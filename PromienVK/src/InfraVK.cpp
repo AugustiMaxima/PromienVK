@@ -4,7 +4,7 @@ namespace infr {
 
 	InfraVK::InfraVK() {}
 
-	virtual void InfraVK::start() {
+	void InfraVK::start() {
 		createInstance();
 		configureLayers();
 		allocatePhysicalDevices();
@@ -17,7 +17,7 @@ namespace infr {
 		render();
 	}
 
-	virtual InfraVK::~InfraVK() {
+	InfraVK::~InfraVK() {
 
 	}
 

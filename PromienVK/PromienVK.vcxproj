@@ -157,6 +157,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="src\Conf.cpp" />
+    <ClCompile Include="src\InfraVK.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\Base.hpp" />
+    <ClInclude Include="src\Conf.hpp" />
+    <ClInclude Include="src\InfraVK.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
