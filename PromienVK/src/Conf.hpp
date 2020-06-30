@@ -11,21 +11,22 @@ namespace conf {
 		ARRAY,
 		MAP,
 		NUM,
-		STRING
+		STRING,
+		NILL
 	};
 
 	struct Entry {
-		Entry(void* content, Type type);
-		Entry(Entry& entry);
+		bool ref;
 		void* content;
 		Type type;
+		Entry();
+		Entry(Entry& entry);
+		Entry(Entry&& entry);
 		~Entry();
-	private:
-		bool archival;
 	};
 
 	struct Scope {
-		std::map<std::string, Entry> entry;
+		std::map<std::string, Entry> map;
 		Entry& operator[](std::string& key);
 	};
 
