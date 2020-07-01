@@ -157,6 +157,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="src\Base.cpp" />
     <ClCompile Include="src\Conf.cpp" />
     <ClCompile Include="src\InfraVK.cpp" />
     <ClCompile Include="test\confTest.cpp" />
