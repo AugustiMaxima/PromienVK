@@ -25,6 +25,12 @@
     <ClCompile Include="src\Conf.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="test\confTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="test\masterTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\InfraVK.hpp">
@@ -36,5 +42,13 @@
     <ClInclude Include="src\Conf.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="test\masterTest.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="test\test.json">
+      <Filter>Source Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

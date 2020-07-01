@@ -159,11 +159,17 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="src\Conf.cpp" />
     <ClCompile Include="src\InfraVK.cpp" />
+    <ClCompile Include="test\confTest.cpp" />
+    <ClCompile Include="test\masterTest.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Base.hpp" />
     <ClInclude Include="src\Conf.hpp" />
     <ClInclude Include="src\InfraVK.hpp" />
+    <ClInclude Include="test\masterTest.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="test\test.json" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

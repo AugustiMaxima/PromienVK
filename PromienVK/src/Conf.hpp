@@ -7,7 +7,7 @@
 //here comes my best json impression
 
 namespace conf {
-	enum Type {
+	enum class Type {
 		ARRAY,
 		MAP,
 		NUM,
@@ -16,21 +16,25 @@ namespace conf {
 	};
 
 	struct Entry {
-		bool ref;
 		void* content;
 		Type type;
 		Entry();
 		Entry(Entry& entry);
 		Entry(Entry&& entry);
+		Entry& operator=(Entry& entry);
+		Entry& operator=(Entry&& entry);
 		~Entry();
+	private:
+		bool ref;
+		void gc();
 	};
 
 	struct Scope {
 		std::map<std::string, Entry> map;
-		Entry& operator[](std::string& key);
+		Entry& operator[](std::string key);
 	};
 
-	void parseConfigs(Scope& scope, std::string& filename);
+	void parseConfigs(Scope& scope, std::string filename);
 
 }
 

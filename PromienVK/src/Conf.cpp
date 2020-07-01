@@ -6,7 +6,7 @@
 using namespace std;
 
 namespace conf {
-	void parseConfigGeneric(Scope& scope, ifstream& stream, string& line, int index);
+	void parseConfigGeneric(Entry& entry, ifstream& stream, string& line, int& index);
 
 	int skipWhitespace(string& line, int index) {
 		for (int i = index; i < line.length(); i++) {
@@ -21,7 +21,7 @@ namespace conf {
 	}
 
 	int skipToDelimiter(string& line, int index, char delimiter) {
-		for (int i = 0; i < line.length(); i++) {
+		for (int i = index; i < line.length(); i++) {
 			if (line[i] == delimiter)
 				return i;
 		}
@@ -43,28 +43,30 @@ namespace conf {
 			throw exception("Bad config file, expecting brace");
 		}
 		bool empty = true;
-		while (!ios::eofbit) {
-			if (empty && line[index++] != ',') {
-				throw exception("Missing delimiter ,");
-			}
+		while (true) {
 			dash(stream, line, index);
-			//key name
 			if (line[index] == '}') {
 				index++;
 				break;
 			}
+			if (!empty && line[index++] != ',') {
+				throw exception("Missing delimiter ,");
+			}
+			dash(stream, line, index);
+			//key name
 			if (line[index++] != '"') {
 				throw exception("Bad config file, expecting quotation");
 			}
 			int mark = skipToDelimiter(line, index, '"');
 			string key = line.substr(index, mark - index);
-			index = mark;
+			index = mark + 1;
 			dash(stream, line, index);
 			if (line[index++] != ':') {
 				throw exception("Bad config file, expecting divider");
 			}
 			//deals with real entry now
 			parseConfigGeneric(scope[key], stream, line, index);
+			empty = false;
 		}
 		return src;
 	}
@@ -78,15 +80,18 @@ namespace conf {
 		bool empty = true;
 		int i = 0;
 		while (true) {
-			if (empty && line[index++] != ',') {
+			dash(stream, line, index);
+			if (line[index] == ']') {
+				index++;
+				break;
+			}
+			if (!empty && line[index++] != ',') {
 				throw exception("Missing delimiter ,");
 			}
 			dash(stream, line, index);
-			if (line[index] == ']') {
-				break;
-			}
 			arr.push_back(Entry());
 			parseConfigGeneric(arr[i++], stream, line, index);
+			empty = false;
 		}
 		return src;
 	}
@@ -113,29 +118,27 @@ namespace conf {
 		int mark = skipToDelimiter(line, index, '"');
 		string* str = new string;
 		*str = line.substr(index, mark - index);
-		index = mark;
+		index = mark + 1;
 		return str;
 	}
 
 	void parseConfigGeneric(Entry& entry, ifstream& stream, string& line, int& index) {
-		//indicate that this is the master copy
-		entry.ref = false;
 		dash(stream, line, index);
 		char selector = line[index];
 		if (selector == '{') {
-			entry.type = MAP;
+			entry.type = Type::MAP;
 			entry.content = parseConfigMap(stream, line, index);
 		}
 		else if (selector == '[') {
-			entry.type = ARRAY;
+			entry.type = Type::ARRAY;
 			entry.content = parseConfigArray(stream, line, index);
 		}
 		else if (selector == '"') {
-			entry.type = STRING;
+			entry.type = Type::STRING;
 			entry.content = parseConfigStr(stream, line, index);
 		}
 		else if (selector <= '9' && selector >= '0') {
-			entry.type = NUM;
+			entry.type = Type::NUM;
 			entry.content = parseConfigNum(stream, line, index);
 		}
 		else {
@@ -143,34 +146,32 @@ namespace conf {
 		}
 	}
 
-	void parseConfigs(Scope& scope, string& filename) {
+	void parseConfigs(Scope& scope, string filename) {
 		ifstream file{ filename };
 		string line = "";
 		int index = 0;
 		bool empty = true;
-		while (!ios::eofbit) {
-			if (empty && line[index++] != ',') {
+
+		while (!file.eof() || index<line.length()) {
+			dash(file, line, index);
+			if (!empty && line[index++] != ',') {
 				throw exception("Missing delimiter ,");
 			}
 			dash(file, line, index);
 			//key name
-			if (line[index] == '}') {
-				index++;
-				break;
-			}
 			if (line[index++] != '"') {
 				throw exception("Bad config file, expecting quotation");
 			}
 			int mark = skipToDelimiter(line, index, '"');
 			string key = line.substr(index, mark - index);
-			index = mark;
+			index = mark + 1;
 			dash(file, line, index);
 			if (line[index++] != ':') {
 				throw exception("Bad config file, expecting divider");
 			}
 			//deals with real entry now
 			parseConfigGeneric(scope[key], file, line, index);
-			dash(file, line, index);
+			empty = false;
 		}
 	}
 
@@ -183,34 +184,59 @@ namespace conf {
 	}
 
 	Entry::Entry(Entry&& entry) : ref(entry.ref), content(entry.content), type(entry.type) {
-
+		entry.ref = true;
 	}
 
-	Entry::~Entry() {
-		if (!ref && type != NILL) {
+	Entry& Entry::operator=(Entry& entry) {
+		gc();
+		ref = true;
+		content = entry.content;
+		type = entry.type;
+		return *this;
+	}
+
+	Entry& Entry::operator=(Entry&& entry) {
+		bool oref = ref;
+		void* ocontent = content;
+		Type otype = type;
+		ref = entry.ref;
+		content = entry.content;
+		type = entry.type;
+		ref = entry.ref;
+		entry.ref = oref;
+		entry.content = ocontent;
+		entry.type = otype;
+		return *this;
+	}
+
+	void Entry::gc() {
+		if (!ref && type != Type::NILL) {
 			switch (type) {
-				case ARRAY:
-					delete (vector<Entry>*)content;
-					break;
-				case MAP:
-					delete (Scope*)content;
-					break;
-				case NUM:
-					delete (int*)content;
-					break;
-				case STRING:
-					delete (string*)content;
-					break;
-				default:
-
-
+			case Type::ARRAY:
+				delete (vector<Entry>*)content;
+				break;
+			case Type::MAP:
+				delete (Scope*)content;
+				break;
+			case Type::NUM:
+				delete (int*)content;
+				break;
+			case Type::STRING:
+				delete (string*)content;
+				break;
+			default:
+				break;
 			}
 		}
 	}
 
-	Entry& Scope::operator[](std::string& key) {
+	Entry::~Entry() {
+		gc();
+	}
+
+	Entry& Scope::operator[](std::string key) {
 		if (map.count(key) == 0) {
-			map[key].type = NILL;
+			map[key].type = Type::NILL;
 		}
 		return map[key];
 	}
