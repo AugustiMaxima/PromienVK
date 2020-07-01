@@ -179,7 +179,7 @@ namespace conf {
 		ref = false;
 	}
 
-	Entry::Entry(Entry& entry):ref(true), content(entry.content), type(entry.type) {
+	Entry::Entry(const Entry& entry):ref(true), content(entry.content), type(entry.type) {
 	
 	}
 
@@ -234,11 +234,70 @@ namespace conf {
 		gc();
 	}
 
-	Entry& Scope::operator[](std::string key) {
+	Entry& Scope::operator[](string key) {
 		if (map.count(key) == 0) {
 			map[key].type = Type::NILL;
 		}
 		return map[key];
 	}
 
+	Entry::operator string() {
+		if (type != Type::STRING) {
+			throw exception("Bad cast exception");
+		}
+		return *(string*)content;
+	}
+
+	Entry::operator string&() {
+		if (type != Type::STRING) {
+			throw exception("Bad cast exception");
+		}
+		return *(string*)content;
+	}
+
+	Entry::operator int() {
+		if (type != Type::NUM) {
+			throw exception("Bad cast exception");
+		}
+		return *(int*)content;
+	}	
+	
+	Entry::operator int&() {
+		if (type != Type::NUM) {
+			throw exception("Bad cast exception");
+		}
+		return *(int*)content;
+	}
+
+	Entry::operator Scope () {
+		if (type != Type::MAP) {
+			throw exception("Bad cast exception");
+		}
+		//use a cast first to make sure we get lvalue assignment rather than rvalue assignment
+		Scope& src = *(Scope*)content;
+		return src;
+	}
+
+	Entry::operator Scope& () {
+		if (type != Type::MAP) {
+			throw exception("Bad cast exception");
+		}
+		//no concerns about r values here
+		return *(Scope*)content;
+	}
+	
+	Entry::operator vector<Entry>(){
+		if (type != Type::ARRAY) {
+			throw exception("Bad cast exception");
+		}
+		vector<Entry>& src = *(vector<Entry>*)content;
+		return src;
+	}
+
+	Entry::operator vector<Entry>&() {
+		if (type != Type::ARRAY) {
+			throw exception("Bad cast exception");
+		}
+		return *(vector<Entry>*)content;
+	}
 }

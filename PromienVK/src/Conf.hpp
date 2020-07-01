@@ -15,24 +15,36 @@ namespace conf {
 		NILL
 	};
 
+	struct Entry;
+
+	struct Scope {
+		std::map<std::string, Entry> map;
+		Entry& operator[](std::string key);
+	};
+	
 	struct Entry {
 		void* content;
 		Type type;
 		Entry();
-		Entry(Entry& entry);
+		Entry(const Entry& entry);
 		Entry(Entry&& entry);
 		Entry& operator=(Entry& entry);
 		Entry& operator=(Entry&& entry);
+		operator std::string();
+		operator std::string& ();
+		operator int();
+		operator int& ();
+		operator Scope();
+		operator Scope& ();
+		operator std::vector<Entry> ();
+		operator std::vector<Entry>& ();
 		~Entry();
 	private:
 		bool ref;
 		void gc();
 	};
 
-	struct Scope {
-		std::map<std::string, Entry> map;
-		Entry& operator[](std::string key);
-	};
+
 
 	void parseConfigs(Scope& scope, std::string filename);
 

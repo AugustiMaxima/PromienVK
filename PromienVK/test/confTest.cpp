@@ -11,19 +11,19 @@ int confTest() {
 	
 	parseConfigs(scope, "test/test.json");
 	
-	Scope& glossary = *(Scope*)(scope["glossary"].content);
+	Scope& glossary = scope["glossary"];
 
-	Scope& glossDiv = *(Scope*)(glossary["GlossDiv"].content);
+	Scope glossDiv = glossary["GlossDiv"];
 	
-	Scope& glossList = *(Scope*)(glossDiv["GlossList"].content);
+	Scope& glossList = glossDiv["GlossList"];
 	
-	Scope& glossEntry = *(Scope*)(glossList["GlossEntry"].content);
+	Scope glossEntry = glossList["GlossEntry"];
 
-	string& glossTerm = *(string*)(glossEntry["GlossTerm"].content);
+	string glossTerm = glossEntry["GlossTerm"];
 	
-	Scope& glossDef = *(Scope*)(glossEntry["GlossDef"].content);
+	Scope glossDef = glossEntry["GlossDef"];
 
-	vector<Entry>& glossSeeAlso = *(vector<Entry>*)(glossDef["GlossSeeAlso"].content);
+	vector<Entry> glossSeeAlso = glossDef["GlossSeeAlso"];
 
 	if (glossTerm == "Standard Generalized Markup Language") {
 		return 0;
