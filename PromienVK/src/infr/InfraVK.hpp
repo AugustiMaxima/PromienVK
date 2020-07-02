@@ -6,7 +6,6 @@ namespace infr {
 	class InfraVK {
 	private:
 		virtual void createInstance() = 0;
-		virtual void configureLayers() = 0;
 		//devices
 		virtual void allocatePhysicalDevices() = 0;
 		virtual void createLogicalDevices() = 0;
@@ -19,6 +18,8 @@ namespace infr {
 		virtual void configureGraphicsPipeline() = 0;
 		//iterations
 		virtual void render() = 0;
+		//cleanup
+		virtual void cleanup() = 0;
 
 	public:
 		InfraVK();

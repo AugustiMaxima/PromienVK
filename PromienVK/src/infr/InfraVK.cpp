@@ -6,7 +6,6 @@ namespace infr {
 
 	void InfraVK::start() {
 		createInstance();
-		configureLayers();
 		allocatePhysicalDevices();
 		createLogicalDevices();
 		createQueues();

@@ -241,26 +241,12 @@ namespace conf {
 		return map[key];
 	}
 
-	Entry::operator string() {
-		if (type != Type::STRING) {
-			throw exception("Bad cast exception");
-		}
-		return *(string*)content;
-	}
-
 	Entry::operator string&() {
 		if (type != Type::STRING) {
 			throw exception("Bad cast exception");
 		}
 		return *(string*)content;
 	}
-
-	Entry::operator int() {
-		if (type != Type::NUM) {
-			throw exception("Bad cast exception");
-		}
-		return *(int*)content;
-	}	
 	
 	Entry::operator int&() {
 		if (type != Type::NUM) {
@@ -299,5 +285,54 @@ namespace conf {
 			throw exception("Bad cast exception");
 		}
 		return *(vector<Entry>*)content;
+	}
+
+	Entry& Entry::operator=(int num) {
+		gc();
+		content = new int;
+		*(int*)content = num;
+		type = Type::NUM;
+		ref = false;
+		return *this;
+	}
+
+	Entry& Entry::operator=(string str) {
+		gc();
+		content = new string;
+		*(string*)content = str;
+		type = Type::STRING;
+		ref = false;
+		return *this;
+	}
+
+	Entry& Entry::operator=(Scope& scp) {
+		gc();
+		content = new Scope(scp);
+		type = Type::MAP;
+		ref = false;
+
+		Scope& scc = *(Scope*)content;
+
+		for (auto& kv = scp.map.begin(); kv != scp.map.end(); kv++) {
+			string key = kv->first;
+			kv->second.ref = true;
+			scc[key].ref = false;
+		}
+		return *this;
+	}
+	
+	Entry& Entry::operator=(vector<Entry>& arr) {
+		gc();
+		content = new vector<Entry>(arr);
+		type = Type::ARRAY;
+		ref = false;
+
+		vector<Entry>& ary = *(vector<Entry>*)content;
+
+		for (int i = 0; i < arr.size(); i++) {
+			arr[i].ref = true;
+			ary[i].ref = false;
+		}
+		return *this;
 	}
 }

@@ -1,0 +1,8 @@
+"Application": {
+	"Title": "Promien SDK",
+	"AppVersion": 0,
+}, "Image": {
+	"ResX": 1920,
+	"ResY": 1080,
+	"VerticalFOV": 70
+}

@@ -157,16 +157,21 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="src\Base.cpp" />
-    <ClCompile Include="src\Conf.cpp" />
-    <ClCompile Include="src\InfraVK.cpp" />
+    <ClCompile Include="not_main.cpp" />
+    <ClCompile Include="src\dbg\dbg.cpp" />
+    <ClCompile Include="src\dbg\vLog.cpp" />
+    <ClCompile Include="src\infr\Base.cpp" />
+    <ClCompile Include="src\infr\Conf.cpp" />
+    <ClCompile Include="src\infr\InfraVK.cpp" />
     <ClCompile Include="test\confTest.cpp" />
     <ClCompile Include="test\masterTest.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\Base.hpp" />
-    <ClInclude Include="src\Conf.hpp" />
-    <ClInclude Include="src\InfraVK.hpp" />
+    <ClInclude Include="src\dbg\dbg.hpp" />
+    <ClInclude Include="src\dbg\vLog.hpp" />
+    <ClInclude Include="src\infr\Base.hpp" />
+    <ClInclude Include="src\infr\Conf.hpp" />
+    <ClInclude Include="src\infr\InfraVK.hpp" />
     <ClInclude Include="test\masterTest.hpp" />
   </ItemGroup>
   <ItemGroup>
