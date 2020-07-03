@@ -1,3 +1,4 @@
+#include "deviceSet.hpp"
 #include "Base.hpp"
 
 #if defined(_DEBUG)
@@ -59,9 +60,24 @@ namespace infr {
 #endif
 	}
 
+	void Base::allocatePhysicalDevices() {
+		//global, includes all physicalDevices
+		physicalDeviceMap["*"] = instance.enumeratePhysicalDevices();
+		auto& deviceList = physicalDeviceMap["*"];
+
+		for (auto& device : deviceList) {
+			registerDeviceSet(physicalDeviceMap, device);
+		}
+		
+		rankDeviceEligibility(physicalDeviceMap);
+	
+	}
+
 
 	Base::~Base() {
 		//TO BE COMPLETED
+		instance.destroyDebugUtilsMessengerEXT(debugMessenger, nullptr, dldi);
+		instance.destroy();
 	}
 
 

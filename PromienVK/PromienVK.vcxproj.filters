@@ -43,6 +43,9 @@
     <ClCompile Include="src\dbg\dbg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\infr\deviceSet.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="test\masterTest.hpp">
@@ -61,6 +64,9 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="src\dbg\vLog.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\infr\deviceSet.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

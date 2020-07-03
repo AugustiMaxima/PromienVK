@@ -7,7 +7,6 @@ using namespace conf;
 
 int confTest1() {
 	Scope scope;
-	
 	parseConfigs(scope, "test/test.json");
 	Scope& glossary = scope["glossary"];
 	Scope glossDiv = glossary["GlossDiv"];
@@ -40,7 +39,6 @@ int confTest2() {
 }
 
 int confTest() {
-
 	confTest1();
 	confTest2();
 	return 0;
