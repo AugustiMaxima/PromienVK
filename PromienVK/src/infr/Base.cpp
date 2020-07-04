@@ -70,7 +70,13 @@ namespace infr {
 		}
 		
 		rankDeviceEligibility(physicalDeviceMap);
-	
+	}
+
+	void Base::createLogicalDevices() {
+
+
+
+
 	}
 
 

@@ -6,10 +6,10 @@ namespace infr {
 
 	void InfraVK::start() {
 		createInstance();
+		createSurface();
 		allocatePhysicalDevices();
 		createLogicalDevices();
 		createQueues();
-		createSurface();
 		configureSwapChain();
 		configureImageView();
 		configureGraphicsPipeline();
