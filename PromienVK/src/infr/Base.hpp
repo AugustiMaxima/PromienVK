@@ -6,7 +6,7 @@
 #include "InfraVK.hpp"
 namespace infr {
 	class Base : public InfraVK {
-	private:
+	protected:
 		//Data is going to be inherited, so absolute care is needed for extensibility
 		conf::Scope configs;
 		vk::Instance instance;
@@ -27,18 +27,15 @@ namespace infr {
 		std::vector<vk::SwapchainKHR> swapchains;
 
 		//we'll leave the GraphicsPipeline part alone, as it is completely dependent on implementation
-	public:
-		Base(std::string config);
+
 		//It's important to note that while data is general, implementation cannot
 		//Implementations will strive to be a good reference for versatile uses
 		//But constraints will be made
 		virtual void createInstance();
-		virtual void createSurface();
 		virtual void allocatePhysicalDevices();
-		virtual void createLogicalDevices();
-		virtual void createQueues();
-		virtual void configureSwapChain();
-		virtual void configureImageView();
+		virtual void cleanup();
+	public:
+		Base(std::string config);
 		virtual ~Base();
 	};
 }

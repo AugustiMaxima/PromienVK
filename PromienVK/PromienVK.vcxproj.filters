@@ -46,33 +46,42 @@
     <ClCompile Include="src\infr\deviceSet.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\core\prototype.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="test\masterTest.hpp">
-      <Filter>Source Files</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\infr\Base.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\infr\Conf.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\infr\InfraVK.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\dbg\dbg.hpp">
-      <Filter>Source Files</Filter>
+    <ClInclude Include="src\core\prototype.hpp">
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\dbg\vLog.hpp">
-      <Filter>Source Files</Filter>
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\infr\InfraVK.hpp">
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\infr\deviceSet.hpp">
-      <Filter>Source Files</Filter>
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\dbg\dbg.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\infr\Conf.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\infr\Base.hpp">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="test\test.json">
-      <Filter>Source Files</Filter>
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="configs\settings.json">
+      <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>
 </Project>

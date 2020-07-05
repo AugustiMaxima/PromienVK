@@ -14,6 +14,7 @@ namespace infr {
 		configureImageView();
 		configureGraphicsPipeline();
 		render();
+		cleanup();
 	}
 
 	InfraVK::~InfraVK() {

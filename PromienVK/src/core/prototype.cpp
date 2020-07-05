@@ -1,30 +1,45 @@
-#include "deviceSet.hpp"
-#include "Base.hpp"
-
-#if defined(_DEBUG)
+#define GLFW_INCLUDE_VULKAN
 #include "../dbg/vLog.hpp"
-#endif
+#include "prototype.hpp"
 
+namespace core {
 
-namespace infr {
-	Base::Base(std::string config) :InfraVK() {
-		conf::parseConfigs(configs, config);
+	Prototype::Prototype(std::string config):infr::Base(config){}
+
+	void Prototype::initWindow() {
+		glfwInit();
+
+		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+		glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+		//TODO: (bordleress)\ fullscreen support
+		conf::Scope display = configs["Display"];
+		conf::Scope appScope = configs["Application"];
+		glfwCreateWindow(display["XRes"], display["YRes"], ((std::string)appScope["Title"]).c_str(), nullptr, nullptr);
 	}
 
-	void Base::createInstance() {
+	void Prototype::createInstance() {
+		initWindow();
+
 		conf::Scope appScope = configs["Application"];
 		vk::ApplicationInfo appInfo = vk::ApplicationInfo()
 			.setPApplicationName(((std::string)appScope["Title"]).c_str())
-			.setApplicationVersion(appScope["AppVersion"])
+			.setApplicationVersion(VK_MAKE_VERSION(appScope["MajorVersion"], appScope["MinorVersion"], appScope["PatchVersion"]))
 			.setPEngineName("PromienVK")
-			.setEngineVersion(0)
+			.setEngineVersion(VK_MAKE_VERSION(0,0,0))
 			.setApiVersion(VK_API_VERSION_1_2);
 
-		// Use validation layers if this is a debug build
 		std::vector<const char*> layers;
 
 		//extensions:
 		std::vector<const char*> extensions;
+
+		uint32_t glfwExtensionCount;
+		const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+		extensions.resize(glfwExtensionCount);
+		for (int i = 0; i < extensions.size(); i++) {
+			extensions[i] = glfwExtensions[i];
+		}
+
 
 #if defined(_DEBUG)
 		layers.push_back("VK_LAYER_KHRONOS_validation");
@@ -60,28 +75,33 @@ namespace infr {
 #endif
 	}
 
-	void Base::allocatePhysicalDevices() {
-		//global, includes all physicalDevices
-		physicalDeviceMap["*"] = instance.enumeratePhysicalDevices();
-		auto& deviceList = physicalDeviceMap["*"];
-
-		for (auto& device : deviceList) {
-			registerDeviceSet(physicalDeviceMap, device);
+	void Prototype::createSurface() {
+		VkSurfaceKHR surface;
+		//Use .hpp they said, it will clean up everything, they said
+		if (glfwCreateWindowSurface((VkInstance)instance, window, nullptr, &surface) != VK_SUCCESS) {
+			throw std::runtime_error("failed to create window surface!");
 		}
-		
-		rankDeviceEligibility(physicalDeviceMap);
+		surfaces.push_back(vk::SurfaceKHR(surface));
 	}
 
-	void Base::cleanup() {
+	void Prototype::allocatePhysicalDevices() {
+
+	}
+
+	void Prototype::cleanup() {
+
+
+		instance.destroySurfaceKHR(surfaces[0]);
 #if defined(_DEBUG)
 		instance.destroyDebugUtilsMessengerEXT(debugMessenger, nullptr, dldi);
 #endif
 		instance.destroy();
+		glfwDestroyWindow(window);
+		glfwTerminate();
 	}
 
-	Base::~Base() {
-		//Destructor are neglected in favor of cleanup functions due to the fact that cleanup can be overriden, and this cannot
-		//this gives greater flexibility for subclasses to manipulate data as they desire
+	Prototype::~Prototype() {
+
 	}
 
 }
