@@ -86,7 +86,11 @@ namespace core {
 
 	void Prototype::allocatePhysicalDevices() {
 		physicalDeviceMap["*"] = instance.enumeratePhysicalDevices();
-		dps::pickDevices(physicalDeviceMap, surfaces[0]);
+		dps::pickPhysicalDevices(physicalDeviceMap, surfaces[0]);
+	}
+
+	void Prototype::createLogicalDevices() {
+		//TODO: Assert that there is a suitable device for all categories
 	}
 
 	void Prototype::cleanup() {
