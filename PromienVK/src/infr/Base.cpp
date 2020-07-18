@@ -66,10 +66,10 @@ namespace infr {
 		auto& deviceList = physicalDeviceMap["*"];
 
 		for (auto& device : deviceList) {
-			registerDeviceSet(physicalDeviceMap, device);
+			dvs::registerDeviceSet(physicalDeviceMap, device);
 		}
 		
-		rankDeviceEligibility(physicalDeviceMap);
+		dvs::rankDeviceEligibility(physicalDeviceMap);
 	}
 
 	void Base::cleanup() {

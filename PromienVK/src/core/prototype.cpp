@@ -1,5 +1,6 @@
 #define GLFW_INCLUDE_VULKAN
 #include "../dbg/vLog.hpp"
+#include "devicePick.hpp"
 #include "prototype.hpp"
 
 namespace core {
@@ -39,7 +40,6 @@ namespace core {
 		for (int i = 0; i < extensions.size(); i++) {
 			extensions[i] = glfwExtensions[i];
 		}
-
 
 #if defined(_DEBUG)
 		layers.push_back("VK_LAYER_KHRONOS_validation");
@@ -85,7 +85,8 @@ namespace core {
 	}
 
 	void Prototype::allocatePhysicalDevices() {
-
+		physicalDeviceMap["*"] = instance.enumeratePhysicalDevices();
+		dps::pickDevices(physicalDeviceMap, surfaces[0]);
 	}
 
 	void Prototype::cleanup() {

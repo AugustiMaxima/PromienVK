@@ -6,8 +6,15 @@
 #include <map>
 
 namespace infr {
-	void registerDeviceSet(std::map<std::string, std::vector<vk::PhysicalDevice>>& pDeviceMap, vk::PhysicalDevice device);
-	void rankDeviceEligibility(std::map<std::string, std::vector<vk::PhysicalDevice>>& pDeviceMap);
+	namespace dvs {
+		bool computeCompatibile(vk::PhysicalDevice device);
+		bool graphicCompatibile(vk::PhysicalDevice device);
+		int computeRank(vk::PhysicalDevice device1, vk::PhysicalDevice device2);
+		int graphicRank(vk::PhysicalDevice device1, vk::PhysicalDevice device2);
+
+		void registerDeviceSet(std::map<std::string, std::vector<vk::PhysicalDevice>>& pDeviceMap, vk::PhysicalDevice device);
+		void rankDeviceEligibility(std::map<std::string, std::vector<vk::PhysicalDevice>>& pDeviceMap);
+	}
 }
 
 #endif
