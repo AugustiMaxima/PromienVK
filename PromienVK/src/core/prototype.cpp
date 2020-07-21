@@ -9,13 +9,12 @@ namespace core {
 
 	void Prototype::initWindow() {
 		glfwInit();
-
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 		glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 		//TODO: (bordleress)\ fullscreen support
 		conf::Scope display = configs["Display"];
 		conf::Scope appScope = configs["Application"];
-		glfwCreateWindow(display["XRes"], display["YRes"], ((std::string)appScope["Title"]).c_str(), nullptr, nullptr);
+		window = glfwCreateWindow(display["XRes"], display["YRes"], ((std::string)appScope["Title"]).c_str(), nullptr, nullptr);
 	}
 
 	void Prototype::createInstance() {

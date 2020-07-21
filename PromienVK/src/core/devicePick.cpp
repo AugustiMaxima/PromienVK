@@ -4,6 +4,12 @@
 using namespace std;
 using namespace vk;
 
+struct featureList {
+	int set[3];
+	int& operator[](int i) {
+		return set[i];
+	}
+};
 
 namespace core {
 	namespace dps {
@@ -80,8 +86,33 @@ namespace core {
 
 		void pickDevices(map<string, vector<PhysicalDevice>>& pDeviceMap, SurfaceKHR surface, map<string, vector<Device>>& deviceMap, std::function<map<string, vector<int>>(map<string, vector<PhysicalDevice>>&)> logic) {
 			auto queryMap = logic(pDeviceMap);
+			//as we may have multiple queues demanding from the same physicalDevice, we can use queues from the same device
+			//length = number of devices in ["*"], ie selected
+			vector<vector<DeviceQueueCreateInfo>> qDep;
+			vector<featureList> qSup;
+			vector<featureList> qInd;
+			vector<PhysicalDeviceFeatures> qfeat;
+			vector<DeviceCreateInfo> qInfo;
+			//as it's possible for even queues to perform multiple functions, we also want to enable queue sharing
+			auto& dlist = queryMap["*"];
+			qDep.resize(dlist.size());
+			qSup.resize(dlist.size());
+			qfeat.resize(dlist.size());
+			qInfo.resize(dlist.size());
 
+			//initialization
+			for (int i = 0; i < dlist.size(); i++) {
+				for (int j = 0; j < 3; j++) {
+					qSup[i][j] = -1;
+					qInd[i][j] = -1;
+				}
+			}
 
+			//compute pass
+			for (int pid : queryMap["Compute"]) {
+
+			}
+		
 		}
 
 	}
