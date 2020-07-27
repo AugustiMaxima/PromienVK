@@ -182,7 +182,7 @@
     <ClInclude Include="src\infr\Conf.hpp" />
     <ClInclude Include="src\infr\deviceSet.hpp" />
     <ClInclude Include="src\infr\InfraVK.hpp" />
-    <ClInclude Include="src\utils\multindex.hpp" />
+    <ClInclude Include="src\utils\multIndex.hpp" />
     <ClInclude Include="test\masterTest.hpp" />
   </ItemGroup>
   <ItemGroup>

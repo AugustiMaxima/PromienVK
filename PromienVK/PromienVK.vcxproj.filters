@@ -81,7 +81,7 @@
     <ClInclude Include="src\core\devicePick.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\utils\multindex.hpp">
+    <ClInclude Include="src\utils\multIndex.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
