@@ -14,7 +14,8 @@ namespace util {
 			iNode* p;
 			iNode* l;
 			iNode* r;
-			void updateHeight() {
+			bool updateHeight() {
+				int oh = height;
 				int lh = l ? l->height : 0;
 				int rh = r ? r->height : 0;
 				height = (lh > rh ? lh : rh) + 1;
@@ -24,6 +25,7 @@ namespace util {
 				if (r) {
 					r->p = this;
 				}
+				return oh == height;
 			}
 			iNode* balance() {
 				int lh = l ? l->height : 0;
@@ -119,20 +121,129 @@ namespace util {
 					if (r)
 						r = r->put(key, value, residual);
 					else {
-						r = new iNode(key, value);
+						r = new iNode(key, value, this);
 						*residual = value;
 					}
 				}
 				return balance();
 			}
+			iNode* put(K key, V value) {
+				if (key < this->key) {
+					if (l)
+						l = l->put(key, value);
+					else {
+						l = new iNode(key, value, this);
+					}
+				}
+				else if (key == this->key) {
+					this->value = value;
+				}
+				else {
+					if (r)
+						r = r->put(key, value);
+					else {
+						r = new iNode(key, value, this);
+					}
+				}
+				return balance();
+			}
 			iNode* insert(K key, V value) {
-
+				if (key < this->key) {
+					l = l->insert(key, value);
+				}
+				//important note here:
+				//insert is intended for multi sets
+				//this does not imply that first key hit is the left most, as this collection is subject to shuffling/rebalancing
+				else {
+					r = r->insert(key, value);
+				}
+				return balance();
 			}
 			iNode* left();
 			iNode* right();
-			iNode* remove(iNode* node);
-			iNode* remove(K key);
-			V& getValue();
+			iNode* remove() {
+				iNode* rep = nullptr;
+				if (l && l->r) {
+					rep = l;
+					while (rep->r)
+						rep = rep->r;
+					iNode* ps = rep->p;
+					ps->r = rep->l;
+					while (ps != this) {
+						if (ps->updateHeight())
+							break;
+						ps = ps->p;
+					}
+					rep->l = l;
+					rep->r = r;
+				}
+				else if (r && r->l) {
+					rep = r;
+					while (rep->l)
+						rep = rep->l;
+					iNode* ps = rep->p;
+					ps->l = rep->r;
+					while (ps != this) {
+						if (ps->updateHeight())
+							break;
+						ps = ps->p;
+					}
+					rep->l = l;
+					rep->r = r;
+				}
+				else if (l) {
+					rep = l;
+					rep->r = r;
+				}
+				else if (r) {
+					rep = r;
+					rep->l = l;
+				}
+				rep->p = p;
+				rep->updateHeight();
+				l = nullptr;
+				r = nullptr;
+				delete this;
+				return rep;
+			}
+			iNode* remove(K key) {
+				if (key < this->key) {
+					l = l->remove(key);
+				}
+				else if (key == this->key) {
+					return remove();
+				}
+				else {
+					r = r->remove(key);
+				}
+				return balance();
+			}
+			iNode* remove(iNode* node) {
+				iNode* ps = node->p;
+				bool null = false;
+				if (ps->l == node) {
+					ps->l = node->remove();
+				}
+				else if (ps->r == node) {
+					ps->r = node->remove();
+				}
+				else {
+					null = true;
+				}
+				if (!null) {
+					while (ps) {
+						if(ps->updateHeight())
+							break;
+						ps = ps->p;
+					}
+				}
+			}
+			K getKey() {
+				return key;
+			}
+			V& getValue() {
+				return value;
+			}
 			~iNode() {
 				delete l;
 				delete r;
