@@ -2,6 +2,6 @@
 
 int masterTest() {
 	confTest();
-
+	dictTest();
 	return 0;
 }

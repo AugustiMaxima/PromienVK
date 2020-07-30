@@ -19,5 +19,7 @@ int main() {
 	//insert your compiler flag here
 	masterTest();
 
+	char a;
+	cin >> a;
 
 }

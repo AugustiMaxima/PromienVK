@@ -171,6 +171,7 @@
     <ClCompile Include="src\infr\deviceSet.cpp" />
     <ClCompile Include="src\infr\InfraVK.cpp" />
     <ClCompile Include="test\confTest.cpp" />
+    <ClCompile Include="test\dictTest.cpp" />
     <ClCompile Include="test\masterTest.cpp" />
   </ItemGroup>
   <ItemGroup>

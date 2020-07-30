@@ -4,6 +4,8 @@
 
 int confTest();
 
+int dictTest();
+
 int masterTest();
 
 #endif

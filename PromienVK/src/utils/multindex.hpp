@@ -4,7 +4,16 @@
 #include <optional>
 #include <vector>
 
+#include <string>
+
 namespace util {
+
+	struct _debug_Tree_Vis {
+		std::string k;
+		std::string v;
+		int x, y;
+	};
+
 	template<typename K, typename V>
 	class multIndex {
 		class iNode {
@@ -81,8 +90,6 @@ namespace util {
 				}
 				return anchor;
 			}
-
-
 		public:
 			iNode(const K& key, V value, iNode* parent = nullptr) :key(key), value(value), p(parent), height(1), l(nullptr), r(nullptr) {
 			}
@@ -155,19 +162,30 @@ namespace util {
 			}
 			iNode* insert(const K& key, V value) {
 				if (key < this->key) {
-					l = l->insert(key, value);
+					if (l)
+						l = l->insert(key, value);
+					else
+						l = new iNode(key, value, this);
 				}
 				//important note here:
 				//insert is intended for multi sets
 				//this does not imply that first key hit is the left most, as this collection is subject to shuffling/rebalancing
 				else {
-					r = r->insert(key, value);
+					if (r)
+						r = r->insert(key, value);
+					else
+						r = new iNode(key, value, this);
 				}
 				return balance();
 			}
 			iNode* left() {
-				if (l)
-					return l;
+				if (l) {
+					iNode* cs = l;
+					while (cs->r) {
+						cs = cs->r;
+					}
+					return cs;
+				}
 				iNode* ps = p;
 				iNode* c = this;
 				while (ps && ps->l == c) {
@@ -177,8 +195,13 @@ namespace util {
 				return ps;
 			}
 			iNode* right() {
-				if (r)
-					return r;
+				if (r) {
+					iNode* cs = r;
+					while (cs->l) {
+						cs = cs->l;
+					}
+					return cs;
+				}
 				iNode* ps = p;
 				iNode* c = this;
 				while (ps && ps->r == c) {
@@ -225,6 +248,12 @@ namespace util {
 					rep = r;
 					rep->l = l;
 				}
+				else {
+					l = nullptr;
+					r = nullptr;
+					delete this;
+					return nullptr;
+				}
 				rep->p = p;
 				rep->updateHeight();
 				l = nullptr;
@@ -263,6 +292,17 @@ namespace util {
 						ps = ps->p;
 					}
 				}
+			}
+			void _debug(int radius, int pos, int height, std::vector<_debug_Tree_Vis>& dtv, std::string(*kk)(K), std::string(*vv)(V)) {
+				dtv.push_back(_debug_Tree_Vis{ kk(key), vv(value), pos, height });
+				int hrad = radius / 2;
+				if(l)
+					l->_debug(hrad, pos - hrad, height + 1, dtv, kk, vv);
+				if(r)
+				r->_debug(hrad, pos + hrad, height + 1, dtv, kk, vv);
+			}
+			int getHeight() {
+				return height;
 			}
 			K getKey() {
 				return key;
@@ -307,15 +347,32 @@ namespace util {
 		multIndex() :root(nullptr) {
 		}
 		void put(K key, V value) {
-			root->put(key, value);
+			if (root)
+				root = root->put(key, value);
+			else
+				root = new iNode(key, value);
+		}
+		void insert(K key, V value) {
+			if (root)
+				root = root->insert(key, value);
+			else
+				root = new iNode(key, value);
+		}
+		void remove(K key) {
+			if (root)
+				root = root->remove(key);
 		}
 		std::optional<V> get(const K& key) {
+			return std::optional<V>();
 			iNode* kn = root->find(key);
 			if (kn)
 				return std::optional<V>(kn->getValue());
 			return std::optional<V>();
 		}
 		std::vector<V> query(const K& left, const K& right) {
+			std::vector<V> results;
+			if (!root)
+				return results;
 			iNode* l = root->query(left);
 			//edge, inclusive
 			iNode* r = root->query(right, -1);
@@ -336,7 +393,6 @@ namespace util {
 				//right most limit, helps with the iterator end logic
 				r = r->right();
 			}
-			std::vector<V> results;
 			if (l) {
 				for (iNode* i = l; i != r; i = i->right()) {
 					results.push_back(i->getValue());
@@ -345,9 +401,22 @@ namespace util {
 			return results;
 		}
 		iKey select(const K& key) {
+			if (!root)
+				return iKey(nullptr);
 			return iKey(root->find(key));
 		}
-		
+		void _debug(int& width, int& height, std::vector<_debug_Tree_Vis>& dtv, std::string(*kk)(K), std::string(*vv)(V)) {
+			if (!root) {
+				height = 0;
+				width = 0;
+				return;
+			}
+			height = root->getHeight();
+			width = 1;
+			for (int i = 0; i < height; i++)
+				width *= 2;
+			root->_debug(width/2, width/2, 1, dtv, kk, vv);
+		}
 		~multIndex() {
 			delete root;
 		}

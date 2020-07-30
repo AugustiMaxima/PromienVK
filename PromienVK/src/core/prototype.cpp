@@ -92,6 +92,25 @@ namespace core {
 		//TODO: Assert that there is a suitable device for all categories
 	}
 
+	void Prototype::createQueues(){
+	}
+
+	void Prototype::configureSwapChain() {
+
+	}
+
+	void Prototype::configureImageView() {
+
+	}
+
+	void Prototype::configureGraphicsPipeline() {
+
+	}
+
+	void Prototype::render() {
+
+	}
+
 	void Prototype::cleanup() {
 
 
