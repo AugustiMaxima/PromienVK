@@ -90,7 +90,6 @@ namespace core {
 			//length = number of devices in ["*"], ie selected
 			vector<vector<DeviceQueueCreateInfo>> qDep;
 			vector<featureList> qSup;
-			vector<featureList> qInd;
 			vector<PhysicalDeviceFeatures> qfeat;
 			vector<DeviceCreateInfo> qInfo;
 			//as it's possible for even queues to perform multiple functions, we also want to enable queue sharing
@@ -104,14 +103,47 @@ namespace core {
 			for (int i = 0; i < dlist.size(); i++) {
 				for (int j = 0; j < 3; j++) {
 					qSup[i][j] = -1;
-					qInd[i][j] = -1;
+				}
+			}
+			//we will stick with one queue per function for now
+			//compute pass
+			for (int pid : queryMap["Compute"]) {
+				if (qSup[pid][0] == -1) {
+					auto& device = pDeviceMap["*"][queryMap["*"][pid]];
+					auto qs = device.getQueueFamilyProperties();
+					for (int i = 0; i < qs.size(); i++) {
+						if (qs[i].queueFlags & vk::QueueFlagBits::eCompute) {
+							qSup[pid][0] = i;
+						}
+					}
+				}
+			}
+			//graphic pass
+			for (int pid : queryMap["Graphic"]) {
+				if (qSup[pid][1] == -1) {
+					auto& device = pDeviceMap["*"][queryMap["*"][pid]];
+					auto qs = device.getQueueFamilyProperties();
+					for (int i = 0; i < qs.size(); i++) {
+						if (qs[i].queueFlags & vk::QueueFlagBits::eGraphics) {
+							qSup[pid][1] = i;
+						}
+					}
+				}
+			}
+			//present pass
+			for (int pid : queryMap["Present"]) {
+				if (qSup[pid][2] == -1) {
+					auto& device = pDeviceMap["*"][queryMap["*"][pid]];
+					auto qs = device.getQueueFamilyProperties();
+					for (int i = 0; i < qs.size(); i++) {
+						if (device.getSurfaceSupportKHR(i, surface)) {
+							qSup[pid][2] = i;
+						}
+					}
 				}
 			}
 
-			//compute pass
-			for (int pid : queryMap["Compute"]) {
-
-			}
+			//consolidations here
 		
 		}
 
