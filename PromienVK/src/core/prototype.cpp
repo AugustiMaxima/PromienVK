@@ -84,8 +84,20 @@ namespace core {
 	}
 
 	void Prototype::allocatePhysicalDevices() {
+		std::map<std::string, vk::DeviceCreateInfo> templ;
+		vk::DeviceCreateInfo& present = templ["present"];
+		const std::vector<const char*> deviceExtensions = {
+			VK_KHR_SWAPCHAIN_EXTENSION_NAME
+		};
+		present.enabledExtensionCount = deviceExtensions.size();
+		present.ppEnabledExtensionNames = deviceExtensions.data();
+
+#if defined(_DEBUG)
+		//Fill in layer data for legacy vk implementations
+#endif
+
 		physicalDeviceMap["*"] = instance.enumeratePhysicalDevices();
-		dps::pickPhysicalDevices(physicalDeviceMap, surfaces[0]);
+		dps::pickPhysicalDevices(physicalDeviceMap, templ, surfaces[0]);
 	}
 
 	void Prototype::createLogicalDevices() {

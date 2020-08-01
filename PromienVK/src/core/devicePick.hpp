@@ -32,7 +32,7 @@ namespace core {
 		bool presentReady(vk::PhysicalDevice device, vk::SurfaceKHR surface);
 		int presentScore(vk::PhysicalDevice device1, vk::PhysicalDevice device2);
 
-		bool presentAndSwapReady(vk::PhysicalDevice device, vk::SurfaceKHR surface);
+		bool deviceCompatible(vk::PhysicalDevice device, vk::DeviceCreateInfo spec);
 
 		void pickPhysicalDevices(std::map<std::string, std::vector<vk::PhysicalDevice>>& deviceMap,
 			std::map<std::string, vk::DeviceCreateInfo>& templ, vk::SurfaceKHR surface);

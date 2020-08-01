@@ -30,32 +30,43 @@ namespace core {
 				- device2.getProperties().apiVersion;
 		}
 
-		bool presentAndSwapReady(PhysicalDevice device, SurfaceKHR surface) {
-			const vector<const char*> deviceExtensions = {
-				VK_KHR_SWAPCHAIN_EXTENSION_NAME
-			};
-			set<string> requiredExtensions(deviceExtensions.begin(), deviceExtensions.end());
-			vector<ExtensionProperties> exts = device.enumerateDeviceExtensionProperties();
-			for (const auto& ext : exts) {
-				requiredExtensions.erase(ext.extensionName);
+		bool deviceCompatible(PhysicalDevice device, DeviceCreateInfo spec) {
+			set<string> rexts{};
+			for (int i = 0; i < spec.enabledExtensionCount; i++) {
+				rexts.insert(spec.ppEnabledExtensionNames[i]);
 			}
-			return requiredExtensions.empty() && presentReady(device, surface);
+			for (const auto& ext : device.enumerateDeviceExtensionProperties()) {
+				rexts.erase(ext.extensionName);
+			}
+			/* Commented out due to it being legacy behavior
+			set<string> rlyrs{};
+			for (int i = 0; i < spec.enabledLayerCount; i++) {
+				rlyrs.insert(spec.ppEnabledLayerNames[i]);
+			}
+			for (const auto& lyr : device.enumerateDeviceLayerProperties()) {
+				rlyrs.erase(lyr.layerName);
+			}*/
+			//TODO: Device feature matching
+			return rexts.empty();
 		}
 
-		//TODO: implement template filter
-		void pickPhysicalDevices(map<string, vector<PhysicalDevice>>& deviceMap, map<string, DeviceCreateInfo>, SurfaceKHR surface) {
+		void pickPhysicalDevices(map<string, vector<PhysicalDevice>>& deviceMap, map<string, DeviceCreateInfo>& templ, SurfaceKHR surface) {
 			vector<PhysicalDevice>& dlst = deviceMap["*"];
 			for (auto& device : dlst) {
-				infr::dvs::registerDeviceSet(deviceMap, device);
-				if (presentAndSwapReady(device, surface)) {
+				//compute pass
+				if (infr::dvs::computeCompatible(device) && deviceCompatible(device, templ["compute"])) {
+					deviceMap["compute"].push_back(device);
+				}
+				if (infr::dvs::graphicCompatible(device) && deviceCompatible(device, templ["graphic"])) {
+					deviceMap["graphic"].push_back(device);
+				}
+				if (presentReady(device, surface) && deviceCompatible(device, templ["present"])) {
 					deviceMap["present"].push_back(device);
 				}
 			}
-
-			infr::dvs::rankDeviceEligibility(deviceMap);
-
-			auto& pp = deviceMap["present"];
-			std::sort(pp.begin(), pp.end(), presentScore);
+			std::sort(deviceMap["compute"].begin(), deviceMap["compute"].end(), infr::dvs::computeRank);
+			std::sort(deviceMap["graphic"].begin(), deviceMap["graphic"].end(), infr::dvs::graphicRank);
+			std::sort(deviceMap["present"].begin(), deviceMap["present"].end(), presentScore);
 		}
 
 		//merges multiple device dependencies
