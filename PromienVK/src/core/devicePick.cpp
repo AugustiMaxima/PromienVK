@@ -30,19 +30,60 @@ namespace core {
 				- device2.getProperties().apiVersion;
 		}
 
-		void pickPhysicalDevices(map<string, vector<PhysicalDevice>>& map, SurfaceKHR surface) {
-			vector<PhysicalDevice>& dlst = map["*"];
+		bool presentAndSwapReady(PhysicalDevice device, SurfaceKHR surface) {
+			const vector<const char*> deviceExtensions = {
+				VK_KHR_SWAPCHAIN_EXTENSION_NAME
+			};
+			set<string> requiredExtensions(deviceExtensions.begin(), deviceExtensions.end());
+			vector<ExtensionProperties> exts = device.enumerateDeviceExtensionProperties();
+			for (const auto& ext : exts) {
+				requiredExtensions.erase(ext.extensionName);
+			}
+			return requiredExtensions.empty() && presentReady(device, surface);
+		}
+
+		//TODO: implement template filter
+		void pickPhysicalDevices(map<string, vector<PhysicalDevice>>& deviceMap, map<string, DeviceCreateInfo>, SurfaceKHR surface) {
+			vector<PhysicalDevice>& dlst = deviceMap["*"];
 			for (auto& device : dlst) {
-				infr::dvs::registerDeviceSet(map, device);
-				if (presentReady(device, surface)) {
-					map["present"].push_back(device);
+				infr::dvs::registerDeviceSet(deviceMap, device);
+				if (presentAndSwapReady(device, surface)) {
+					deviceMap["present"].push_back(device);
 				}
 			}
 
-			infr::dvs::rankDeviceEligibility(map);
+			infr::dvs::rankDeviceEligibility(deviceMap);
 
-			auto& pp = map["present"];
+			auto& pp = deviceMap["present"];
 			std::sort(pp.begin(), pp.end(), presentScore);
+		}
+
+		//merges multiple device dependencies
+		deviceCreateEnclosure iconoSynthesis(vector<DeviceCreateInfo>& templs) {
+			deviceCreateEnclosure closure;
+			for (const auto& templ : templs) {
+				for (int i = 0; i < templ.enabledExtensionCount; i++) {
+					closure.exts.insert(templ.ppEnabledExtensionNames[i]);
+				}
+				for (int i = 0; i < templ.enabledLayerCount; i++) {
+					closure.lyrs.insert(templ.ppEnabledLayerNames[i]);
+				}
+				closure.deviceFeatures.alphaToOne |= templ.pEnabledFeatures->alphaToOne;
+				closure.deviceFeatures.depthBiasClamp |= templ.pEnabledFeatures->depthBiasClamp;
+				//TODO: fill out this cancerous list
+				//Probably on a per need basis
+			}
+			for (const auto& ext : closure.exts) {
+				closure.extensions.push_back(ext.c_str());
+			}
+			for (const auto& lyr : closure.lyrs) {
+				closure.layers.push_back(lyr.c_str());
+			}
+			closure.ref.enabledExtensionCount = closure.extensions.size();
+			closure.ref.ppEnabledExtensionNames = closure.extensions.data();
+			closure.ref.enabledLayerCount = closure.layers.size();
+			closure.ref.ppEnabledLayerNames = closure.layers.data();
+			closure.ref.pEnabledFeatures = &closure.deviceFeatures;
 		}
 
 		//"*" references offsets from the original map
@@ -84,23 +125,37 @@ namespace core {
 			return dmp;
 		}
 
+		//TODO: combining with smarter selection, try to reduce queue sharing
 		void pickDevices(map<string, vector<PhysicalDevice>>& pDeviceMap, SurfaceKHR surface,
 			map<string, vector<Device>>& deviceMap, map<string, util::multIndex<float, Queue>>& queueMap,
+			map<string, DeviceCreateInfo>& templ,
 			function<map<string, vector<int>>(map<string, vector<PhysicalDevice>>&)> logic) {
 			auto queryMap = logic(pDeviceMap);
 			//as we may have multiple queues demanding from the same physicalDevice, we can use queues from the same device
 			//length = number of devices in ["*"], ie selected
 			vector<featureList> qSup;
+			vector<featureList> qInd;
+			vector<featureList> qRng;
+			vector<deviceQueueResourceDescriptor> qDes;
 			//as it's possible for even queues to perform multiple functions, we also want to enable queue sharing
 			auto& dlist = queryMap["*"];
 			qSup.resize(dlist.size());
-
+			qInd.resize(dlist.size());
+			qRng.resize(dlist.size());
+			qDes.resize(dlist.size());
 			//initialization
 			for (int i = 0; i < dlist.size(); i++) {
 				for (int j = 0; j < 3; j++) {
 					qSup[i][j] = -1;
+					qInd[i][j] = 0;
+					qRng[i][j] = 0;
 				}
+				qDes[i].queues = pDeviceMap["*"][dlist[i]].getQueueFamilyProperties();
+				qDes[i].allocated.resize(qDes[i].queues.size());
 			}
+
+			//Not yet reworked -- Change below
+
 			//we will stick with one queue per function for now
 			//compute pass
 			for (int pid : queryMap["compute"]) {
@@ -143,6 +198,8 @@ namespace core {
 			for (int i = 0; i < dlist.size(); i++) {
 				auto& device = pDeviceMap["*"][dlist[i]];
 				DeviceCreateInfo info{};
+				info.enabledExtensionCount = 0;
+				info.enabledLayerCount = 0;
 				featureList ss = qSup[i];
 				set<int> s;
 				for (int i = 0; i < 3; i++) {
@@ -164,13 +221,10 @@ namespace core {
 				info.pEnabledFeatures = &deviceFeatures;
 				info.pQueueCreateInfos = deviceQeueues.data();
 				info.queueCreateInfoCount = deviceQeueues.size();
-				info.enabledExtensionCount = 0;
-				info.enabledLayerCount = 0;
 
 				Device ld = device.createDevice(info);
 				deviceMap["*"].push_back(ld);
 			}
-
 			//assumptions here to be changed: each device only get one queue, this may change in the future
 
 			//compute device gathering

@@ -89,8 +89,11 @@ namespace core {
 	}
 
 	void Prototype::createLogicalDevices() {
+		std::map<std::string, vk::DeviceCreateInfo> templ;
+		//configure extension count
+		vk::DeviceCreateInfo& present = templ["present"];
 		//TODO: Assert that there is a suitable device for all categories
-		dps::pickDevices(physicalDeviceMap, surfaces[0], deviceMap, queueMap);
+		dps::pickDevices(physicalDeviceMap, surfaces[0], deviceMap, queueMap, templ);
 	}
 
 	void Prototype::configureSwapChain() {
@@ -122,7 +125,7 @@ namespace core {
 	}
 
 	Prototype::~Prototype() {
-
+		cleanup();
 	}
 
 }

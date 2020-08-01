@@ -10,16 +10,41 @@
 
 namespace core {
 	namespace dps {
+
+		//frustration free packaging
+		struct deviceCreateEnclosure {
+			vk::DeviceCreateInfo ref;
+			//owing queue's specificy to devices, this might be hairy to get right
+			//we may revisit this at a later time
+			//std::vector<vk::DeviceQueueCreateInfo> queues;
+			std::set<std::string> exts;
+			std::set<std::string> lyrs;
+			std::vector<const char*> extensions;
+			std::vector<const char*> layers;
+			vk::PhysicalDeviceFeatures deviceFeatures;
+		};
+
+		struct deviceQueueResourceDescriptor {
+			std::vector<vk::QueueFamilyProperties> queues;
+			std::vector<int> allocated;
+		};
+
 		bool presentReady(vk::PhysicalDevice device, vk::SurfaceKHR surface);
 		int presentScore(vk::PhysicalDevice device1, vk::PhysicalDevice device2);
 
-		void pickPhysicalDevices(std::map<std::string, std::vector<vk::PhysicalDevice>>& deviceMap, vk::SurfaceKHR surface);
+		bool presentAndSwapReady(vk::PhysicalDevice device, vk::SurfaceKHR surface);
+
+		void pickPhysicalDevices(std::map<std::string, std::vector<vk::PhysicalDevice>>& deviceMap,
+			std::map<std::string, vk::DeviceCreateInfo>& templ, vk::SurfaceKHR surface);
+
+		deviceCreateEnclosure iconoSynthesis(std::vector<vk::DeviceCreateInfo>& templs);
 
 		std::map<std::string, std::vector<int>> naiveSelection(std::map<std::string, std::vector<vk::PhysicalDevice>>& pDeviceMap);
 
-		void pickDevices(std::map<std::string, std::vector<vk::PhysicalDevice>>& pdeviceMap,
-			vk::SurfaceKHR surface, std::map<std::string, std::vector<vk::Device>>& deviceMap,
+		void pickDevices(std::map<std::string, std::vector<vk::PhysicalDevice>>& pdeviceMap, 
+			vk::SurfaceKHR surface, std::map<std::string, std::vector<vk::Device>>& deviceMap, 
 			std::map<std::string, util::multIndex<float, vk::Queue>>& queueMap,
+			std::map<std::string, vk::DeviceCreateInfo>& templ,
 			std::function<std::map<std::string, std::vector<int>>(std::map<std::string, std::vector<vk::PhysicalDevice>>& pDeviceMap)> = naiveSelection);
 	}
 }
