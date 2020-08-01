@@ -84,20 +84,16 @@ namespace core {
 			return dmp;
 		}
 
-		void pickDevices(map<string, vector<PhysicalDevice>>& pDeviceMap, SurfaceKHR surface, map<string, vector<Device>>& deviceMap, std::function<map<string, vector<int>>(map<string, vector<PhysicalDevice>>&)> logic) {
+		void pickDevices(map<string, vector<PhysicalDevice>>& pDeviceMap, SurfaceKHR surface,
+			map<string, vector<Device>>& deviceMap, map<string, util::multIndex<float, Queue>>& queueMap,
+			function<map<string, vector<int>>(map<string, vector<PhysicalDevice>>&)> logic) {
 			auto queryMap = logic(pDeviceMap);
 			//as we may have multiple queues demanding from the same physicalDevice, we can use queues from the same device
 			//length = number of devices in ["*"], ie selected
-			vector<vector<DeviceQueueCreateInfo>> qDep;
 			vector<featureList> qSup;
-			vector<PhysicalDeviceFeatures> qfeat;
-			vector<DeviceCreateInfo> qInfo;
 			//as it's possible for even queues to perform multiple functions, we also want to enable queue sharing
 			auto& dlist = queryMap["*"];
-			qDep.resize(dlist.size());
 			qSup.resize(dlist.size());
-			qfeat.resize(dlist.size());
-			qInfo.resize(dlist.size());
 
 			//initialization
 			for (int i = 0; i < dlist.size(); i++) {
@@ -107,7 +103,7 @@ namespace core {
 			}
 			//we will stick with one queue per function for now
 			//compute pass
-			for (int pid : queryMap["Compute"]) {
+			for (int pid : queryMap["compute"]) {
 				if (qSup[pid][0] == -1) {
 					auto& device = pDeviceMap["*"][queryMap["*"][pid]];
 					auto qs = device.getQueueFamilyProperties();
@@ -119,7 +115,7 @@ namespace core {
 				}
 			}
 			//graphic pass
-			for (int pid : queryMap["Graphic"]) {
+			for (int pid : queryMap["graphic"]) {
 				if (qSup[pid][1] == -1) {
 					auto& device = pDeviceMap["*"][queryMap["*"][pid]];
 					auto qs = device.getQueueFamilyProperties();
@@ -131,7 +127,7 @@ namespace core {
 				}
 			}
 			//present pass
-			for (int pid : queryMap["Present"]) {
+			for (int pid : queryMap["present"]) {
 				if (qSup[pid][2] == -1) {
 					auto& device = pDeviceMap["*"][queryMap["*"][pid]];
 					auto qs = device.getQueueFamilyProperties();
@@ -144,7 +140,60 @@ namespace core {
 			}
 
 			//consolidations here
-		
+			for (int i = 0; i < dlist.size(); i++) {
+				auto& device = pDeviceMap["*"][dlist[i]];
+				DeviceCreateInfo info{};
+				featureList ss = qSup[i];
+				set<int> s;
+				for (int i = 0; i < 3; i++) {
+					if (ss[i] >= 0) {
+						s.insert(ss[i]);
+					}
+				}
+				vector<DeviceQueueCreateInfo> deviceQeueues;
+				float qp = 1.0f;
+				for (auto i : s) {
+					DeviceQueueCreateInfo info{};
+					info.queueFamilyIndex = i;
+					info.queueCount = 1;
+					info.pQueuePriorities = &qp;
+					deviceQeueues.push_back(info);
+				}
+				//may extend the deviceFeature in the future
+				PhysicalDeviceFeatures deviceFeatures{};
+				info.pEnabledFeatures = &deviceFeatures;
+				info.pQueueCreateInfos = deviceQeueues.data();
+				info.queueCreateInfoCount = deviceQeueues.size();
+				info.enabledExtensionCount = 0;
+				info.enabledLayerCount = 0;
+
+				Device ld = device.createDevice(info);
+				deviceMap["*"].push_back(ld);
+			}
+
+			//assumptions here to be changed: each device only get one queue, this may change in the future
+
+			//compute device gathering
+			for (int pid : queryMap["compute"]) {
+				Device dv = deviceMap["*"][pid];
+				deviceMap["compute"].push_back(dv);
+				int qi = qSup[pid][0];
+				queueMap["compute"].insert(1.0f, dv.getQueue(qi, 0));
+			}
+			//graphic device gathering
+			for (int pid : queryMap["graphic"]) {
+				Device dv = deviceMap["*"][pid];
+				deviceMap["graphic"].push_back(dv);
+				int qi = qSup[pid][0];
+				queueMap["graphic"].insert(1.0f, dv.getQueue(qi, 0));
+			}
+			//present device gathering
+			for (int pid : queryMap["present"]) {
+				Device dv = deviceMap["*"][pid];
+				deviceMap["present"].push_back(dv);
+				int qi = qSup[pid][0];
+				queueMap["present"].insert(1.0f, dv.getQueue(qi, 0));
+			}
 		}
 
 	}

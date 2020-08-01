@@ -90,9 +90,7 @@ namespace core {
 
 	void Prototype::createLogicalDevices() {
 		//TODO: Assert that there is a suitable device for all categories
-	}
-
-	void Prototype::createQueues(){
+		dps::pickDevices(physicalDeviceMap, surfaces[0], deviceMap, queueMap);
 	}
 
 	void Prototype::configureSwapChain() {

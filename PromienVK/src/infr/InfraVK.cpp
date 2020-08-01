@@ -9,7 +9,6 @@ namespace infr {
 		createSurface();
 		allocatePhysicalDevices();
 		createLogicalDevices();
-		createQueues();
 		configureSwapChain();
 		configureImageView();
 		configureGraphicsPipeline();

@@ -6,6 +6,7 @@
 #include <map>
 #include <set>
 #include <functional>
+#include "../utils/multIndex.hpp"
 
 namespace core {
 	namespace dps {
@@ -18,6 +19,7 @@ namespace core {
 
 		void pickDevices(std::map<std::string, std::vector<vk::PhysicalDevice>>& pdeviceMap,
 			vk::SurfaceKHR surface, std::map<std::string, std::vector<vk::Device>>& deviceMap,
+			std::map<std::string, util::multIndex<float, vk::Queue>>& queueMap,
 			std::function<std::map<std::string, std::vector<int>>(std::map<std::string, std::vector<vk::PhysicalDevice>>& pDeviceMap)> = naiveSelection);
 	}
 }

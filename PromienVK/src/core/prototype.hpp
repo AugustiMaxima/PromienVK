@@ -14,7 +14,6 @@ namespace core {
 		virtual void createSurface();
 		virtual void allocatePhysicalDevices();
 		virtual void createLogicalDevices();
-		virtual void createQueues();
 		virtual void configureSwapChain();
 		virtual void configureImageView();
 		virtual void configureGraphicsPipeline();

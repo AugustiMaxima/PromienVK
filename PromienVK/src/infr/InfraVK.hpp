@@ -10,7 +10,6 @@ namespace infr {
 		//devices
 		virtual void allocatePhysicalDevices() = 0;
 		virtual void createLogicalDevices() = 0;
-		virtual void createQueues() = 0;
 		//present
 		virtual void configureSwapChain() = 0;
 		virtual void configureImageView() = 0;
