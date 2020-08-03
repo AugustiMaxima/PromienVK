@@ -85,27 +85,37 @@ namespace core {
 
 	void Prototype::allocatePhysicalDevices() {
 		std::map<std::string, vk::DeviceCreateInfo> templ;
-		vk::DeviceCreateInfo& present = templ["present"];
+		vk::DeviceCreateInfo& graphic = templ["graphic"];
 		const std::vector<const char*> deviceExtensions = {
 			VK_KHR_SWAPCHAIN_EXTENSION_NAME
 		};
-		present.enabledExtensionCount = deviceExtensions.size();
-		present.ppEnabledExtensionNames = deviceExtensions.data();
+		graphic.enabledExtensionCount = deviceExtensions.size();
+		graphic.ppEnabledExtensionNames = deviceExtensions.data();
 
 #if defined(_DEBUG)
 		//Fill in layer data for legacy vk implementations
 #endif
-
 		physicalDeviceMap["*"] = instance.enumeratePhysicalDevices();
 		dps::pickPhysicalDevices(physicalDeviceMap, templ, surfaces[0]);
+
+		if (!physicalDeviceMap["graphic"].size())
+			throw std::runtime_error("No suitable gpu found for this application");
 	}
 
 	void Prototype::createLogicalDevices() {
 		std::map<std::string, vk::DeviceCreateInfo> templ;
 		//configure extension count
-		vk::DeviceCreateInfo& present = templ["present"];
-		//TODO: Assert that there is a suitable device for all categories
-		dps::pickDevices(physicalDeviceMap, surfaces[0], deviceMap, queueMap, templ);
+		//pattern: use template to configure device properties, can be shared across physical and logical device selection
+		vk::DeviceCreateInfo& graphic = templ["graphic"];
+		const std::vector<const char*> deviceExtensions = {
+			VK_KHR_SWAPCHAIN_EXTENSION_NAME
+		};
+		graphic.enabledExtensionCount = deviceExtensions.size();
+		graphic.ppEnabledExtensionNames = deviceExtensions.data();
+
+		dps::pickDevices(physicalDeviceMap, surfaces[0], deviceMap, templ);
+
+		//TODO:fish out the queues we need
 	}
 
 	void Prototype::configureSwapChain() {
@@ -125,7 +135,7 @@ namespace core {
 	}
 
 	void Prototype::cleanup() {
-
+		//TODO: destroy physical and logical devices
 
 		instance.destroySurfaceKHR(surfaces[0]);
 #if defined(_DEBUG)

@@ -5,7 +5,7 @@ using namespace std;
 using namespace vk;
 
 struct featureList {
-	int set[3];
+	int set[2];
 	int& operator[](int i) {
 		return set[i];
 	}
@@ -21,13 +21,6 @@ namespace core {
 				}
 			}
 			return false;
-		}
-
-		int presentScore(PhysicalDevice device1, PhysicalDevice device2) {
-			return device1.getMemoryProperties().memoryHeaps[0].size
-				+ device1.getProperties().apiVersion
-				- device2.getMemoryProperties().memoryHeaps[0].size
-				- device2.getProperties().apiVersion;
 		}
 
 		bool deviceCompatible(PhysicalDevice device, DeviceCreateInfo spec) {
@@ -53,20 +46,15 @@ namespace core {
 		void pickPhysicalDevices(map<string, vector<PhysicalDevice>>& deviceMap, map<string, DeviceCreateInfo>& templ, SurfaceKHR surface) {
 			vector<PhysicalDevice>& dlst = deviceMap["*"];
 			for (auto& device : dlst) {
-				//compute pass
+				if (presentReady(device, surface) && infr::dvs::graphicCompatible(device) && deviceCompatible(device, templ["graphic"])) {
+					deviceMap["graphic"].push_back(device);
+				}
 				if (infr::dvs::computeCompatible(device) && deviceCompatible(device, templ["compute"])) {
 					deviceMap["compute"].push_back(device);
 				}
-				if (infr::dvs::graphicCompatible(device) && deviceCompatible(device, templ["graphic"])) {
-					deviceMap["graphic"].push_back(device);
-				}
-				if (presentReady(device, surface) && deviceCompatible(device, templ["present"])) {
-					deviceMap["present"].push_back(device);
-				}
 			}
-			std::sort(deviceMap["compute"].begin(), deviceMap["compute"].end(), infr::dvs::computeRank);
 			std::sort(deviceMap["graphic"].begin(), deviceMap["graphic"].end(), infr::dvs::graphicRank);
-			std::sort(deviceMap["present"].begin(), deviceMap["present"].end(), presentScore);
+			std::sort(deviceMap["compute"].begin(), deviceMap["compute"].end(), infr::dvs::computeRank);
 		}
 
 		//merges multiple device dependencies
@@ -99,9 +87,8 @@ namespace core {
 
 		//"*" references offsets from the original map
 		//"key" references the "*" binding for efficiency
-		map<string, vector<int>> naiveSelection(map<string, vector<PhysicalDevice>>& pDeviceMap) {
-			map<string, vector<int>> dmp;
-			set<int> deviceSet;
+		map<string, vector<int>> physicalDeviceIndexing(map<string, vector<PhysicalDevice>>& pDeviceMap) {
+			map<string, vector<int>> dMap;
 			map<PhysicalDevice, int> rMap;
 
 			auto& principal = pDeviceMap["*"];
@@ -109,155 +96,81 @@ namespace core {
 				rMap[principal[i]] = i;
 			}
 
-			//deviceSet construction logic could be fine tuned in the future
 			for (int i = 0; i < 1; i++) {
-				deviceSet.insert(rMap[pDeviceMap["compute"][i]]);
-				deviceSet.insert(rMap[pDeviceMap["graphic"][i]]);
-				deviceSet.insert(rMap[pDeviceMap["present"][i]]);
+				dMap["compute"].push_back(rMap[pDeviceMap["compute"][i]]);
+				dMap["graphic"].push_back(rMap[pDeviceMap["graphic"][i]]);
 			}
 
-			auto& dls = dmp["*"];
-
-			for (auto& di : deviceSet) {
-				dls.push_back(di);
-			}
-
-			map<PhysicalDevice, int> iMap;
-			for (int i = 0; i < dls.size(); i++) {
-				iMap[principal[dls[i]]] = i;
-			}
-
-			for (int i = 0; i < 1; i++) {
-				dmp["compute"].push_back(iMap[pDeviceMap["compute"][i]]);
-				dmp["graphic"].push_back(rMap[pDeviceMap["graphic"][i]]);
-				dmp["present"].push_back(rMap[pDeviceMap["present"][i]]);
-			}
-
-			return dmp;
+			return dMap;
 		}
 
-		//TODO: combining with smarter selection, try to reduce queue sharing
-		void pickDevices(map<string, vector<PhysicalDevice>>& pDeviceMap, SurfaceKHR surface,
-			map<string, vector<Device>>& deviceMap, map<string, util::multIndex<float, Queue>>& queueMap,
-			map<string, DeviceCreateInfo>& templ,
-			function<map<string, vector<int>>(map<string, vector<PhysicalDevice>>&)> logic) {
-			auto queryMap = logic(pDeviceMap);
-			//as we may have multiple queues demanding from the same physicalDevice, we can use queues from the same device
-			//length = number of devices in ["*"], ie selected
-			vector<featureList> qSup;
-			vector<featureList> qInd;
-			vector<featureList> qRng;
-			vector<deviceQueueResourceDescriptor> qDes;
-			//as it's possible for even queues to perform multiple functions, we also want to enable queue sharing
-			auto& dlist = queryMap["*"];
-			qSup.resize(dlist.size());
-			qInd.resize(dlist.size());
-			qRng.resize(dlist.size());
-			qDes.resize(dlist.size());
-			//initialization
-			for (int i = 0; i < dlist.size(); i++) {
-				for (int j = 0; j < 3; j++) {
-					qSup[i][j] = -1;
-					qInd[i][j] = 0;
-					qRng[i][j] = 0;
-				}
-				qDes[i].queues = pDeviceMap["*"][dlist[i]].getQueueFamilyProperties();
-				qDes[i].allocated.resize(qDes[i].queues.size());
-			}
+		map<string, vector<bool>> naiveSelection(map<string, vector<int>>& deviceIndice) {
+			map<string, vector<bool>> selected;
+			selected["graphic"].push_back(true);
+		}
 
-			//Not yet reworked -- Change below
+		vector<PhysicalDevice> pickDevices(map<string, vector<PhysicalDevice>>& pDeviceMap, SurfaceKHR surface, 
+			map<string, vector<Device>>& deviceMap, map<string, DeviceCreateInfo>& templ,
+			function<map<string, vector<bool>>(map<string, vector<int>>&)> selector) {
+			vector<PhysicalDevice> pDevices;
+			auto queryMap = physicalDeviceIndexing(pDeviceMap);
+			auto& dlst = pDeviceMap["*"];
+			auto selected = selector(queryMap);
+			for (auto& id : selected["graphic"]) {
+				Device dvc = allocateDeviceQueue(dlst[id], templ["graphic"]);
+				pDevices.push_back(dlst[id]);
+				deviceMap["*"].push_back(dvc);
+				deviceMap["graphic"].push_back(dvc);
+			}
+			for (auto& id : selected["compute"]) {
+				Device dvc = allocateDeviceQueue(dlst[id], templ["compute"]);
+				pDevices.push_back(dlst[id]);
+				deviceMap["*"].push_back(dvc);
+				deviceMap["compute"].push_back(dvc);
+			}
+			return pDevices;
+		}
 
-			//we will stick with one queue per function for now
-			//compute pass
-			for (int pid : queryMap["compute"]) {
-				if (qSup[pid][0] == -1) {
-					auto& device = pDeviceMap["*"][queryMap["*"][pid]];
-					auto qs = device.getQueueFamilyProperties();
-					for (int i = 0; i < qs.size(); i++) {
-						if (qs[i].queueFlags & vk::QueueFlagBits::eCompute) {
-							qSup[pid][0] = i;
-						}
-					}
-				}
+		Device allocateDeviceQueue(PhysicalDevice physicalDevice, DeviceCreateInfo templat) {
+			vector<QueueFamilyProperties> queueFamilies = physicalDevice.getQueueFamilyProperties();
+			vector<DeviceQueueCreateInfo> queueInfos = vector<DeviceQueueCreateInfo>(queueFamilies.size());
+			vector<vector<float>> priorities = vector<vector<float>>(queueFamilies.size());
+			for (int i = 0; i < queueFamilies.size(); i++) {
+				queueInfos[i].queueFamilyIndex = i;
+				queueInfos[i].queueCount = queueFamilies[i].queueCount;
+				priorities[i].resize(queueFamilies[i].queueCount);
+				for (int j = 0; j < queueFamilies[i].queueCount; j++)
+					priorities[i][j] = 1.0f;
+				queueInfos[i].pQueuePriorities = priorities[i].data();
 			}
-			//graphic pass
-			for (int pid : queryMap["graphic"]) {
-				if (qSup[pid][1] == -1) {
-					auto& device = pDeviceMap["*"][queryMap["*"][pid]];
-					auto qs = device.getQueueFamilyProperties();
-					for (int i = 0; i < qs.size(); i++) {
-						if (qs[i].queueFlags & vk::QueueFlagBits::eGraphics) {
-							qSup[pid][1] = i;
-						}
-					}
-				}
-			}
-			//present pass
-			for (int pid : queryMap["present"]) {
-				if (qSup[pid][2] == -1) {
-					auto& device = pDeviceMap["*"][queryMap["*"][pid]];
-					auto qs = device.getQueueFamilyProperties();
-					for (int i = 0; i < qs.size(); i++) {
-						if (device.getSurfaceSupportKHR(i, surface)) {
-							qSup[pid][2] = i;
-						}
-					}
-				}
-			}
+			templat.pQueueCreateInfos = queueInfos.data();
+			templat.queueCreateInfoCount = queueInfos.size();
+			return physicalDevice.createDevice(templat);
+		}
 
-			//consolidations here
-			for (int i = 0; i < dlist.size(); i++) {
-				auto& device = pDeviceMap["*"][dlist[i]];
-				DeviceCreateInfo info{};
-				info.enabledExtensionCount = 0;
-				info.enabledLayerCount = 0;
-				featureList ss = qSup[i];
-				set<int> s;
-				for (int i = 0; i < 3; i++) {
-					if (ss[i] >= 0) {
-						s.insert(ss[i]);
-					}
-				}
-				vector<DeviceQueueCreateInfo> deviceQeueues;
-				float qp = 1.0f;
-				for (auto i : s) {
-					DeviceQueueCreateInfo info{};
-					info.queueFamilyIndex = i;
-					info.queueCount = 1;
-					info.pQueuePriorities = &qp;
-					deviceQeueues.push_back(info);
-				}
-				//may extend the deviceFeature in the future
-				PhysicalDeviceFeatures deviceFeatures{};
-				info.pEnabledFeatures = &deviceFeatures;
-				info.pQueueCreateInfos = deviceQeueues.data();
-				info.queueCreateInfoCount = deviceQeueues.size();
+		void retrieveQueues(vector<Device>& devices, vector<PhysicalDevice>& deviceRef,
+			map<Device, map<string, util::multIndex<float, Queue>>>& queueMap) {
+			for (int i = 0; i < devices.size(); i++) {
+				queueMap[devices[i]] = collectDeviceQueue(devices[i], deviceRef[i]);
+			}
+		}
 
-				Device ld = device.createDevice(info);
-				deviceMap["*"].push_back(ld);
-			}
-			//assumptions here to be changed: each device only get one queue, this may change in the future
+		map<string, util::multIndex<float, Queue>> collectDeviceQueue(Device device, PhysicalDevice deviceRef) {
+			vector<QueueFamilyProperties> qs = deviceRef.getQueueFamilyProperties();
+			for (int i = 0; i < qs.size(); i++) {
+				//pattern matching
+				if (qs[i].queueFlags & QueueFlagBits::eGraphics) {
+					//graphics (general) queue
 
-			//compute device gathering
-			for (int pid : queryMap["compute"]) {
-				Device dv = deviceMap["*"][pid];
-				deviceMap["compute"].push_back(dv);
-				int qi = qSup[pid][0];
-				queueMap["compute"].insert(1.0f, dv.getQueue(qi, 0));
-			}
-			//graphic device gathering
-			for (int pid : queryMap["graphic"]) {
-				Device dv = deviceMap["*"][pid];
-				deviceMap["graphic"].push_back(dv);
-				int qi = qSup[pid][0];
-				queueMap["graphic"].insert(1.0f, dv.getQueue(qi, 0));
-			}
-			//present device gathering
-			for (int pid : queryMap["present"]) {
-				Device dv = deviceMap["*"][pid];
-				deviceMap["present"].push_back(dv);
-				int qi = qSup[pid][0];
-				queueMap["present"].insert(1.0f, dv.getQueue(qi, 0));
+				}
+				else if (qs[i].queueFlags & QueueFlagBits::eCompute) {
+					//async compute queue
+
+				}
+				else if (qs[i].queueFlags & QueueFlagBits::eTransfer) {
+					//transfer/copy queue
+
+				}
 			}
 		}
 
