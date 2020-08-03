@@ -37,7 +37,7 @@ namespace core {
 
 		std::map<std::string, std::vector<bool>> naiveSelection(std::map<std::string, std::vector<int>>& deviceIndice);
 
-		std::vector<vk::PhysicalDevice> pickDevices(std::map<std::string, std::vector<vk::PhysicalDevice>>& pdeviceMap, vk::SurfaceKHR surface, 
+		void pickDevices(std::map<std::string, std::vector<vk::PhysicalDevice>>& pdeviceMap, vk::SurfaceKHR surface, 
 			std::map<std::string, std::vector<vk::Device>>& deviceMap, std::map<std::string, vk::DeviceCreateInfo>& templ,
 			std::function<std::map<std::string, std::vector<bool>>(std::map<std::string, std::vector<int>>&)> selector = naiveSelection);
 	

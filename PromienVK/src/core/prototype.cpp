@@ -113,9 +113,9 @@ namespace core {
 		graphic.enabledExtensionCount = deviceExtensions.size();
 		graphic.ppEnabledExtensionNames = deviceExtensions.data();
 
-		auto& ref = dps::pickDevices(physicalDeviceMap, surfaces[0], deviceMap, templ);
+		dps::pickDevices(physicalDeviceMap, surfaces[0], deviceMap, templ);
 
-		dps::retrieveQueues(deviceMap["*"], ref, queueMap);
+		dps::retrieveQueues(deviceMap["*"], physicalDeviceMap["|*"], queueMap);
 	}
 
 	void Prototype::configureSwapChain() {

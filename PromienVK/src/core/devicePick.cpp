@@ -83,6 +83,8 @@ namespace core {
 			closure.ref.enabledLayerCount = closure.layers.size();
 			closure.ref.ppEnabledLayerNames = closure.layers.data();
 			closure.ref.pEnabledFeatures = &closure.deviceFeatures;
+
+			return closure;
 		}
 
 		//"*" references offsets from the original map
@@ -107,28 +109,50 @@ namespace core {
 		map<string, vector<bool>> naiveSelection(map<string, vector<int>>& deviceIndice) {
 			map<string, vector<bool>> selected;
 			selected["graphic"].push_back(true);
+			return selected;
 		}
 
-		vector<PhysicalDevice> pickDevices(map<string, vector<PhysicalDevice>>& pDeviceMap, SurfaceKHR surface, 
+		void pickDevices(map<string, vector<PhysicalDevice>>& pDeviceMap, SurfaceKHR surface, 
 			map<string, vector<Device>>& deviceMap, map<string, DeviceCreateInfo>& templ,
 			function<map<string, vector<bool>>(map<string, vector<int>>&)> selector) {
-			vector<PhysicalDevice> pDevices;
 			auto queryMap = physicalDeviceIndexing(pDeviceMap);
 			auto& dlst = pDeviceMap["*"];
 			auto selected = selector(queryMap);
+			
+			//As it's clearly evident, we need to keep track of the source physical Device and the resultant logical Device
+			//It's not technically required to keep the full list of qualifying PhysicalDevices
+			//We have opted right now to create copies
+			//A more performant way to go about this would be just clearing the old entries
+			//if that kind of portability is desired, it may be a good idea as it reduces memory consumption and bloat
+			//As always, we may revisit this topic in the future
+
+			//More notes:
+			//Option 1: Keep it string prefix based
+			//Technically more flexible. Allows us to have a complete history of the device selection process
+			//Technically accumulates unnecessary amount of memory that is not essential for progream execution
+			//Prevents / inconveniences attempts to convert the string keys to enum based keys, which also improves performance
+			//Option 2: Clearing old entries
+			//Less bloat, more light weight, physicalDevice records that are not registered as logicalDevices do not concern us
+			//Allows for the enum keys to proceed smoothly
+			//More work, unclear if it could bite us in the future
+
+			//Option 2 it is
+			map<string, vector<PhysicalDevice>> npDeviceMap;
 			for (auto& id : selected["graphic"]) {
 				Device dvc = allocateDeviceQueue(dlst[id], templ["graphic"]);
-				pDevices.push_back(dlst[id]);
 				deviceMap["*"].push_back(dvc);
+				npDeviceMap["*"].push_back(dlst[id]);
 				deviceMap["graphic"].push_back(dvc);
+				npDeviceMap["graphic"].push_back(dlst[id]);
 			}
 			for (auto& id : selected["compute"]) {
 				Device dvc = allocateDeviceQueue(dlst[id], templ["compute"]);
-				pDevices.push_back(dlst[id]);
 				deviceMap["*"].push_back(dvc);
+				npDeviceMap["*"].push_back(dlst[id]);
 				deviceMap["compute"].push_back(dvc);
+				npDeviceMap["compute"].push_back(dlst[id]);
 			}
-			return pDevices;
+			pDeviceMap = npDeviceMap;
 		}
 
 		Device allocateDeviceQueue(PhysicalDevice physicalDevice, DeviceCreateInfo templat) {
