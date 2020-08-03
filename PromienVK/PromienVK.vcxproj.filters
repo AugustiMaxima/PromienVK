@@ -55,6 +55,9 @@
     <ClCompile Include="test\dictTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\core\swapchain.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="test\masterTest.hpp">
@@ -85,6 +88,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\utils\multIndex.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\core\swapchain.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

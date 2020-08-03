@@ -15,12 +15,16 @@ namespace core {
 	namespace dps {
 		bool presentReady(PhysicalDevice device, SurfaceKHR surface) {
 			auto qs = device.getQueueFamilyProperties();
+			bool surport = false;
 			for (int i = 0; i < qs.size(); i++) {
 				if (device.getSurfaceSupportKHR(i, surface)) {
-					return true;
+					surport = true;
+					break;
 				}
 			}
-			return false;
+			vector<SurfaceFormatKHR> fmt = device.getSurfaceFormatsKHR(surface);
+			vector<PresentModeKHR> pm = device.getSurfacePresentModesKHR(surface);
+			return surport & fmt.size() & pm.size();
 		}
 
 		bool deviceCompatible(PhysicalDevice device, DeviceCreateInfo spec) {
@@ -31,14 +35,13 @@ namespace core {
 			for (const auto& ext : device.enumerateDeviceExtensionProperties()) {
 				rexts.erase(ext.extensionName);
 			}
-			/* Commented out due to it being legacy behavior
 			set<string> rlyrs{};
 			for (int i = 0; i < spec.enabledLayerCount; i++) {
 				rlyrs.insert(spec.ppEnabledLayerNames[i]);
 			}
 			for (const auto& lyr : device.enumerateDeviceLayerProperties()) {
 				rlyrs.erase(lyr.layerName);
-			}*/
+			}
 			//TODO: Device feature matching
 			return rexts.empty();
 		}
