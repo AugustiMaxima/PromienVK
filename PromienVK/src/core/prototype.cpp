@@ -115,7 +115,7 @@ namespace core {
 
 		dps::pickDevices(physicalDeviceMap, surfaces[0], deviceMap, templ);
 
-		dps::retrieveQueues(deviceMap["*"], physicalDeviceMap["|*"], queueMap);
+		dps::retrieveQueues(deviceMap["*"], physicalDeviceMap["*"], queueMap);
 	}
 
 	void Prototype::configureSwapChain() {
