@@ -156,23 +156,27 @@ namespace core {
 		}
 
 		map<string, util::multIndex<float, Queue>> collectDeviceQueue(Device device, PhysicalDevice deviceRef) {
+			map<string, util::multIndex<float, Queue>> qMap;
 			vector<QueueFamilyProperties> qs = deviceRef.getQueueFamilyProperties();
 			for (int i = 0; i < qs.size(); i++) {
 				//pattern matching
+				string key;
 				if (qs[i].queueFlags & QueueFlagBits::eGraphics) {
 					//graphics (general) queue
-
+					key = "graphic";
 				}
 				else if (qs[i].queueFlags & QueueFlagBits::eCompute) {
 					//async compute queue
-
+					key = "compute";
 				}
 				else if (qs[i].queueFlags & QueueFlagBits::eTransfer) {
 					//transfer/copy queue
-
+					key = "transfer";
 				}
+				for (int j = 0; j < qs[i].queueCount; j++)
+					qMap[key].insert(1.0f, device.getQueue(i, j));
 			}
+			return qMap;
 		}
-
 	}
 }
