@@ -7,8 +7,8 @@
 
 namespace infr {
 	namespace dvs {
-		bool computeCompatibile(vk::PhysicalDevice device);
-		bool graphicCompatibile(vk::PhysicalDevice device);
+		bool computeCompatible(vk::PhysicalDevice device);
+		bool graphicCompatible(vk::PhysicalDevice device);
 		int computeRank(vk::PhysicalDevice device1, vk::PhysicalDevice device2);
 		int graphicRank(vk::PhysicalDevice device1, vk::PhysicalDevice device2);
 

@@ -5,7 +5,7 @@ namespace infr {
 	namespace dvs {
 		//perhaps in the future we'd add RT Queues
 
-		bool computeCompatibile(vk::PhysicalDevice device) {
+		bool computeCompatible(vk::PhysicalDevice device) {
 			auto qs = device.getQueueFamilyProperties();
 			for (auto& q : qs) {
 				if (q.queueFlags & vk::QueueFlagBits::eCompute) {
@@ -15,7 +15,7 @@ namespace infr {
 			return false;
 		}
 
-		bool graphicCompatibile(vk::PhysicalDevice device) {
+		bool graphicCompatible(vk::PhysicalDevice device) {
 			auto qs = device.getQueueFamilyProperties();
 			for (auto& q : qs) {
 				if (q.queueFlags & vk::QueueFlagBits::eGraphics) {
@@ -46,10 +46,10 @@ namespace infr {
 
 
 		void registerDeviceSet(std::map<std::string, std::vector<vk::PhysicalDevice>>& pDeviceMap, vk::PhysicalDevice device) {
-			if (computeCompatibile(device)) {
+			if (computeCompatible(device)) {
 				pDeviceMap["compute"].push_back(device);
 			}
-			if (graphicCompatibile(device)) {
+			if (graphicCompatible(device)) {
 				pDeviceMap["graphic"].push_back(device);
 			}
 		}

@@ -24,28 +24,29 @@ namespace core {
 			vk::PhysicalDeviceFeatures deviceFeatures;
 		};
 
-		struct deviceQueueResourceDescriptor {
-			std::vector<vk::QueueFamilyProperties> queues;
-			std::vector<int> allocated;
-		};
-
 		bool presentReady(vk::PhysicalDevice device, vk::SurfaceKHR surface);
-		int presentScore(vk::PhysicalDevice device1, vk::PhysicalDevice device2);
 
-		bool presentAndSwapReady(vk::PhysicalDevice device, vk::SurfaceKHR surface);
+		bool deviceCompatible(vk::PhysicalDevice device, vk::DeviceCreateInfo spec);
 
 		void pickPhysicalDevices(std::map<std::string, std::vector<vk::PhysicalDevice>>& deviceMap,
 			std::map<std::string, vk::DeviceCreateInfo>& templ, vk::SurfaceKHR surface);
 
 		deviceCreateEnclosure iconoSynthesis(std::vector<vk::DeviceCreateInfo>& templs);
 
-		std::map<std::string, std::vector<int>> naiveSelection(std::map<std::string, std::vector<vk::PhysicalDevice>>& pDeviceMap);
+		std::map<std::string, std::vector<int>> physicalDeviceIndexing(std::map<std::string, std::vector<vk::PhysicalDevice>>& pDeviceMap);
 
-		void pickDevices(std::map<std::string, std::vector<vk::PhysicalDevice>>& pdeviceMap, 
-			vk::SurfaceKHR surface, std::map<std::string, std::vector<vk::Device>>& deviceMap, 
-			std::map<std::string, util::multIndex<float, vk::Queue>>& queueMap,
-			std::map<std::string, vk::DeviceCreateInfo>& templ,
-			std::function<std::map<std::string, std::vector<int>>(std::map<std::string, std::vector<vk::PhysicalDevice>>& pDeviceMap)> = naiveSelection);
+		std::map<std::string, std::vector<bool>> naiveSelection(std::map<std::string, std::vector<int>>& deviceIndice);
+
+		std::vector<vk::PhysicalDevice> pickDevices(std::map<std::string, std::vector<vk::PhysicalDevice>>& pdeviceMap, vk::SurfaceKHR surface, 
+			std::map<std::string, std::vector<vk::Device>>& deviceMap, std::map<std::string, vk::DeviceCreateInfo>& templ,
+			std::function<std::map<std::string, std::vector<bool>>(std::map<std::string, std::vector<int>>&)> selector = naiveSelection);
+	
+		vk::Device allocateDeviceQueue(vk::PhysicalDevice physicalDevice, vk::DeviceCreateInfo templat);
+		
+		void retrieveQueues(std::vector<vk::Device>& devices, std::vector<vk::PhysicalDevice>& deviceRef,
+			std::map<vk::Device, std::map<std::string, util::multIndex<float, vk::Queue>>>& queueMap);
+
+		std::map<std::string, util::multIndex<float, vk::Queue>> collectDeviceQueue(vk::Device device, vk::PhysicalDevice deviceRef);
 	}
 }
 
