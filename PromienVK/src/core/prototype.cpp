@@ -128,6 +128,32 @@ namespace core {
 		settings::updateDisplaySettings(configs["Display"], display);
 
 		//TODO: Actually construct the damn swap chain
+
+		vk::SurfaceCapabilitiesKHR cap = physicalDeviceMap["graphic"][0].getSurfaceCapabilitiesKHR(surfaces[0]);
+
+		int imageCount = cap.minImageCount + 1;
+
+		if (imageCount > cap.maxImageCount && !cap.maxImageCount)
+			imageCount = cap.maxImageCount;
+
+		//TODO: update eColorattachedment to Transfer
+		vk::SwapchainCreateInfoKHR info = vk::SwapchainCreateInfoKHR()
+			.setMinImageCount(imageCount)
+			.setImageFormat(display.format.format)
+			.setImageColorSpace(display.format.colorSpace)
+			.setImageExtent(display.resolution)
+			.setImageArrayLayers(1)
+			.setImageUsage(vk::ImageUsageFlagBits::eColorAttachment)
+			.setImageSharingMode(vk::SharingMode::eExclusive)
+			.setQueueFamilyIndexCount(0)
+			.setPQueueFamilyIndices(nullptr)
+			.setPreTransform(cap.currentTransform)
+			.setCompositeAlpha(vk::CompositeAlphaFlagBitsKHR::eOpaque)
+			.setPresentMode(display.present)
+			.setClipped(true);
+		//TODO: old Swap Chain for resizing ops
+
+		swapchains.push_back(deviceMap["graphic"][0].createSwapchainKHR(info));
 	}
 
 	void Prototype::configureImageView() {
@@ -143,8 +169,10 @@ namespace core {
 	}
 
 	void Prototype::cleanup() {
-		//TODO: destroy physical and logical devices
 
+
+		deviceMap["graphic"][0].destroySwapchainKHR(swapchains[0]);
+		deviceMap["graphic"][0].destroy();
 		instance.destroySurfaceKHR(surfaces[0]);
 #if defined(_DEBUG)
 		instance.destroyDebugUtilsMessengerEXT(debugMessenger, nullptr, dldi);

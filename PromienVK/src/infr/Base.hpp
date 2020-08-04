@@ -20,8 +20,8 @@ namespace infr {
 		std::map<std::string, std::vector<vk::PhysicalDevice>> physicalDeviceMap;
 		//map to support multi utility, vector to support multi gpu
 		std::map<std::string, std::vector<vk::Device>> deviceMap;
+		std::map<vk::Device, vk::DispatchLoaderDynamic> dldm;
 		std::map<vk::Device, std::map<std::string, util::multIndex<float, vk::Queue>>> queueMap;
-		std::map<std::string, std::vector<vk::DispatchLoaderDynamic>> dldm;
 
 		//multiple viewport, for applications like VR
 		std::vector<vk::SurfaceKHR> surfaces;
