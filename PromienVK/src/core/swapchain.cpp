@@ -4,23 +4,19 @@ namespace core {
 	namespace spc {
 		using namespace std;
 		using namespace vk;
-		SurfaceFormatKHR selectSurfaceFormat(PhysicalDevice device, SurfaceKHR surface, vector<SurfaceFormatKHR> req) {
+		SurfaceFormatKHR selectSurfaceFormat(PhysicalDevice device, SurfaceKHR surface, SurfaceFormatKHR req) {
 			vector<SurfaceFormatKHR>& sFormats = device.getSurfaceFormatsKHR(surface);
 			for (const auto& fm : sFormats) {
-				for (const auto& rm : req) {
-					if (fm == rm)
-						return fm;
-				}
+				if (fm == req)
+					return fm;
 			}
 			return sFormats[0];
 		}
-		PresentModeKHR selectPresentMode(PhysicalDevice device, SurfaceKHR surface, vector<PresentModeKHR> req) {
+		PresentModeKHR selectPresentMode(PhysicalDevice device, SurfaceKHR surface, PresentModeKHR req) {
 			vector<PresentModeKHR>& presentModes = device.getSurfacePresentModesKHR(surface);
-			for (int i = 0; i < req.size(); i++) {
-				for (const auto& presentMode : presentModes) {
-					if (presentMode == req[i]) {
-						return presentMode;
-					}
+			for (const auto& presentMode : presentModes) {
+				if (presentMode == req) {
+					return presentMode;
 				}
 			}
 			return presentModes[0];

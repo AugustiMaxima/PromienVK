@@ -164,6 +164,7 @@
     <ClCompile Include="not_main.cpp" />
     <ClCompile Include="src\core\devicePick.cpp" />
     <ClCompile Include="src\core\prototype.cpp" />
+    <ClCompile Include="src\core\settings.cpp" />
     <ClCompile Include="src\core\swapchain.cpp" />
     <ClCompile Include="src\dbg\dbg.cpp" />
     <ClCompile Include="src\dbg\vLog.cpp" />
@@ -178,6 +179,7 @@
   <ItemGroup>
     <ClInclude Include="src\core\devicePick.hpp" />
     <ClInclude Include="src\core\prototype.hpp" />
+    <ClInclude Include="src\core\settings.hpp" />
     <ClInclude Include="src\core\swapchain.hpp" />
     <ClInclude Include="src\dbg\dbg.hpp" />
     <ClInclude Include="src\dbg\vLog.hpp" />

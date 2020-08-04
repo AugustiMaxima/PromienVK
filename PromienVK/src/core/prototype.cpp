@@ -1,6 +1,8 @@
 #define GLFW_INCLUDE_VULKAN
 #include "../dbg/vLog.hpp"
 #include "devicePick.hpp"
+#include "swapchain.hpp"
+#include "settings.hpp"
 #include "prototype.hpp"
 
 namespace core {
@@ -119,7 +121,13 @@ namespace core {
 	}
 
 	void Prototype::configureSwapChain() {
+		settings::DisplaySettings display = settings::processDisplaySettings(configs["Display"]);
+		display.format = spc::selectSurfaceFormat(physicalDeviceMap["graphic"][0], surfaces[0], display.format);
+		display.present = spc::selectPresentMode(physicalDeviceMap["graphic"][0], surfaces[0], display.present);
+		display.resolution = spc::chooseSwapExtent(physicalDeviceMap["graphic"][0], surfaces[0], display.resolution);
+		settings::updateDisplaySettings(configs["Display"], display);
 
+		//TODO: Actually construct the damn swap chain
 	}
 
 	void Prototype::configureImageView() {
