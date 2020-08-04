@@ -1,6 +1,8 @@
 #define GLFW_INCLUDE_VULKAN
 #include "../dbg/vLog.hpp"
 #include "devicePick.hpp"
+#include "swapchain.hpp"
+#include "settings.hpp"
 #include "prototype.hpp"
 
 namespace core {
@@ -119,11 +121,64 @@ namespace core {
 	}
 
 	void Prototype::configureSwapChain() {
+		settings::DisplaySettings display = settings::processDisplaySettings(configs["Display"]);
+		display.format = spc::selectSurfaceFormat(physicalDeviceMap["graphic"][0], surfaces[0], display.format);
+		display.present = spc::selectPresentMode(physicalDeviceMap["graphic"][0], surfaces[0], display.present);
+		display.resolution = spc::chooseSwapExtent(physicalDeviceMap["graphic"][0], surfaces[0], display.resolution);
+		settings::updateDisplaySettings(configs["Display"], display);
 
+		//TODO: Actually construct the damn swap chain
+
+		vk::SurfaceCapabilitiesKHR cap = physicalDeviceMap["graphic"][0].getSurfaceCapabilitiesKHR(surfaces[0]);
+
+		int imageCount = cap.minImageCount + 1;
+
+		if (imageCount > cap.maxImageCount && !cap.maxImageCount)
+			imageCount = cap.maxImageCount;
+
+		//TODO: update eColorattachedment to Transfer
+		vk::SwapchainCreateInfoKHR info = vk::SwapchainCreateInfoKHR()
+			.setMinImageCount(imageCount)
+			.setImageFormat(display.format.format)
+			.setImageColorSpace(display.format.colorSpace)
+			.setImageExtent(display.resolution)
+			.setImageArrayLayers(1)
+			.setImageUsage(vk::ImageUsageFlagBits::eColorAttachment)
+			.setImageSharingMode(vk::SharingMode::eExclusive)
+			.setQueueFamilyIndexCount(0)
+			.setPQueueFamilyIndices(nullptr)
+			.setPreTransform(cap.currentTransform)
+			.setCompositeAlpha(vk::CompositeAlphaFlagBitsKHR::eOpaque)
+			.setPresentMode(display.present)
+			.setClipped(true);
+		//TODO: old Swap Chain for resizing ops
+
+		swapchains.push_back(deviceMap["graphic"][0].createSwapchainKHR(info));
 	}
 
 	void Prototype::configureImageView() {
-
+		settings::DisplaySettings display = settings::processDisplaySettings(configs["Display"]);
+		vk::Device& gpu = deviceMap["graphic"][0];
+		swapchainImages.push_back(gpu.getSwapchainImagesKHR(swapchains[0]));
+		std::vector<vk::Image>& imgs = swapchainImages[0];
+		swapchainImageViews.emplace_back(imgs.size());
+		std::vector<vk::ImageView>& imgvs = swapchainImageViews[0];
+		for (int i = 0; i < imgs.size(); i++) {
+			vk::ImageViewCreateInfo info = vk::ImageViewCreateInfo()
+				.setImage(imgs[i])
+				.setViewType(vk::ImageViewType::e2D)
+				.setFormat(display.format.format)
+				.setComponents({ vk::ComponentSwizzle::eIdentity, vk::ComponentSwizzle::eIdentity, vk::ComponentSwizzle::eIdentity, vk::ComponentSwizzle::eIdentity })
+				.setSubresourceRange(
+					vk::ImageSubresourceRange()
+					.setAspectMask(vk::ImageAspectFlagBits::eColor)
+					.setBaseMipLevel(0)
+					.setLevelCount(1)
+					.setBaseArrayLayer(0)
+					.setLayerCount(1)
+				);
+			imgvs.push_back(gpu.createImageView(info));
+		}
 	}
 
 	void Prototype::configureGraphicsPipeline() {
@@ -135,8 +190,10 @@ namespace core {
 	}
 
 	void Prototype::cleanup() {
-		//TODO: destroy physical and logical devices
 
+
+		deviceMap["graphic"][0].destroySwapchainKHR(swapchains[0]);
+		deviceMap["graphic"][0].destroy();
 		instance.destroySurfaceKHR(surfaces[0]);
 #if defined(_DEBUG)
 		instance.destroyDebugUtilsMessengerEXT(debugMessenger, nullptr, dldi);
