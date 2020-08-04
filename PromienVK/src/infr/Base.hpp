@@ -26,6 +26,8 @@ namespace infr {
 		//multiple viewport, for applications like VR
 		std::vector<vk::SurfaceKHR> surfaces;
 		std::vector<vk::SwapchainKHR> swapchains;
+		std::vector<std::vector<vk::Image>> swapchainImages;
+		std::vector < std::vector<vk::ImageView>> swapchainImageViews;
 		std::vector<vk::Pipeline> pipelines;
 
 		//we'll leave the GraphicsPipeline part alone, as it is completely dependent on implementation

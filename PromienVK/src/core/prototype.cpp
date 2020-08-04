@@ -157,7 +157,28 @@ namespace core {
 	}
 
 	void Prototype::configureImageView() {
-
+		settings::DisplaySettings display = settings::processDisplaySettings(configs["Display"]);
+		vk::Device& gpu = deviceMap["graphic"][0];
+		swapchainImages.push_back(gpu.getSwapchainImagesKHR(swapchains[0]));
+		std::vector<vk::Image>& imgs = swapchainImages[0];
+		swapchainImageViews.emplace_back(imgs.size());
+		std::vector<vk::ImageView>& imgvs = swapchainImageViews[0];
+		for (int i = 0; i < imgs.size(); i++) {
+			vk::ImageViewCreateInfo info = vk::ImageViewCreateInfo()
+				.setImage(imgs[i])
+				.setViewType(vk::ImageViewType::e2D)
+				.setFormat(display.format.format)
+				.setComponents({ vk::ComponentSwizzle::eIdentity, vk::ComponentSwizzle::eIdentity, vk::ComponentSwizzle::eIdentity, vk::ComponentSwizzle::eIdentity })
+				.setSubresourceRange(
+					vk::ImageSubresourceRange()
+					.setAspectMask(vk::ImageAspectFlagBits::eColor)
+					.setBaseMipLevel(0)
+					.setLevelCount(1)
+					.setBaseArrayLayer(0)
+					.setLayerCount(1)
+				);
+			imgvs.push_back(gpu.createImageView(info));
+		}
 	}
 
 	void Prototype::configureGraphicsPipeline() {
