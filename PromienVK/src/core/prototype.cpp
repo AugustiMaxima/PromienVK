@@ -3,6 +3,7 @@
 #include "devicePick.hpp"
 #include "swapchain.hpp"
 #include "settings.hpp"
+#include "shader.hpp"
 #include "prototype.hpp"
 
 namespace core {
@@ -182,7 +183,18 @@ namespace core {
 	}
 
 	void Prototype::configureGraphicsPipeline() {
+		vk::Device gpu = deviceMap["graphic"][0];
+		//TODO: make this configurable
+		vk::ShaderModule vert = shader::createShaderModule(gpu, "shader/shader.vert.spv");
+		vk::ShaderModule frag = shader::createShaderModule(gpu, "shader/shader.frag.spv");
 
+		vk::PipelineShaderStageCreateInfo vstage = shader::createShaderStage(vert, vk::ShaderStageFlagBits::eVertex);
+		vk::PipelineShaderStageCreateInfo fstage = shader::createShaderStage(frag, vk::ShaderStageFlagBits::eFragment);
+
+
+
+		gpu.destroyShaderModule(vert);
+		gpu.destroyShaderModule(frag);
 	}
 
 	void Prototype::render() {
@@ -190,10 +202,13 @@ namespace core {
 	}
 
 	void Prototype::cleanup() {
+		vk::Device gpu = deviceMap["graphic"][0];
 
-
-		deviceMap["graphic"][0].destroySwapchainKHR(swapchains[0]);
-		deviceMap["graphic"][0].destroy();
+		for (auto imageView : swapchainImageViews[0]) {
+			gpu.destroyImageView(imageView);
+		}
+		gpu.destroySwapchainKHR(swapchains[0]);
+		gpu.destroy();
 		instance.destroySurfaceKHR(surfaces[0]);
 #if defined(_DEBUG)
 		instance.destroyDebugUtilsMessengerEXT(debugMessenger, nullptr, dldi);

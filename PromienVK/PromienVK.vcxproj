@@ -165,6 +165,7 @@
     <ClCompile Include="src\core\devicePick.cpp" />
     <ClCompile Include="src\core\prototype.cpp" />
     <ClCompile Include="src\core\settings.cpp" />
+    <ClCompile Include="src\core\shader.cpp" />
     <ClCompile Include="src\core\swapchain.cpp" />
     <ClCompile Include="src\dbg\dbg.cpp" />
     <ClCompile Include="src\dbg\vLog.cpp" />
@@ -180,6 +181,7 @@
     <ClInclude Include="src\core\devicePick.hpp" />
     <ClInclude Include="src\core\prototype.hpp" />
     <ClInclude Include="src\core\settings.hpp" />
+    <ClInclude Include="src\core\shader.hpp" />
     <ClInclude Include="src\core\swapchain.hpp" />
     <ClInclude Include="src\dbg\dbg.hpp" />
     <ClInclude Include="src\dbg\vLog.hpp" />
@@ -192,6 +194,11 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="configs\settings.json" />
+    <None Include="shaders\compileShader.bat" />
+    <None Include="shaders\shader.frag" />
+    <None Include="shaders\shader.frag.spv" />
+    <None Include="shaders\shader.vert" />
+    <None Include="shaders\shader.vert.spv" />
     <None Include="test\test.json" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
