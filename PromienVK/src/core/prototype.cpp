@@ -191,7 +191,9 @@ namespace core {
 		vk::PipelineShaderStageCreateInfo vstage = shader::createShaderStage(vert, vk::ShaderStageFlagBits::eVertex);
 		vk::PipelineShaderStageCreateInfo fstage = shader::createShaderStage(frag, vk::ShaderStageFlagBits::eFragment);
 
-
+		vk::PipelineVertexInputStateCreateInfo vertexInputInfo = vk::PipelineVertexInputStateCreateInfo()
+			.setVertexAttributeDescriptionCount(0)
+			.setVertexBindingDescriptionCount(0);
 
 		gpu.destroyShaderModule(vert);
 		gpu.destroyShaderModule(frag);
