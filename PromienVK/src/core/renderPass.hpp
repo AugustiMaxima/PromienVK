@@ -11,6 +11,7 @@ namespace core {
 			std::vector<vk::AttachmentDescription> attachments;
 			std::vector<vk::SubpassDescription> subpasses;
 			std::vector<vk::AttachmentReference> attachRefs;
+			std::vector<vk::SubpassDependency> dependencies;
 			void assemble();
 			vk::RenderPass construct();
 		};

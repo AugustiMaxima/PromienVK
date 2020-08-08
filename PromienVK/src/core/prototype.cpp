@@ -4,6 +4,8 @@
 #include "swapchain.hpp"
 #include "settings.hpp"
 #include "shader.hpp"
+#include "pipeline.hpp"
+#include "renderpass.hpp"
 #include "prototype.hpp"
 
 namespace core {
@@ -191,9 +193,9 @@ namespace core {
 		vk::PipelineShaderStageCreateInfo vstage = shader::createShaderStage(vert, vk::ShaderStageFlagBits::eVertex);
 		vk::PipelineShaderStageCreateInfo fstage = shader::createShaderStage(frag, vk::ShaderStageFlagBits::eFragment);
 
-		vk::PipelineVertexInputStateCreateInfo vertexInputInfo = vk::PipelineVertexInputStateCreateInfo()
-			.setVertexAttributeDescriptionCount(0)
-			.setVertexBindingDescriptionCount(0);
+		pipeline::GraphicsPipelineEnclosure pipeline;
+		//temporarily null
+		pipeline.vertice.verticeInput.push_back();
 
 		gpu.destroyShaderModule(vert);
 		gpu.destroyShaderModule(frag);

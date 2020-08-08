@@ -11,37 +11,46 @@ namespace core {
 		//this strongly discourage modularity and prevents effective refactor and code reuse
 
 		//So we are going to attempt to fix the cancer that is vanilla vulkan by using structs to build enclosures
-		
+
+		struct VertexInputEnclosure {
+			vk::PipelineVertexInputStateCreateInfo verticeInput;
+			std::vector<vk::VertexInputBindingDescription> binding;
+			std::vector<vk::VertexInputAttributeDescription> attribute;
+			vk::PipelineVertexInputStateCreateInfo assemble();
+		};
+
+		struct VertexSetEnclosure {
+			std::vector<VertexInputEnclosure> verticeInput;
+			std::vector<vk::PipelineInputAssemblyStateCreateInfo> inputAssembly;
+		};
+
+		vk::PipelineInputAssemblyStateCreateInfo configureInputAssembly(vk::PrimitiveTopology topology, bool primitiveRestart);
+
 		struct ViewportStateEnclosure{
 			vk::PipelineViewportStateCreateInfo viewportState{};
 			std::vector<vk::Viewport> viewports;
 			std::vector<vk::Rect2D> scissors;
-			void assemble();
-		};
-
-		struct VertexInputEnclosure {
-			std::vector<vk::PipelineVertexInputStateCreateInfo> verticeInput;
-			std::vector<vk::PipelineInputAssemblyStateCreateInfo> inputAssembly;
+			vk::PipelineViewportStateCreateInfo assemble();
 		};
 
 		struct UniformEnclosure {
 			vk::PipelineLayoutCreateInfo layout;
 			std::vector<vk::DescriptorSetLayout> descriptors;
 			std::vector<vk::PushConstantRange> constants;
-			void assemble();
-			vk::PipelineLayout construct();
+			vk::PipelineLayoutCreateInfo assemble();
+			vk::PipelineLayout construct(vk::Device device);
 		};
 
 		struct DynamicStateEnclosure {
 			vk::PipelineDynamicStateCreateInfo dynamicState;
 			std::vector<vk::DynamicState> states;
-			void assemble();
+			vk::PipelineDynamicStateCreateInfo assemble();
 		};
 
 		struct ColorBlendingEnclosure {
 			vk::PipelineColorBlendStateCreateInfo colorBlendingInfo;
 			std::vector <vk::PipelineColorBlendAttachmentState> attachments;
-			void assemble();
+			vk::PipelineColorBlendStateCreateInfo assemble();
 		};
 
 		struct GraphicsPipelineEnclosure {
@@ -58,6 +67,13 @@ namespace core {
 			void assemble();
 			vk::Pipeline construct();
 		};
+
+
+
+
+
+
+
 	}
 }
 
