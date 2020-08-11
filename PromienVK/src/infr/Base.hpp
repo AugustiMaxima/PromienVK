@@ -16,6 +16,10 @@ namespace infr {
 #if defined(_DEBUG)
 		vk::DebugUtilsMessengerEXT debugMessenger;
 #endif
+
+		//TODO: Refactor the data section
+		//"safe" to remove
+
 		//optional, can be removed for debloating
 		std::map<std::string, std::vector<vk::PhysicalDevice>> physicalDeviceMap;
 		//map to support multi utility, vector to support multi gpu

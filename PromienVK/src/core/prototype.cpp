@@ -195,7 +195,6 @@ namespace core {
 
 		pipeline::GraphicsPipelineEnclosure pipeline;
 		//temporarily null
-		pipeline.vertice.verticeInput.push_back();
 
 		gpu.destroyShaderModule(vert);
 		gpu.destroyShaderModule(frag);

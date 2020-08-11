@@ -12,8 +12,9 @@ namespace core {
 			std::vector<vk::SubpassDescription> subpasses;
 			std::vector<vk::AttachmentReference> attachRefs;
 			std::vector<vk::SubpassDependency> dependencies;
-			void assemble();
-			vk::RenderPass construct();
+			vk::RenderPass renderPass;
+			vk::RenderPassCreateInfo& assemble();
+			vk::RenderPass& construct(vk::Device device);
 		};
 	}
 }
