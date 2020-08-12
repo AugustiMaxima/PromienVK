@@ -162,6 +162,7 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="not_main.cpp" />
+    <ClCompile Include="src\core\boilerplate.cpp" />
     <ClCompile Include="src\core\devicePick.cpp" />
     <ClCompile Include="src\core\pipeline.cpp" />
     <ClCompile Include="src\core\prototype.cpp" />
@@ -180,6 +181,7 @@
     <ClCompile Include="test\masterTest.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\core\boilerplate.hpp" />
     <ClInclude Include="src\core\devicePick.hpp" />
     <ClInclude Include="src\core\pipeline.hpp" />
     <ClInclude Include="src\core\prototype.hpp" />

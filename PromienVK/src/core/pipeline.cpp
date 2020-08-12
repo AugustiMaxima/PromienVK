@@ -41,12 +41,6 @@ namespace core {
 			return viewportState;
 		}
 
-		PipelineInputAssemblyStateCreateInfo configureInputAssembly(PrimitiveTopology topology, bool primtiveRestart) {
-			return PipelineInputAssemblyStateCreateInfo()
-				.setTopology(topology)
-				.setPrimitiveRestartEnable(primtiveRestart);
-		}
-
 		PipelineViewportStateCreateInfo& ViewportStateEnclosure::assemble() {
 			viewportState = viewportState
 				.setScissorCount(scissors.size())

@@ -28,8 +28,6 @@ namespace core {
 			vk::PipelineVertexInputStateCreateInfo& assemble();
 		};
 
-		vk::PipelineInputAssemblyStateCreateInfo configureInputAssembly(vk::PrimitiveTopology topology, bool primitiveRestart);
-
 		struct ViewportStateEnclosure{
 			vk::PipelineViewportStateCreateInfo viewportState{};
 			std::vector<vk::Viewport> viewports;
@@ -37,17 +35,16 @@ namespace core {
 			vk::PipelineViewportStateCreateInfo& assemble();
 		};
 
+		struct ColorBlendingEnclosure {
+			vk::PipelineColorBlendStateCreateInfo colorBlendingInfo;
+			std::vector <vk::PipelineColorBlendAttachmentState> attachments;
+			vk::PipelineColorBlendStateCreateInfo& assemble();
+		};
 
 		struct DynamicStateEnclosure {
 			vk::PipelineDynamicStateCreateInfo dynamicState;
 			std::vector<vk::DynamicState> states;
 			vk::PipelineDynamicStateCreateInfo& assemble();
-		};
-
-		struct ColorBlendingEnclosure {
-			vk::PipelineColorBlendStateCreateInfo colorBlendingInfo;
-			std::vector <vk::PipelineColorBlendAttachmentState> attachments;
-			vk::PipelineColorBlendStateCreateInfo& assemble();
 		};
 
 		struct UniformEnclosure {
