@@ -14,6 +14,7 @@ namespace infr {
 		virtual void configureSwapChain() = 0;
 		virtual void configureImageView() = 0;
 		//pipeline
+		virtual void configureRenderPass() = 0;
 		virtual void configureGraphicsPipeline() = 0;
 		//iterations
 		virtual void render() = 0;

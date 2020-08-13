@@ -62,8 +62,8 @@ namespace infr {
 
 	void Base::allocatePhysicalDevices() {
 		//global, includes all physicalDevices
-		physicalDeviceMap["*"] = instance.enumeratePhysicalDevices();
-		auto& deviceList = physicalDeviceMap["*"];
+		physicalDeviceMap[infr::DeviceFunction::all] = instance.enumeratePhysicalDevices();
+		auto& deviceList = physicalDeviceMap[infr::DeviceFunction::all];
 
 		for (auto& device : deviceList) {
 			dvs::registerDeviceSet(physicalDeviceMap, device);

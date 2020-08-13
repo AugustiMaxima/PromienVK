@@ -11,6 +11,7 @@ namespace infr {
 		createLogicalDevices();
 		configureSwapChain();
 		configureImageView();
+		configureRenderPass();
 		configureGraphicsPipeline();
 		render();
 		cleanup();

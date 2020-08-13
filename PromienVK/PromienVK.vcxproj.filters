@@ -61,6 +61,18 @@
     <ClCompile Include="src\core\settings.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\core\shader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\core\pipeline.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\core\renderPass.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\core\boilerplate.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="test\masterTest.hpp">
@@ -99,12 +111,42 @@
     <ClInclude Include="src\core\settings.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\core\shader.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\core\pipeline.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\core\renderPass.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\core\boilerplate.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\infr\type.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="test\test.json">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="configs\settings.json">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="shaders\compileShader.bat">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="shaders\shader.frag">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="shaders\shader.frag.spv">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="shaders\shader.vert">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="shaders\shader.vert.spv">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>

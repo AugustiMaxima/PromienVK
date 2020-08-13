@@ -6,6 +6,7 @@
 #include <map>
 #include <set>
 #include <functional>
+#include "../infr/type.hpp"
 #include "../utils/multIndex.hpp"
 
 namespace core {
@@ -28,25 +29,25 @@ namespace core {
 
 		bool deviceCompatible(vk::PhysicalDevice device, vk::DeviceCreateInfo spec);
 
-		void pickPhysicalDevices(std::map<std::string, std::vector<vk::PhysicalDevice>>& deviceMap,
-			std::map<std::string, vk::DeviceCreateInfo>& templ, vk::SurfaceKHR surface);
+		void pickPhysicalDevices(std::map<infr::DeviceFunction, std::vector<vk::PhysicalDevice>>& deviceMap,
+			std::map<infr::DeviceFunction, vk::DeviceCreateInfo>& templ, vk::SurfaceKHR surface);
 
 		deviceCreateEnclosure iconoSynthesis(std::vector<vk::DeviceCreateInfo>& templs);
 
-		std::map<std::string, std::vector<int>> physicalDeviceIndexing(std::map<std::string, std::vector<vk::PhysicalDevice>>& pDeviceMap);
+		std::map<infr::DeviceFunction, std::vector<int>> physicalDeviceIndexing(std::map<infr::DeviceFunction, std::vector<vk::PhysicalDevice>>& pDeviceMap);
 
-		std::map<std::string, std::vector<bool>> naiveSelection(std::map<std::string, std::vector<int>>& deviceIndice);
+		std::map<infr::DeviceFunction, std::vector<bool>> naiveSelection(std::map<infr::DeviceFunction, std::vector<int>>& deviceIndice);
 
-		void pickDevices(std::map<std::string, std::vector<vk::PhysicalDevice>>& pdeviceMap, vk::SurfaceKHR surface, 
-			std::map<std::string, std::vector<vk::Device>>& deviceMap, std::map<std::string, vk::DeviceCreateInfo>& templ,
-			std::function<std::map<std::string, std::vector<bool>>(std::map<std::string, std::vector<int>>&)> selector = naiveSelection);
+		void pickDevices(std::map<infr::DeviceFunction, std::vector<vk::PhysicalDevice>>& pdeviceMap, vk::SurfaceKHR surface,
+			std::map<infr::DeviceFunction, std::vector<vk::Device>>& deviceMap, std::map<infr::DeviceFunction, vk::DeviceCreateInfo>& templ,
+			std::function<std::map<infr::DeviceFunction, std::vector<bool>>(std::map<infr::DeviceFunction, std::vector<int>>&)> selector = naiveSelection);
 	
 		vk::Device allocateDeviceQueue(vk::PhysicalDevice physicalDevice, vk::DeviceCreateInfo templat);
 		
 		void retrieveQueues(std::vector<vk::Device>& devices, std::vector<vk::PhysicalDevice>& deviceRef,
-			std::map<vk::Device, std::map<std::string, util::multIndex<float, vk::Queue>>>& queueMap);
+			std::map<vk::Device, std::map<infr::QueueFunction, util::multIndex<float, vk::Queue>>>& queueMap);
 
-		std::map<std::string, util::multIndex<float, vk::Queue>> collectDeviceQueue(vk::Device device, vk::PhysicalDevice deviceRef);
+		std::map<infr::QueueFunction, util::multIndex<float, vk::Queue>> collectDeviceQueue(vk::Device device, vk::PhysicalDevice deviceRef);
 	}
 }
 
