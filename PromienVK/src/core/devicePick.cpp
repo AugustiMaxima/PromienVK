@@ -46,18 +46,18 @@ namespace core {
 			return rexts.empty();
 		}
 
-		void pickPhysicalDevices(map<string, vector<PhysicalDevice>>& deviceMap, map<string, DeviceCreateInfo>& templ, SurfaceKHR surface) {
-			vector<PhysicalDevice>& dlst = deviceMap["*"];
+		void pickPhysicalDevices(map<infr::DeviceFunction, vector<PhysicalDevice>>& deviceMap, map<infr::DeviceFunction, DeviceCreateInfo>& templ, SurfaceKHR surface) {
+			vector<PhysicalDevice>& dlst = deviceMap[infr::DeviceFunction::all];
 			for (auto& device : dlst) {
-				if (presentReady(device, surface) && infr::dvs::graphicCompatible(device) && deviceCompatible(device, templ["graphic"])) {
-					deviceMap["graphic"].push_back(device);
+				if (presentReady(device, surface) && infr::dvs::graphicCompatible(device) && deviceCompatible(device, templ[infr::DeviceFunction::graphic])) {
+					deviceMap[infr::DeviceFunction::graphic].push_back(device);
 				}
-				if (infr::dvs::computeCompatible(device) && deviceCompatible(device, templ["compute"])) {
-					deviceMap["compute"].push_back(device);
+				if (infr::dvs::computeCompatible(device) && deviceCompatible(device, templ[infr::DeviceFunction::compute])) {
+					deviceMap[infr::DeviceFunction::compute].push_back(device);
 				}
 			}
-			std::sort(deviceMap["graphic"].begin(), deviceMap["graphic"].end(), infr::dvs::graphicRank);
-			std::sort(deviceMap["compute"].begin(), deviceMap["compute"].end(), infr::dvs::computeRank);
+			std::sort(deviceMap[infr::DeviceFunction::graphic].begin(), deviceMap[infr::DeviceFunction::graphic].end(), infr::dvs::graphicRank);
+			std::sort(deviceMap[infr::DeviceFunction::compute].begin(), deviceMap[infr::DeviceFunction::compute].end(), infr::dvs::computeRank);
 		}
 
 		//merges multiple device dependencies
@@ -92,34 +92,34 @@ namespace core {
 
 		//"*" references offsets from the original map
 		//"key" references the "*" binding for efficiency
-		map<string, vector<int>> physicalDeviceIndexing(map<string, vector<PhysicalDevice>>& pDeviceMap) {
-			map<string, vector<int>> dMap;
+		map<infr::DeviceFunction, vector<int>> physicalDeviceIndexing(map<infr::DeviceFunction, vector<PhysicalDevice>>& pDeviceMap) {
+			map<infr::DeviceFunction, vector<int>> dMap;
 			map<PhysicalDevice, int> rMap;
 
-			auto& principal = pDeviceMap["*"];
+			auto& principal = pDeviceMap[infr::DeviceFunction::all];
 			for (int i = 0; i < principal.size(); i++) {
 				rMap[principal[i]] = i;
 			}
 
 			for (int i = 0; i < 1; i++) {
-				dMap["compute"].push_back(rMap[pDeviceMap["compute"][i]]);
-				dMap["graphic"].push_back(rMap[pDeviceMap["graphic"][i]]);
+				dMap[infr::DeviceFunction::compute].push_back(rMap[pDeviceMap[infr::DeviceFunction::compute][i]]);
+				dMap[infr::DeviceFunction::graphic].push_back(rMap[pDeviceMap[infr::DeviceFunction::graphic][i]]);
 			}
 
 			return dMap;
 		}
 
-		map<string, vector<bool>> naiveSelection(map<string, vector<int>>& deviceIndice) {
-			map<string, vector<bool>> selected;
-			selected["graphic"].push_back(true);
+		map<infr::DeviceFunction, vector<bool>> naiveSelection(map<infr::DeviceFunction, vector<int>>& deviceIndice) {
+			map<infr::DeviceFunction, vector<bool>> selected;
+			selected[infr::DeviceFunction::graphic].push_back(true);
 			return selected;
 		}
 
-		void pickDevices(map<string, vector<PhysicalDevice>>& pDeviceMap, SurfaceKHR surface, 
-			map<string, vector<Device>>& deviceMap, map<string, DeviceCreateInfo>& templ,
-			function<map<string, vector<bool>>(map<string, vector<int>>&)> selector) {
+		void pickDevices(map<infr::DeviceFunction, vector<PhysicalDevice>>& pDeviceMap, SurfaceKHR surface,
+			map<infr::DeviceFunction, vector<Device>>& deviceMap, map<infr::DeviceFunction, DeviceCreateInfo>& templ,
+			function<map<infr::DeviceFunction, vector<bool>>(map<infr::DeviceFunction, vector<int>>&)> selector) {
 			auto queryMap = physicalDeviceIndexing(pDeviceMap);
-			auto& dlst = pDeviceMap["*"];
+			auto& dlst = pDeviceMap[infr::DeviceFunction::all];
 			auto selected = selector(queryMap);
 			
 			//As it's clearly evident, we need to keep track of the source physical Device and the resultant logical Device
@@ -140,20 +140,20 @@ namespace core {
 			//More work, unclear if it could bite us in the future
 
 			//Option 2 it is
-			map<string, vector<PhysicalDevice>> npDeviceMap;
-			for (auto& id : selected["graphic"]) {
-				Device dvc = allocateDeviceQueue(dlst[id], templ["graphic"]);
-				deviceMap["*"].push_back(dvc);
-				npDeviceMap["*"].push_back(dlst[id]);
-				deviceMap["graphic"].push_back(dvc);
-				npDeviceMap["graphic"].push_back(dlst[id]);
+			map<infr::DeviceFunction, vector<PhysicalDevice>> npDeviceMap;
+			for (auto& id : selected[infr::DeviceFunction::graphic]) {
+				Device dvc = allocateDeviceQueue(dlst[id], templ[infr::DeviceFunction::graphic]);
+				deviceMap[infr::DeviceFunction::all].push_back(dvc);
+				npDeviceMap[infr::DeviceFunction::all].push_back(dlst[id]);
+				deviceMap[infr::DeviceFunction::graphic].push_back(dvc);
+				npDeviceMap[infr::DeviceFunction::graphic].push_back(dlst[id]);
 			}
-			for (auto& id : selected["compute"]) {
-				Device dvc = allocateDeviceQueue(dlst[id], templ["compute"]);
-				deviceMap["*"].push_back(dvc);
-				npDeviceMap["*"].push_back(dlst[id]);
-				deviceMap["compute"].push_back(dvc);
-				npDeviceMap["compute"].push_back(dlst[id]);
+			for (auto& id : selected[infr::DeviceFunction::compute]) {
+				Device dvc = allocateDeviceQueue(dlst[id], templ[infr::DeviceFunction::compute]);
+				deviceMap[infr::DeviceFunction::all].push_back(dvc);
+				npDeviceMap[infr::DeviceFunction::all].push_back(dlst[id]);
+				deviceMap[infr::DeviceFunction::compute].push_back(dvc);
+				npDeviceMap[infr::DeviceFunction::compute].push_back(dlst[id]);
 			}
 			pDeviceMap = npDeviceMap;
 		}
@@ -176,29 +176,29 @@ namespace core {
 		}
 
 		void retrieveQueues(vector<Device>& devices, vector<PhysicalDevice>& deviceRef,
-			map<Device, map<string, util::multIndex<float, Queue>>>& queueMap) {
+			map<Device, map<infr::QueueFunction, util::multIndex<float, Queue>>>& queueMap) {
 			for (int i = 0; i < devices.size(); i++) {
 				queueMap[devices[i]] = collectDeviceQueue(devices[i], deviceRef[i]);
 			}
 		}
 
-		map<string, util::multIndex<float, Queue>> collectDeviceQueue(Device device, PhysicalDevice deviceRef) {
-			map<string, util::multIndex<float, Queue>> qMap;
+		map<infr::QueueFunction, util::multIndex<float, Queue>> collectDeviceQueue(Device device, PhysicalDevice deviceRef) {
+			map<infr::QueueFunction, util::multIndex<float, Queue>> qMap;
 			vector<QueueFamilyProperties> qs = deviceRef.getQueueFamilyProperties();
 			for (int i = 0; i < qs.size(); i++) {
 				//pattern matching
-				string key;
+				infr::QueueFunction key;
 				if (qs[i].queueFlags & QueueFlagBits::eGraphics) {
 					//graphics (general) queue
-					key = "graphic";
+					key = infr::QueueFunction::graphic;
 				}
 				else if (qs[i].queueFlags & QueueFlagBits::eCompute) {
 					//async compute queue
-					key = "compute";
+					key = infr::QueueFunction::compute;
 				}
 				else if (qs[i].queueFlags & QueueFlagBits::eTransfer) {
 					//transfer/copy queue
-					key = "transfer";
+					key = infr::QueueFunction::transfer;
 				}
 				for (int j = 0; j < qs[i].queueCount; j++)
 					qMap[key].insert(1.0f, device.getQueue(i, j));

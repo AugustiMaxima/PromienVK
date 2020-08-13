@@ -41,15 +41,6 @@ namespace core {
 			return viewportState;
 		}
 
-		PipelineViewportStateCreateInfo& ViewportStateEnclosure::assemble() {
-			viewportState = viewportState
-				.setScissorCount(scissors.size())
-				.setPScissors(scissors.data())
-				.setPViewports(viewports.data())
-				.setViewportCount(viewports.size());
-			return viewportState;
-		}
-
 		PipelineLayoutCreateInfo& UniformEnclosure::assemble() {
 			info = info
 				.setPPushConstantRanges(constants.data())

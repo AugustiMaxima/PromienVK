@@ -25,6 +25,7 @@ namespace core {
 				.setModule(module)
 				.setPName(entry.c_str())
 				.setStage(flag);
+			return info;
 		}
 
 	}

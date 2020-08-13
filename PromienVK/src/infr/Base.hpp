@@ -2,12 +2,15 @@
 #define BASE_H
 
 #include <vulkan/vulkan.hpp>
-#include "Conf.hpp"
 #include "InfraVK.hpp"
-#include "../utils/multIndex.hpp"
+#include "Conf.hpp"
+#include "type.hpp"
+#include "../utils/multindex.hpp"
+
 namespace infr {
 	class Base : public InfraVK {
 	protected:
+		//archieved, use as a reference on the original design, or to inform potential design choices for multi device designs
 		//Data is going to be inherited, so absolute care is needed for extensibility
 		conf::Scope configs;
 		vk::Instance instance;
@@ -17,15 +20,11 @@ namespace infr {
 		vk::DebugUtilsMessengerEXT debugMessenger;
 #endif
 
-		//TODO: Refactor the data section
-		//"safe" to remove
-
-		//optional, can be removed for debloating
-		std::map<std::string, std::vector<vk::PhysicalDevice>> physicalDeviceMap;
+		std::map<DeviceFunction, std::vector<vk::PhysicalDevice>> physicalDeviceMap;
 		//map to support multi utility, vector to support multi gpu
-		std::map<std::string, std::vector<vk::Device>> deviceMap;
+		std::map<DeviceFunction, std::vector<vk::Device>> deviceMap;
 		std::map<vk::Device, vk::DispatchLoaderDynamic> dldm;
-		std::map<vk::Device, std::map<std::string, util::multIndex<float, vk::Queue>>> queueMap;
+		std::map<vk::Device, std::map<QueueFunction, util::multIndex<float, vk::Queue>>> queueMap;
 
 		//multiple viewport, for applications like VR
 		std::vector<vk::SurfaceKHR> surfaces;

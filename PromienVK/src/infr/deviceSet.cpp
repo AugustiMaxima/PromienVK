@@ -45,18 +45,18 @@ namespace infr {
 		}
 
 
-		void registerDeviceSet(std::map<std::string, std::vector<vk::PhysicalDevice>>& pDeviceMap, vk::PhysicalDevice device) {
+		void registerDeviceSet(std::map<DeviceFunction, std::vector<vk::PhysicalDevice>>& pDeviceMap, vk::PhysicalDevice device) {
 			if (computeCompatible(device)) {
-				pDeviceMap["compute"].push_back(device);
+				pDeviceMap[DeviceFunction::compute].push_back(device);
 			}
 			if (graphicCompatible(device)) {
-				pDeviceMap["graphic"].push_back(device);
+				pDeviceMap[DeviceFunction::graphic].push_back(device);
 			}
 		}
 
-		void rankDeviceEligibility(std::map<std::string, std::vector<vk::PhysicalDevice>>& pDeviceMap) {
-			auto& computeList = pDeviceMap["compute"];
-			auto& graphicList = pDeviceMap["graphic"];
+		void rankDeviceEligibility(std::map<DeviceFunction, std::vector<vk::PhysicalDevice>>& pDeviceMap) {
+			auto& computeList = pDeviceMap[DeviceFunction::compute];
+			auto& graphicList = pDeviceMap[DeviceFunction::graphic];
 
 			std::sort(computeList.begin(), computeList.end(), computeRank);
 			std::sort(graphicList.begin(), graphicList.end(), graphicRank);

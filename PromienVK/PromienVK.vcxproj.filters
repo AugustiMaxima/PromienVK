@@ -123,6 +123,9 @@
     <ClInclude Include="src\core\boilerplate.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\infr\type.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="test\test.json">

@@ -1,6 +1,7 @@
 #define GLFW_INCLUDE_VULKAN
 #include "../dbg/vLog.hpp"
 #include "devicePick.hpp"
+#include "../utils/multindex.hpp"
 #include "swapchain.hpp"
 #include "settings.hpp"
 #include "shader.hpp"
@@ -10,7 +11,9 @@
 
 namespace core {
 
-	Prototype::Prototype(std::string config):infr::Base(config){}
+	Prototype::Prototype(std::string config){
+		conf::parseConfigs(configs, config);
+	}
 
 	void Prototype::initWindow() {
 		glfwInit();
@@ -80,17 +83,17 @@ namespace core {
 	}
 
 	void Prototype::createSurface() {
-		VkSurfaceKHR surface;
+		VkSurfaceKHR sf;
 		//Use .hpp they said, it will clean up everything, they said
-		if (glfwCreateWindowSurface((VkInstance)instance, window, nullptr, &surface) != VK_SUCCESS) {
+		if (glfwCreateWindowSurface((VkInstance)instance, window, nullptr, &sf) != VK_SUCCESS) {
 			throw std::runtime_error("failed to create window surface!");
 		}
-		surfaces.push_back(vk::SurfaceKHR(surface));
+		surface = vk::SurfaceKHR(sf);
 	}
 
 	void Prototype::allocatePhysicalDevices() {
-		std::map<std::string, vk::DeviceCreateInfo> templ;
-		vk::DeviceCreateInfo& graphic = templ["graphic"];
+		std::map<infr::DeviceFunction, vk::DeviceCreateInfo> templ;
+		vk::DeviceCreateInfo& graphic = templ[infr::DeviceFunction::graphic];
 		const std::vector<const char*> deviceExtensions = {
 			VK_KHR_SWAPCHAIN_EXTENSION_NAME
 		};
@@ -100,39 +103,52 @@ namespace core {
 #if defined(_DEBUG)
 		//Fill in layer data for legacy vk implementations
 #endif
-		physicalDeviceMap["*"] = instance.enumeratePhysicalDevices();
-		dps::pickPhysicalDevices(physicalDeviceMap, templ, surfaces[0]);
+		std::map<infr::DeviceFunction, std::vector<vk::PhysicalDevice>> physicalDeviceMap;
+		std::map<infr::DeviceFunction, std::vector<vk::Device>> deviceMap;
 
-		if (!physicalDeviceMap["graphic"].size())
+		physicalDeviceMap[infr::DeviceFunction::all] = instance.enumeratePhysicalDevices();
+		dps::pickPhysicalDevices(physicalDeviceMap, templ, surface);
+
+		if (!physicalDeviceMap[infr::DeviceFunction::graphic].size())
 			throw std::runtime_error("No suitable gpu found for this application");
+
+		grgpu = physicalDeviceMap[infr::DeviceFunction::all][0];
 	}
 
 	void Prototype::createLogicalDevices() {
-		std::map<std::string, vk::DeviceCreateInfo> templ;
-		//configure extension count
-		//pattern: use template to configure device properties, can be shared across physical and logical device selection
-		vk::DeviceCreateInfo& graphic = templ["graphic"];
+		vk::DeviceCreateInfo graphic;
+
 		const std::vector<const char*> deviceExtensions = {
 			VK_KHR_SWAPCHAIN_EXTENSION_NAME
 		};
 		graphic.enabledExtensionCount = deviceExtensions.size();
 		graphic.ppEnabledExtensionNames = deviceExtensions.data();
 
-		dps::pickDevices(physicalDeviceMap, surfaces[0], deviceMap, templ);
+#if defined(_DEBUG)
+		//Fill in layer data for legacy vk implementations
+#endif
 
-		dps::retrieveQueues(deviceMap["*"], physicalDeviceMap["*"], queueMap);
+		device = dps::allocateDeviceQueue(grgpu, graphic);
+
+		dldd.init(device);
+
+		std::map<infr::QueueFunction, util::multIndex<float, vk::Queue>> indexedMap = dps::collectDeviceQueue(device, grgpu);
+		for (const auto& index : indexedMap) {
+			util::multIndex queues = index.second;
+			queueMap[index.first] = queues.query(1.0f, 1.0f);
+		}
 	}
 
 	void Prototype::configureSwapChain() {
 		settings::DisplaySettings display = settings::processDisplaySettings(configs["Display"]);
-		display.format = spc::selectSurfaceFormat(physicalDeviceMap["graphic"][0], surfaces[0], display.format);
-		display.present = spc::selectPresentMode(physicalDeviceMap["graphic"][0], surfaces[0], display.present);
-		display.resolution = spc::chooseSwapExtent(physicalDeviceMap["graphic"][0], surfaces[0], display.resolution);
+		display.format = spc::selectSurfaceFormat(grgpu, surface, display.format);
+		display.present = spc::selectPresentMode(grgpu, surface, display.present);
+		display.resolution = spc::chooseSwapExtent(grgpu, surface, display.resolution);
 		settings::updateDisplaySettings(configs["Display"], display);
 
 		//TODO: Actually construct the damn swap chain
 
-		vk::SurfaceCapabilitiesKHR cap = physicalDeviceMap["graphic"][0].getSurfaceCapabilitiesKHR(surfaces[0]);
+		vk::SurfaceCapabilitiesKHR cap = grgpu.getSurfaceCapabilitiesKHR(surface);
 
 		int imageCount = cap.minImageCount + 1;
 
@@ -156,19 +172,15 @@ namespace core {
 			.setClipped(true);
 		//TODO: old Swap Chain for resizing ops
 
-		swapchains.push_back(deviceMap["graphic"][0].createSwapchainKHR(info));
+		swapchain = device.createSwapchainKHR(info);
 	}
 
 	void Prototype::configureImageView() {
 		settings::DisplaySettings display = settings::processDisplaySettings(configs["Display"]);
-		vk::Device& gpu = deviceMap["graphic"][0];
-		swapchainImages.push_back(gpu.getSwapchainImagesKHR(swapchains[0]));
-		std::vector<vk::Image>& imgs = swapchainImages[0];
-		swapchainImageViews.emplace_back(imgs.size());
-		std::vector<vk::ImageView>& imgvs = swapchainImageViews[0];
-		for (int i = 0; i < imgs.size(); i++) {
+		swapchainImages = device.getSwapchainImagesKHR(swapchain);
+		for (int i = 0; i < swapchainImages.size(); i++) {
 			vk::ImageViewCreateInfo info = vk::ImageViewCreateInfo()
-				.setImage(imgs[i])
+				.setImage(swapchainImages[i])
 				.setViewType(vk::ImageViewType::e2D)
 				.setFormat(display.format.format)
 				.setComponents({ vk::ComponentSwizzle::eIdentity, vk::ComponentSwizzle::eIdentity, vk::ComponentSwizzle::eIdentity, vk::ComponentSwizzle::eIdentity })
@@ -180,15 +192,15 @@ namespace core {
 					.setBaseArrayLayer(0)
 					.setLayerCount(1)
 				);
-			imgvs.push_back(gpu.createImageView(info));
+			swapchainImageViews.push_back(device.createImageView(info));
 		}
 	}
 
 	void Prototype::configureGraphicsPipeline() {
-		vk::Device gpu = deviceMap["graphic"][0];
 		//TODO: make this configurable
-		vk::ShaderModule vert = shader::createShaderModule(gpu, "shader/shader.vert.spv");
-		vk::ShaderModule frag = shader::createShaderModule(gpu, "shader/shader.frag.spv");
+		//TODO: refactor this shit within 2 commit
+		vk::ShaderModule vert = shader::createShaderModule(device, "shader/shader.vert.spv");
+		vk::ShaderModule frag = shader::createShaderModule(device, "shader/shader.frag.spv");
 
 		vk::PipelineShaderStageCreateInfo vstage = shader::createShaderStage(vert, vk::ShaderStageFlagBits::eVertex);
 		vk::PipelineShaderStageCreateInfo fstage = shader::createShaderStage(frag, vk::ShaderStageFlagBits::eFragment);
@@ -196,8 +208,8 @@ namespace core {
 		pipeline::GraphicsPipelineEnclosure pipeline;
 		//temporarily null
 
-		gpu.destroyShaderModule(vert);
-		gpu.destroyShaderModule(frag);
+		device.destroyShaderModule(vert);
+		device.destroyShaderModule(frag);
 	}
 
 	void Prototype::render() {
@@ -205,14 +217,13 @@ namespace core {
 	}
 
 	void Prototype::cleanup() {
-		vk::Device gpu = deviceMap["graphic"][0];
 
-		for (auto imageView : swapchainImageViews[0]) {
-			gpu.destroyImageView(imageView);
+		for (auto imageView : swapchainImageViews) {
+			device.destroyImageView(imageView);
 		}
-		gpu.destroySwapchainKHR(swapchains[0]);
-		gpu.destroy();
-		instance.destroySurfaceKHR(surfaces[0]);
+		device.destroySwapchainKHR(swapchain);
+		device.destroy();
+		instance.destroySurfaceKHR(surface);
 #if defined(_DEBUG)
 		instance.destroyDebugUtilsMessengerEXT(debugMessenger, nullptr, dldi);
 #endif

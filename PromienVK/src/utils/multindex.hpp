@@ -95,9 +95,9 @@ namespace util {
 			}
 			iNode(iNode* parent, iNode* src) :key(src->key), value(src->value), height(src->height), p(parent) {
 				if (src->l) 
-					l = new iNode(src->l);
+					l = new iNode(this, src->l);
 				if (src->r)
-					r = new iNode(src->r);
+					r = new iNode(this, src->r);
 			}
 			iNode* find(const K& key) {
 				if (key < this->key) {
@@ -352,14 +352,14 @@ namespace util {
 	public:
 		multIndex() :root(nullptr) {
 		}
-		multIndex(multIndex& src) {
-			root = new iNode(nullptr, src->root);
+		multIndex(const multIndex& src) {
+			root = new iNode(nullptr, src.root);
 		}
 		multIndex(multIndex&& src) {
 			root = src->root;
 			src->root = nullptr;
 		}
-		multIndex& operator=(multIndex& src) {
+		multIndex& operator=(const multIndex& src) {
 			delete root;
 			root = new iNode(nullptr, src->root);
 		}
@@ -445,7 +445,6 @@ namespace util {
 	};
 
 }
-
 
 
 #endif

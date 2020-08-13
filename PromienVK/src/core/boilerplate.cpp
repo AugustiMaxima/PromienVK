@@ -20,7 +20,7 @@ namespace core {
 				.setMaxDepth(1));
 			vp.scissors.push_back(vk::Rect2D()
 				.setOffset({ 0, 0 })
-				.setExtent(vk::Extent2D{ width, height }));
+				.setExtent(vk::Extent2D{ (uint32_t)width, (uint32_t)height }));
 			return vp;
 		}
 
