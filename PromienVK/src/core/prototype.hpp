@@ -6,6 +6,7 @@
 #include "../infr/InfraVk.hpp"
 #include "../infr/Conf.hpp"
 #include "../infr/type.hpp"
+#include "settings.hpp"
 
 namespace core {
 	class Prototype : public infr::InfraVK {
@@ -27,6 +28,8 @@ namespace core {
 		vk::DispatchLoaderDynamic dldd;
 		std::map<infr::QueueFunction, std::vector<vk::Queue>> queueMap;
 		vk::SwapchainKHR swapchain;
+		settings::DisplaySettings display;
+		vk::Extent2D resolution;
 		std::vector<vk::Image> swapchainImages;
 		std::vector<vk::ImageView> swapchainImageViews;
 
@@ -36,6 +39,7 @@ namespace core {
 		virtual void createLogicalDevices();
 		virtual void configureSwapChain();
 		virtual void configureImageView();
+		virtual void configureRenderPass();
 		virtual void configureGraphicsPipeline();
 		virtual void render();
 		virtual void cleanup();

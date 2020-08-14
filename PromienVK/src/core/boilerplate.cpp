@@ -9,18 +9,18 @@ namespace core {
 				.setPrimitiveRestartEnable(primtiveRestart);
 		}
 
-		ViewportStateEnclosure configureViewport(int width, int height) {
+		ViewportStateEnclosure configureViewport(Extent2D extent) {
 			ViewportStateEnclosure vp;
 			vp.viewports.push_back(Viewport()
 				.setX(0)
 				.setY(0)
-				.setHeight(height)
-				.setWidth(width)
+				.setWidth(extent.width)
+				.setHeight(extent.height)
 				.setMinDepth(0)
 				.setMaxDepth(1));
 			vp.scissors.push_back(vk::Rect2D()
 				.setOffset({ 0, 0 })
-				.setExtent(vk::Extent2D{ (uint32_t)width, (uint32_t)height }));
+				.setExtent(extent));
 			return vp;
 		}
 
@@ -80,5 +80,17 @@ namespace core {
 			return ue;
 		}
 
+		GraphicsPipelineEnclosure configureGraphicsPipeline(PrimitiveTopology topology, bool primitiveRestart, Extent2D extent) {
+			GraphicsPipelineEnclosure gp;
+			gp.input = configureInputAssembly(topology, primitiveRestart);
+			gp.viewports = configureViewport(extent);
+			gp.rasterizer = configureRasterizer();
+			gp.multisampling = configureMultisampling();
+			gp.stencil = configureDepth();
+			gp.colorBlending = configureColorBlendingEnclosure();
+			gp.dynamicState = configureDynamicState();
+			gp.uniform = configurePipelineLayout();
+			return gp;
+		}
 	}
 }

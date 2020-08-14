@@ -3,9 +3,9 @@
 #include "devicePick.hpp"
 #include "../utils/multindex.hpp"
 #include "swapchain.hpp"
-#include "settings.hpp"
 #include "shader.hpp"
 #include "pipeline.hpp"
+#include "boilerplate.hpp"
 #include "renderpass.hpp"
 #include "prototype.hpp"
 
@@ -140,7 +140,7 @@ namespace core {
 	}
 
 	void Prototype::configureSwapChain() {
-		settings::DisplaySettings display = settings::processDisplaySettings(configs["Display"]);
+		display = settings::processDisplaySettings(configs["Display"]);
 		display.format = spc::selectSurfaceFormat(grgpu, surface, display.format);
 		display.present = spc::selectPresentMode(grgpu, surface, display.present);
 		display.resolution = spc::chooseSwapExtent(grgpu, surface, display.resolution);
@@ -196,20 +196,22 @@ namespace core {
 		}
 	}
 
+	void Prototype::configureRenderPass() {
+
+	}
+
 	void Prototype::configureGraphicsPipeline() {
-		//TODO: make this configurable
-		//TODO: refactor this shit within 2 commit
-		vk::ShaderModule vert = shader::createShaderModule(device, "shader/shader.vert.spv");
-		vk::ShaderModule frag = shader::createShaderModule(device, "shader/shader.frag.spv");
+		pipeline::GraphicsPipelineEnclosure pip = pipeline::configureGraphicsPipeline(vk::PrimitiveTopology::eTriangleList, false, display.resolution);
+		pip.shaders.entryName = {"main","main"};
+		pip.shaders.srcs = { "shader/shader.vert.spv", "shader/shader.frag.spv" };
+		pip.shaders.stages = { vk::ShaderStageFlagBits::eVertex , vk::ShaderStageFlagBits::eFragment };
+		
+		//render pass stuff here
 
-		vk::PipelineShaderStageCreateInfo vstage = shader::createShaderStage(vert, vk::ShaderStageFlagBits::eVertex);
-		vk::PipelineShaderStageCreateInfo fstage = shader::createShaderStage(frag, vk::ShaderStageFlagBits::eFragment);
 
-		pipeline::GraphicsPipelineEnclosure pipeline;
-		//temporarily null
-
-		device.destroyShaderModule(vert);
-		device.destroyShaderModule(frag);
+		for (auto& shader : pip.shaders.shaders) {
+			device.destroy(shader);
+		}
 	}
 
 	void Prototype::render() {
