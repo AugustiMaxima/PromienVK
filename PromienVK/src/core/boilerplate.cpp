@@ -3,6 +3,19 @@
 namespace core {
 	namespace pipeline {
 		using namespace vk;
+
+		AttachmentDescription configureColorAttachment(Format format) {
+			return AttachmentDescription()
+				.setFormat(format)
+				.setSamples(SampleCountFlagBits::e1)
+				.setLoadOp(AttachmentLoadOp::eClear)
+				.setStoreOp(AttachmentStoreOp::eStore)
+				.setStencilLoadOp(AttachmentLoadOp::eDontCare)
+				.setStencilStoreOp(AttachmentStoreOp::eDontCare)
+				.setInitialLayout(ImageLayout::eUndefined)
+				.setFinalLayout(ImageLayout::ePresentSrcKHR);
+		}
+
 		PipelineInputAssemblyStateCreateInfo configureInputAssembly(PrimitiveTopology topology, bool primtiveRestart) {
 			return PipelineInputAssemblyStateCreateInfo()
 				.setTopology(topology)
@@ -18,7 +31,7 @@ namespace core {
 				.setHeight(extent.height)
 				.setMinDepth(0)
 				.setMaxDepth(1));
-			vp.scissors.push_back(vk::Rect2D()
+			vp.scissors.push_back(Rect2D()
 				.setOffset({ 0, 0 })
 				.setExtent(extent));
 			return vp;
