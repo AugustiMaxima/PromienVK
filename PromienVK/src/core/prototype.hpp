@@ -33,6 +33,10 @@ namespace core {
 		std::vector<vk::Image> swapchainImages;
 		std::vector<vk::ImageView> swapchainImageViews;
 
+		vk::RenderPass renderPass;
+		vk::PipelineLayout pipelineLayout;
+		vk::Pipeline pipeline;
+
 		virtual void createInstance();
 		virtual void createSurface();
 		virtual void allocatePhysicalDevices();

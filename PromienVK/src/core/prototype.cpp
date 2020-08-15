@@ -197,7 +197,16 @@ namespace core {
 	}
 
 	void Prototype::configureRenderPass() {
+		pipeline::RenderPassEnclosure rend;
+		rend.attachments.push_back(pipeline::configureColorAttachment(display.format.format));
+		rend.subpassInf.resize(1);
+		rend.subpassInf[0].color.push_back(vk::AttachmentReference()
+			.setAttachment(0)
+			.setLayout(vk::ImageLayout::eColorAttachmentOptimal)
+		);
+		//configure subpass dependencies
 
+		renderPass = rend.construct(device);
 	}
 
 	void Prototype::configureGraphicsPipeline() {
@@ -206,8 +215,8 @@ namespace core {
 		pip.shaders.srcs = { "shader/shader.vert.spv", "shader/shader.frag.spv" };
 		pip.shaders.stages = { vk::ShaderStageFlagBits::eVertex , vk::ShaderStageFlagBits::eFragment };
 		
-		//render pass stuff here
-
+		pipeline = pip.construct(device, renderPass, 0, nullptr, -1, nullptr);
+		pipelineLayout = pip.uniform.layout;
 
 		for (auto& shader : pip.shaders.shaders) {
 			device.destroy(shader);
