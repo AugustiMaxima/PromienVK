@@ -6,6 +6,7 @@
 
 namespace core {
 	namespace pipeline {
+		vk::AttachmentDescription configureColorAttachment(vk::Format format);
 		//sensible defaults
 		vk::PipelineInputAssemblyStateCreateInfo configureInputAssembly(vk::PrimitiveTopology topology, bool primitiveRestart);
 		ViewportStateEnclosure configureViewport(vk::Extent2D extent);

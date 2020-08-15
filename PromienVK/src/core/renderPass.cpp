@@ -2,7 +2,26 @@
 
 namespace core {
 	namespace pipeline {
+
+		vk::SubpassDescription& SubpassEnclosure::assemble() {
+			subpass = subpass
+				.setInputAttachmentCount(input.size())
+				.setPInputAttachments(input.data())
+				.setColorAttachmentCount(color.size())
+				.setPColorAttachments(color.data())
+				.setPResolveAttachments(resolve.size() ? resolve.data() : nullptr)
+				.setPDepthStencilAttachment(&stencil)
+				.setPreserveAttachmentCount(preserve.size())
+				.setPPreserveAttachments(preserve.data());
+			return subpass;
+		}
+
 		vk::RenderPassCreateInfo& RenderPassEnclosure::assemble() {
+			if (subpasses.size())
+				return info;
+			for (auto& sbs : subpassInf) {
+				subpasses.push_back(sbs.assemble());
+			}
 			info = info
 				.setAttachmentCount(attachments.size())
 				.setPAttachments(attachments.data())
