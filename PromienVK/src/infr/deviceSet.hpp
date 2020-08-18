@@ -15,6 +15,10 @@ namespace infr {
 
 		void registerDeviceSet(std::map<DeviceFunction, std::vector<vk::PhysicalDevice>>& pDeviceMap, vk::PhysicalDevice device);
 		void rankDeviceEligibility(std::map<DeviceFunction, std::vector<vk::PhysicalDevice>>& pDeviceMap);
+	
+		bool isGraphicQueue(vk::QueueFamilyProperties prop);
+		bool isAsyncCompute(vk::QueueFamilyProperties prop);
+		bool isTransferQueue(vk::QueueFamilyProperties prop);
 	}
 }
 

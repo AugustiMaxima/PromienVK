@@ -37,6 +37,10 @@ namespace core {
 		vk::PipelineLayout pipelineLayout;
 		vk::Pipeline pipeline;
 
+		std::vector<vk::Framebuffer> framebuffers;
+
+		vk::CommandPool commandPool;
+
 		virtual void createInstance();
 		virtual void createSurface();
 		virtual void allocatePhysicalDevices();
@@ -45,6 +49,10 @@ namespace core {
 		virtual void configureImageView();
 		virtual void configureRenderPass();
 		virtual void configureGraphicsPipeline();
+		virtual void configureFramebuffers();
+		virtual void configureCommandPool();
+		virtual void configureCommandBuffers();
+		virtual void configureSemaphores();
 		virtual void render();
 		virtual void cleanup();
 

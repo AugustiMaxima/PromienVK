@@ -13,6 +13,10 @@ namespace infr {
 		configureImageView();
 		configureRenderPass();
 		configureGraphicsPipeline();
+		configureFramebuffer();
+		configureCommandPool();
+		configureCommandBuffers();
+		configureSemaphores();
 		render();
 		cleanup();
 	}

@@ -16,6 +16,13 @@ namespace infr {
 		//pipeline
 		virtual void configureRenderPass() = 0;
 		virtual void configureGraphicsPipeline() = 0;
+		//draw
+		virtual void configureFramebuffer() = 0;
+		//command
+		virtual void configureCommandPool() = 0;
+		virtual void configureCommandBuffers() = 0;
+		//synchronization
+		virtual void configureSemaphores() = 0;
 		//iterations
 		virtual void render() = 0;
 		//cleanup

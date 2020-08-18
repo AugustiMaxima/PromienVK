@@ -1,5 +1,6 @@
 #define GLFW_INCLUDE_VULKAN
 #include "../dbg/vLog.hpp"
+#include "../infr/deviceSet.hpp"
 #include "devicePick.hpp"
 #include "../utils/multindex.hpp"
 #include "swapchain.hpp"
@@ -127,8 +128,12 @@ namespace core {
 #if defined(_DEBUG)
 		//Fill in layer data for legacy vk implementations
 #endif
+		std::map<infr::QueueFunction, std::function<bool(vk::QueueFamilyProperties)>> queuery;
+		queuery[infr::QueueFunction::graphic] = infr::dvs::isGraphicQueue;
+		queuery[infr::QueueFunction::compute] = infr::dvs::isAsyncCompute;
+		queuery[infr::QueueFunction::transfer] = infr::dvs::isTransferQueue;
 
-		device = dps::allocateDeviceQueue(grgpu, graphic);
+		device = dps::allocateDeviceQueue(grgpu, graphic, queuery);
 
 		dldd.init(device);
 
@@ -223,13 +228,37 @@ namespace core {
 		}
 	}
 
+	void Prototype::configureFramebuffers() {
+		framebuffers.resize(swapchainImages.size());
+		for (int i = 0; i < swapchainImages.size(); i++) {
+			vk::ImageView attachments[] = { swapchainImageViews[i] };
+			vk::FramebufferCreateInfo info = vk::FramebufferCreateInfo()
+				.setRenderPass(renderPass)
+				.setAttachmentCount(1)
+				.setPAttachments(attachments)
+				.setWidth(display.resolution.width)
+				.setHeight(display.resolution.height)
+				.setLayers(1);
+			framebuffers[i] = device.createFramebuffer(info);
+		}
+	}
+	void configureCommandPool() {
+
+	}
+	void configureCommandBuffers();
+	void configureSemaphores();
+
 	void Prototype::render() {
 
 	}
 
 	void Prototype::cleanup() {
 
-		for (auto imageView : swapchainImageViews) {
+
+		for (auto& fb : framebuffers) {
+			device.destroyFramebuffer(fb);
+		}
+		for (auto& imageView : swapchainImageViews) {
 			device.destroyImageView(imageView);
 		}
 		device.destroySwapchainKHR(swapchain);

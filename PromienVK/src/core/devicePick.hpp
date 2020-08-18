@@ -41,13 +41,16 @@ namespace core {
 		void pickDevices(std::map<infr::DeviceFunction, std::vector<vk::PhysicalDevice>>& pdeviceMap, vk::SurfaceKHR surface,
 			std::map<infr::DeviceFunction, std::vector<vk::Device>>& deviceMap, std::map<infr::DeviceFunction, vk::DeviceCreateInfo>& templ,
 			std::function<std::map<infr::DeviceFunction, std::vector<bool>>(std::map<infr::DeviceFunction, std::vector<int>>&)> selector = naiveSelection);
-	
-		vk::Device allocateDeviceQueue(vk::PhysicalDevice physicalDevice, vk::DeviceCreateInfo templat);
+		
+		vk::Device allocateDeviceQueue(vk::PhysicalDevice physicalDevice, vk::DeviceCreateInfo templat,
+			std::map<infr::QueueFunction, std::function<bool(vk::QueueFamilyProperties)>>& query);
 		
 		void retrieveQueues(std::vector<vk::Device>& devices, std::vector<vk::PhysicalDevice>& deviceRef,
+			std::map<infr::QueueFunction, std::function<bool(vk::QueueFamilyProperties)>>& query,
 			std::map<vk::Device, std::map<infr::QueueFunction, util::multIndex<float, vk::Queue>>>& queueMap);
 
-		std::map<infr::QueueFunction, util::multIndex<float, vk::Queue>> collectDeviceQueue(vk::Device device, vk::PhysicalDevice deviceRef);
+		std::map<infr::QueueFunction, util::multIndex<float, vk::Queue>> collectDeviceQueue(vk::Device device, vk::PhysicalDevice deviceRef, std::map<infr::QueueFunction, 
+			std::function<bool(vk::QueueFamilyProperties)>>& query);
 	}
 }
 

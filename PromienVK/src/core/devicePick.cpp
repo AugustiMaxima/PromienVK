@@ -158,17 +158,32 @@ namespace core {
 			pDeviceMap = npDeviceMap;
 		}
 
-		Device allocateDeviceQueue(PhysicalDevice physicalDevice, DeviceCreateInfo templat) {
+		Device allocateDeviceQueue(PhysicalDevice physicalDevice, DeviceCreateInfo templat,
+			map<infr::QueueFunction, function<bool(QueueFamilyProperties)>>& query) {
+			vector<DeviceQueueCreateInfo> queueInfos;
+			vector<vector<float>> priorities;
+			map<infr::QueueFunction, bool> fill;
 			vector<QueueFamilyProperties> queueFamilies = physicalDevice.getQueueFamilyProperties();
-			vector<DeviceQueueCreateInfo> queueInfos = vector<DeviceQueueCreateInfo>(queueFamilies.size());
-			vector<vector<float>> priorities = vector<vector<float>>(queueFamilies.size());
+			
+			for (const auto& entry : query) {
+				fill[entry.first] = false;
+			}
+			
 			for (int i = 0; i < queueFamilies.size(); i++) {
-				queueInfos[i].queueFamilyIndex = i;
-				queueInfos[i].queueCount = queueFamilies[i].queueCount;
-				priorities[i].resize(queueFamilies[i].queueCount);
-				for (int j = 0; j < queueFamilies[i].queueCount; j++)
-					priorities[i][j] = 1.0f;
-				queueInfos[i].pQueuePriorities = priorities[i].data();
+				for (const auto& entry : query) {
+					if (!fill[entry.first] && entry.second(queueFamilies[i])) {
+						vector<float> pri(queueFamilies[i].queueCount);
+						for (auto& fp : pri)
+							fp = 1.0f;
+						priorities.push_back(pri);
+						queueInfos.push_back(DeviceQueueCreateInfo()
+							.setQueueFamilyIndex(i)
+							.setQueueCount(queueFamilies[i].queueCount)
+							.setPQueuePriorities(priorities[priorities.size() - 1].data()));
+						fill[entry.first] = true;
+						break;
+					}
+				}
 			}
 			templat.pQueueCreateInfos = queueInfos.data();
 			templat.queueCreateInfoCount = queueInfos.size();
@@ -176,32 +191,31 @@ namespace core {
 		}
 
 		void retrieveQueues(vector<Device>& devices, vector<PhysicalDevice>& deviceRef,
+			map<infr::QueueFunction, function<bool(QueueFamilyProperties)>>& query,
 			map<Device, map<infr::QueueFunction, util::multIndex<float, Queue>>>& queueMap) {
 			for (int i = 0; i < devices.size(); i++) {
-				queueMap[devices[i]] = collectDeviceQueue(devices[i], deviceRef[i]);
+				queueMap[devices[i]] = collectDeviceQueue(devices[i], deviceRef[i], query);
 			}
 		}
 
-		map<infr::QueueFunction, util::multIndex<float, Queue>> collectDeviceQueue(Device device, PhysicalDevice deviceRef) {
+		map<infr::QueueFunction, util::multIndex<float, Queue>> collectDeviceQueue(Device device, PhysicalDevice deviceRef,
+			map<infr::QueueFunction, function<bool(QueueFamilyProperties)>>& query) {
 			map<infr::QueueFunction, util::multIndex<float, Queue>> qMap;
+			map<infr::QueueFunction, bool> fill;
 			vector<QueueFamilyProperties> qs = deviceRef.getQueueFamilyProperties();
+
+			for (const auto& entry : query) {
+				fill[entry.first] = false;
+			}
+
 			for (int i = 0; i < qs.size(); i++) {
-				//pattern matching
-				infr::QueueFunction key;
-				if (qs[i].queueFlags & QueueFlagBits::eGraphics) {
-					//graphics (general) queue
-					key = infr::QueueFunction::graphic;
+				for (const auto& entry : query) {
+					if (!fill[entry.first] && entry.second(qs[i])) {
+						for (int j = 0; j < qs[i].queueCount; j++)
+						qMap[entry.first].insert(1.0f, device.getQueue(i, j));
+						break;
+					}
 				}
-				else if (qs[i].queueFlags & QueueFlagBits::eCompute) {
-					//async compute queue
-					key = infr::QueueFunction::compute;
-				}
-				else if (qs[i].queueFlags & QueueFlagBits::eTransfer) {
-					//transfer/copy queue
-					key = infr::QueueFunction::transfer;
-				}
-				for (int j = 0; j < qs[i].queueCount; j++)
-					qMap[key].insert(1.0f, device.getQueue(i, j));
 			}
 			return qMap;
 		}
