@@ -137,7 +137,7 @@ namespace core {
 
 		dldd.init(device);
 
-		std::map<infr::QueueFunction, util::multIndex<float, vk::Queue>> indexedMap = dps::collectDeviceQueue(device, grgpu);
+		std::map<infr::QueueFunction, util::multIndex<float, vk::Queue>> indexedMap = dps::collectDeviceQueue(device, grgpu, queuery);
 		for (const auto& index : indexedMap) {
 			util::multIndex queues = index.second;
 			queueMap[index.first] = queues.query(1.0f, 1.0f);
@@ -242,11 +242,22 @@ namespace core {
 			framebuffers[i] = device.createFramebuffer(info);
 		}
 	}
-	void configureCommandPool() {
-
+	void Prototype::configureCommandPool() {
+		std::map<infr::QueueFunction, std::function<bool(vk::QueueFamilyProperties)>> queuery;
+		queuery[infr::QueueFunction::graphic] = infr::dvs::isGraphicQueue;
+		queuery[infr::QueueFunction::compute] = infr::dvs::isAsyncCompute;
+		queuery[infr::QueueFunction::transfer] = infr::dvs::isTransferQueue;
+		std::map<infr::QueueFunction, int> result = dps::collectDeviceQueueIndex(grgpu, queuery);
+	
+		//when we deal with threads, we should allocate pools per thread
+		for (const auto& q : result) {
+			vk::CommandPoolCreateInfo templat = vk::CommandPoolCreateInfo()
+				.setQueueFamilyIndex(q.second);
+			for (int i = 0; i < swapchainImages.size(); i++) {
+				commandPools[q.first].push_back(device.createCommandPool(templat));
+			}
+		}
 	}
-	void configureCommandBuffers();
-	void configureSemaphores();
 
 	void Prototype::render() {
 
@@ -255,6 +266,11 @@ namespace core {
 	void Prototype::cleanup() {
 
 
+		for (auto& cps : commandPools) {
+			for (auto& cp : cps.second) {
+				device.destroyCommandPool(cp);
+			}
+		}
 		for (auto& fb : framebuffers) {
 			device.destroyFramebuffer(fb);
 		}

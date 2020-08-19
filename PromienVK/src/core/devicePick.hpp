@@ -49,8 +49,11 @@ namespace core {
 			std::map<infr::QueueFunction, std::function<bool(vk::QueueFamilyProperties)>>& query,
 			std::map<vk::Device, std::map<infr::QueueFunction, util::multIndex<float, vk::Queue>>>& queueMap);
 
-		std::map<infr::QueueFunction, util::multIndex<float, vk::Queue>> collectDeviceQueue(vk::Device device, vk::PhysicalDevice deviceRef, std::map<infr::QueueFunction, 
-			std::function<bool(vk::QueueFamilyProperties)>>& query);
+		std::map<infr::QueueFunction, util::multIndex<float, vk::Queue>> collectDeviceQueue(vk::Device device, vk::PhysicalDevice deviceRef, 
+			std::map<infr::QueueFunction, std::function<bool(vk::QueueFamilyProperties)>>& query);
+	
+		std::map<infr::QueueFunction, int> collectDeviceQueueIndex(vk::PhysicalDevice device,
+			std::map<infr::QueueFunction, std::function<bool(vk::QueueFamilyProperties)>>& query);
 	}
 }
 

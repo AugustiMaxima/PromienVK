@@ -212,12 +212,30 @@ namespace core {
 				for (const auto& entry : query) {
 					if (!fill[entry.first] && entry.second(qs[i])) {
 						for (int j = 0; j < qs[i].queueCount; j++)
-						qMap[entry.first].insert(1.0f, device.getQueue(i, j));
+							qMap[entry.first].insert(1.0f, device.getQueue(i, j));
 						break;
 					}
 				}
 			}
 			return qMap;
+		}
+
+		map<infr::QueueFunction, int> collectDeviceQueueIndex(PhysicalDevice device,
+			map<infr::QueueFunction, function<bool(QueueFamilyProperties)>>& query) {
+			map<infr::QueueFunction, int> index;
+			for (const auto& entry : query) {
+				index[entry.first] = -1;
+			}
+			auto qs = device.getQueueFamilyProperties();
+			for (int i = 0; i < qs.size(); i++) {
+				for (const auto& entry : query) {
+					if (index[entry.first] == -1 && entry.second(qs[i])) {
+						index[entry.first] = i;
+						break;
+					}
+				}
+			}
+			return index;
 		}
 	}
 }
