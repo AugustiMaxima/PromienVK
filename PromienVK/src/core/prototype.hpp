@@ -39,7 +39,8 @@ namespace core {
 
 		std::vector<vk::Framebuffer> framebuffers;
 
-		std::map<infr::QueueFunction, std::vector<vk::CommandPool>> commandPools;
+		std::vector<vk::CommandPool> commandPools;
+		std::vector<vk::CommandBuffer> buffers;
 
 		virtual void createInstance();
 		virtual void createSurface();

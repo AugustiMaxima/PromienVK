@@ -40,6 +40,7 @@ namespace core {
 
 		void pickDevices(std::map<infr::DeviceFunction, std::vector<vk::PhysicalDevice>>& pdeviceMap, vk::SurfaceKHR surface,
 			std::map<infr::DeviceFunction, std::vector<vk::Device>>& deviceMap, std::map<infr::DeviceFunction, vk::DeviceCreateInfo>& templ,
+			std::map<infr::QueueFunction, std::function<bool(vk::QueueFamilyProperties)>>& query,
 			std::function<std::map<infr::DeviceFunction, std::vector<bool>>(std::map<infr::DeviceFunction, std::vector<int>>&)> selector = naiveSelection);
 		
 		vk::Device allocateDeviceQueue(vk::PhysicalDevice physicalDevice, vk::DeviceCreateInfo templat,

@@ -242,35 +242,32 @@ namespace core {
 			framebuffers[i] = device.createFramebuffer(info);
 		}
 	}
+	
 	void Prototype::configureCommandPool() {
 		std::map<infr::QueueFunction, std::function<bool(vk::QueueFamilyProperties)>> queuery;
 		queuery[infr::QueueFunction::graphic] = infr::dvs::isGraphicQueue;
-		queuery[infr::QueueFunction::compute] = infr::dvs::isAsyncCompute;
-		queuery[infr::QueueFunction::transfer] = infr::dvs::isTransferQueue;
 		std::map<infr::QueueFunction, int> result = dps::collectDeviceQueueIndex(grgpu, queuery);
 	
-		//when we deal with threads, we should allocate pools per thread
-		for (const auto& q : result) {
-			vk::CommandPoolCreateInfo templat = vk::CommandPoolCreateInfo()
-				.setQueueFamilyIndex(q.second);
-			for (int i = 0; i < swapchainImages.size(); i++) {
-				commandPools[q.first].push_back(device.createCommandPool(templat));
-			}
+		auto info = vk::CommandPoolCreateInfo()
+			.setQueueFamilyIndex(result[infr::QueueFunction::graphic]);
+		
+		for (int i = 0; i < swapchainImages.size(); i++) {
+			commandPools.push_back(device.createCommandPool(info));
+			vk::CommandBufferAllocateInfo info = vk::CommandBufferAllocateInfo()
+				.setCommandBufferCount(1)
+				.setCommandPool(commandPools[i])
+				.setLevel(vk::CommandBufferLevel::ePrimary);
+			buffers.push_back(device.allocateCommandBuffers(info)[0]);
 		}
 	}
 
 	void Prototype::render() {
-
 	}
 
 	void Prototype::cleanup() {
 
 
-		for (auto& cps : commandPools) {
-			for (auto& cp : cps.second) {
-				device.destroyCommandPool(cp);
-			}
-		}
+
 		for (auto& fb : framebuffers) {
 			device.destroyFramebuffer(fb);
 		}

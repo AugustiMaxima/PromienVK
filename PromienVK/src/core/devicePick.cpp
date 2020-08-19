@@ -117,6 +117,7 @@ namespace core {
 
 		void pickDevices(map<infr::DeviceFunction, vector<PhysicalDevice>>& pDeviceMap, SurfaceKHR surface,
 			map<infr::DeviceFunction, vector<Device>>& deviceMap, map<infr::DeviceFunction, DeviceCreateInfo>& templ,
+			map<infr::QueueFunction, function<bool(QueueFamilyProperties)>>& query,
 			function<map<infr::DeviceFunction, vector<bool>>(map<infr::DeviceFunction, vector<int>>&)> selector) {
 			auto queryMap = physicalDeviceIndexing(pDeviceMap);
 			auto& dlst = pDeviceMap[infr::DeviceFunction::all];
@@ -142,14 +143,14 @@ namespace core {
 			//Option 2 it is
 			map<infr::DeviceFunction, vector<PhysicalDevice>> npDeviceMap;
 			for (auto& id : selected[infr::DeviceFunction::graphic]) {
-				Device dvc = allocateDeviceQueue(dlst[id], templ[infr::DeviceFunction::graphic]);
+				Device dvc = allocateDeviceQueue(dlst[id], templ[infr::DeviceFunction::graphic], query);
 				deviceMap[infr::DeviceFunction::all].push_back(dvc);
 				npDeviceMap[infr::DeviceFunction::all].push_back(dlst[id]);
 				deviceMap[infr::DeviceFunction::graphic].push_back(dvc);
 				npDeviceMap[infr::DeviceFunction::graphic].push_back(dlst[id]);
 			}
 			for (auto& id : selected[infr::DeviceFunction::compute]) {
-				Device dvc = allocateDeviceQueue(dlst[id], templ[infr::DeviceFunction::compute]);
+				Device dvc = allocateDeviceQueue(dlst[id], templ[infr::DeviceFunction::compute], query);
 				deviceMap[infr::DeviceFunction::all].push_back(dvc);
 				npDeviceMap[infr::DeviceFunction::all].push_back(dlst[id]);
 				deviceMap[infr::DeviceFunction::compute].push_back(dvc);

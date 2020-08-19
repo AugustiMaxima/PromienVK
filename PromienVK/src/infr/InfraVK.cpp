@@ -15,8 +15,6 @@ namespace infr {
 		configureGraphicsPipeline();
 		configureFramebuffer();
 		configureCommandPool();
-		configureCommandBuffers();
-		configureSemaphores();
 		render();
 		cleanup();
 	}
