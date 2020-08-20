@@ -72,6 +72,11 @@ namespace infr {
 		dvs::rankDeviceEligibility(physicalDeviceMap);
 	}
 
+	void Base::setup() {
+		createInstance();
+		allocatePhysicalDevices();
+	}
+
 	void Base::cleanup() {
 #if defined(_DEBUG)
 		instance.destroyDebugUtilsMessengerEXT(debugMessenger, nullptr, dldi);

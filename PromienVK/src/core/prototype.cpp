@@ -209,6 +209,14 @@ namespace core {
 			.setAttachment(0)
 			.setLayout(vk::ImageLayout::eColorAttachmentOptimal)
 		);
+		rend.dependencies.push_back(vk::SubpassDependency()
+			.setSrcSubpass(VK_SUBPASS_EXTERNAL)
+			.setDstSubpass(0)
+			.setSrcStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput)
+			.setSrcAccessMask(vk::AccessFlagBits::eColorAttachmentWrite)
+			.setDstStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput)
+			.setDstAccessMask(vk::AccessFlagBits::eColorAttachmentWrite));
+
 		//configure subpass dependencies
 
 		renderPass = rend.construct(device);
@@ -261,7 +269,29 @@ namespace core {
 		}
 	}
 
+	void Prototype::setup() {
+		createInstance();
+		createSurface();
+		allocatePhysicalDevices();
+		createLogicalDevices();
+		configureSwapChain();
+		configureImageView();
+		configureRenderPass();
+		configureGraphicsPipeline();
+		configureFramebuffers();
+		configureCommandPool();
+	}
+
 	void Prototype::render() {
+		vk::Semaphore imageAcquired = device.createSemaphore(vk::SemaphoreCreateInfo());
+		vk::Semaphore renderFinished = device.createSemaphore(vk::SemaphoreCreateInfo());
+
+
+
+
+
+
+
 	}
 
 	void Prototype::cleanup() {

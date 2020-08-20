@@ -52,6 +52,7 @@ namespace core {
 		virtual void configureGraphicsPipeline();
 		virtual void configureFramebuffers();
 		virtual void configureCommandPool();
+		virtual void setup();
 		virtual void render();
 		virtual void cleanup();
 

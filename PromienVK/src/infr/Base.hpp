@@ -40,6 +40,7 @@ namespace infr {
 		//But constraints will be made
 		virtual void createInstance();
 		virtual void allocatePhysicalDevices();
+		virtual void setup();
 		virtual void cleanup();
 	public:
 		Base(std::string config);
