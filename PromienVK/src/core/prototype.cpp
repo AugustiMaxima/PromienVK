@@ -258,12 +258,12 @@ namespace core {
 		queuery[infr::QueueFunction::graphic] = infr::dvs::isGraphicQueue;
 		std::map<infr::QueueFunction, int> result = dps::collectDeviceQueueIndex(grgpu, queuery);
 	
-		auto info = vk::CommandPoolCreateInfo()
+		auto pInfo = vk::CommandPoolCreateInfo()
 			.setQueueFamilyIndex(result[infr::QueueFunction::graphic])
 			.setFlags(vk::CommandPoolCreateFlagBits::eResetCommandBuffer);
 		
 		for (int i = 0; i < swapchainImages.size(); i++) {
-			commandPools.push_back(device.createCommandPool(info));
+			commandPools.push_back(device.createCommandPool(pInfo));
 			vk::CommandBufferAllocateInfo info = vk::CommandBufferAllocateInfo()
 				.setCommandBufferCount(1)
 				.setCommandPool(commandPools[i])

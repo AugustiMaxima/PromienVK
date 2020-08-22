@@ -83,7 +83,7 @@ namespace core {
 
 		DynamicStateEnclosure configureDynamicState() {
 			DynamicStateEnclosure ds;
-			ds.states.push_back(DynamicState::eViewport);
+			//ds.states.push_back(DynamicState::eViewport);
 			return ds;
 		}
 
