@@ -62,5 +62,17 @@ namespace infr {
 			std::sort(graphicList.begin(), graphicList.end(), graphicRank);
 		}
 
+		bool isGraphicQueue(vk::QueueFamilyProperties prop) {
+			return (bool)(prop.queueFlags & vk::QueueFlagBits::eGraphics);
+		}
+
+		bool isAsyncCompute(vk::QueueFamilyProperties prop) {
+			return (prop.queueFlags & vk::QueueFlagBits::eCompute) && !(prop.queueFlags & vk::QueueFlagBits::eGraphics);
+		}
+
+		bool isTransferQueue(vk::QueueFamilyProperties prop) {
+			return (bool)(prop.queueFlags & vk::QueueFlagBits::eTransfer);
+		}
+
 	}
 }

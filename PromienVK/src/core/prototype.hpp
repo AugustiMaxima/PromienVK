@@ -1,12 +1,16 @@
 #ifndef PROTOTYPE
 #define PROTOTYPE
 
+#define VULKAN_HPP_DISPATCH_LOADER_DYNAMIC 1
 #include <vulkan/vulkan.hpp>
 #include <GLFW/glfw3.h>
 #include "../infr/InfraVk.hpp"
 #include "../infr/Conf.hpp"
 #include "../infr/type.hpp"
+#include "../utils/semaphore.hpp"
 #include "settings.hpp"
+
+VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE
 
 namespace core {
 	class Prototype : public infr::InfraVK {
@@ -29,13 +33,26 @@ namespace core {
 		std::map<infr::QueueFunction, std::vector<vk::Queue>> queueMap;
 		vk::SwapchainKHR swapchain;
 		settings::DisplaySettings display;
-		vk::Extent2D resolution;
 		std::vector<vk::Image> swapchainImages;
 		std::vector<vk::ImageView> swapchainImageViews;
 
 		vk::RenderPass renderPass;
 		vk::PipelineLayout pipelineLayout;
 		vk::Pipeline pipeline;
+
+		std::vector<vk::Framebuffer> framebuffers;
+
+		std::vector<vk::CommandPool> commandPools;
+		std::vector<vk::CommandBuffer> commandBuffers;
+
+		int maxFramesLatency;
+
+		std::vector<vk::Semaphore> imgAcquired;
+		std::vector<vk::Semaphore> rndrFinished;
+
+		std::vector<vk::Fence> frameFinished;
+		std::vector<vk::Fence> imageLease;
+
 
 		virtual void createInstance();
 		virtual void createSurface();
@@ -45,7 +62,12 @@ namespace core {
 		virtual void configureImageView();
 		virtual void configureRenderPass();
 		virtual void configureGraphicsPipeline();
+		virtual void configureFramebuffers();
+		virtual void configureCommandPool();
+		virtual void configureSynchronization();
+		virtual void setup();
 		virtual void render();
+		virtual void renderFrame(unsigned f);
 		virtual void cleanup();
 
 	public:

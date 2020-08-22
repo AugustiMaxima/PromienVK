@@ -83,12 +83,13 @@ namespace core {
 
 		DynamicStateEnclosure configureDynamicState() {
 			DynamicStateEnclosure ds;
-			ds.states.push_back(DynamicState::eViewport);
+			//ds.states.push_back(DynamicState::eViewport);
 			return ds;
 		}
 
 		UniformEnclosure configurePipelineLayout() {
 			UniformEnclosure ue;
+			ue.constructed = false;
 			//To be customized for each app
 			return ue;
 		}

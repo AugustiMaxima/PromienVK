@@ -10,7 +10,7 @@ namespace core {
 				.setColorAttachmentCount(color.size())
 				.setPColorAttachments(color.data())
 				.setPResolveAttachments(resolve.size() ? resolve.data() : nullptr)
-				.setPDepthStencilAttachment(&stencil)
+				.setPDepthStencilAttachment(stencil.size() ? stencil.data() : nullptr)
 				.setPreserveAttachmentCount(preserve.size())
 				.setPPreserveAttachments(preserve.data());
 			return subpass;
@@ -33,7 +33,7 @@ namespace core {
 		}
 
 		vk::RenderPass& RenderPassEnclosure::construct(vk::Device device){
-			renderPass = device.createRenderPass(info);
+			renderPass = device.createRenderPass(assemble());
 			return renderPass;
 		}
 	}

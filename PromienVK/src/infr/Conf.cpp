@@ -152,8 +152,9 @@ namespace conf {
 		int index = 0;
 		bool empty = true;
 
+		dash(file, line, index);
+
 		while (!file.eof() || index<line.length()) {
-			dash(file, line, index);
 			if (!empty && line[index++] != ',') {
 				throw exception("Missing delimiter ,");
 			}
@@ -172,6 +173,7 @@ namespace conf {
 			//deals with real entry now
 			parseConfigGeneric(scope[key], file, line, index);
 			empty = false;
+			dash(file, line, index);
 		}
 	}
 

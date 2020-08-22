@@ -1,5 +1,6 @@
 #define GLFW_INCLUDE_VULKAN
 #include "../dbg/vLog.hpp"
+#include "../infr/deviceSet.hpp"
 #include "devicePick.hpp"
 #include "../utils/multindex.hpp"
 #include "swapchain.hpp"
@@ -75,7 +76,10 @@ namespace core {
 			throw std::runtime_error("failed to create instance!");
 		}
 
-		dldi.init(instance);
+		vk::DynamicLoader dl;
+		PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr = dl.getProcAddress<PFN_vkGetInstanceProcAddr>("vkGetInstanceProcAddr");
+
+		dldi.init(instance, vkGetInstanceProcAddr);
 
 #if defined(_DEBUG)
 		debugMessenger = instance.createDebugUtilsMessengerEXT(msgInfo, nullptr, dldi);
@@ -127,14 +131,16 @@ namespace core {
 #if defined(_DEBUG)
 		//Fill in layer data for legacy vk implementations
 #endif
+		std::map<infr::QueueFunction, std::function<bool(vk::QueueFamilyProperties)>> queuery;
+		queuery[infr::QueueFunction::graphic] = infr::dvs::isGraphicQueue;
+		queuery[infr::QueueFunction::compute] = infr::dvs::isAsyncCompute;
+		queuery[infr::QueueFunction::transfer] = infr::dvs::isTransferQueue;
 
-		device = dps::allocateDeviceQueue(grgpu, graphic);
+		device = dps::allocateDeviceQueue(grgpu, graphic, queuery);
 
-		dldd.init(device);
-
-		std::map<infr::QueueFunction, util::multIndex<float, vk::Queue>> indexedMap = dps::collectDeviceQueue(device, grgpu);
+		std::map<infr::QueueFunction, util::multIndex<float, vk::Queue>> indexedMap = dps::collectDeviceQueue(device, grgpu, queuery);
 		for (const auto& index : indexedMap) {
-			util::multIndex queues = index.second;
+			util::multIndex<float, vk::Queue> queues = index.second;
 			queueMap[index.first] = queues.query(1.0f, 1.0f);
 		}
 	}
@@ -169,7 +175,8 @@ namespace core {
 			.setPreTransform(cap.currentTransform)
 			.setCompositeAlpha(vk::CompositeAlphaFlagBitsKHR::eOpaque)
 			.setPresentMode(display.present)
-			.setClipped(true);
+			.setClipped(true)
+			.setSurface(surface);
 		//TODO: old Swap Chain for resizing ops
 
 		swapchain = device.createSwapchainKHR(info);
@@ -204,6 +211,14 @@ namespace core {
 			.setAttachment(0)
 			.setLayout(vk::ImageLayout::eColorAttachmentOptimal)
 		);
+		rend.dependencies.push_back(vk::SubpassDependency()
+			.setSrcSubpass(VK_SUBPASS_EXTERNAL)
+			.setDstSubpass(0)
+			.setSrcStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput)
+			.setSrcAccessMask(vk::AccessFlagBits::eColorAttachmentWrite)
+			.setDstStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput)
+			.setDstAccessMask(vk::AccessFlagBits::eColorAttachmentWrite));
+
 		//configure subpass dependencies
 
 		renderPass = rend.construct(device);
@@ -212,9 +227,9 @@ namespace core {
 	void Prototype::configureGraphicsPipeline() {
 		pipeline::GraphicsPipelineEnclosure pip = pipeline::configureGraphicsPipeline(vk::PrimitiveTopology::eTriangleList, false, display.resolution);
 		pip.shaders.entryName = {"main","main"};
-		pip.shaders.srcs = { "shader/shader.vert.spv", "shader/shader.frag.spv" };
+		pip.shaders.srcs = { "shaders/shader.vert.spv", "shaders/shader.frag.spv" };
 		pip.shaders.stages = { vk::ShaderStageFlagBits::eVertex , vk::ShaderStageFlagBits::eFragment };
-		
+
 		pipeline = pip.construct(device, renderPass, 0, nullptr, -1, nullptr);
 		pipelineLayout = pip.uniform.layout;
 
@@ -223,13 +238,159 @@ namespace core {
 		}
 	}
 
+	void Prototype::configureFramebuffers() {
+		framebuffers.resize(swapchainImages.size());
+		for (int i = 0; i < swapchainImages.size(); i++) {
+			vk::ImageView attachments[] = { swapchainImageViews[i] };
+			vk::FramebufferCreateInfo info = vk::FramebufferCreateInfo()
+				.setRenderPass(renderPass)
+				.setAttachmentCount(1)
+				.setPAttachments(attachments)
+				.setWidth(display.resolution.width)
+				.setHeight(display.resolution.height)
+				.setLayers(1);
+			framebuffers[i] = device.createFramebuffer(info);
+		}
+	}
+	
+	void Prototype::configureCommandPool() {
+		std::map<infr::QueueFunction, std::function<bool(vk::QueueFamilyProperties)>> queuery;
+		queuery[infr::QueueFunction::graphic] = infr::dvs::isGraphicQueue;
+		std::map<infr::QueueFunction, int> result = dps::collectDeviceQueueIndex(grgpu, queuery);
+	
+		auto pInfo = vk::CommandPoolCreateInfo()
+			.setQueueFamilyIndex(result[infr::QueueFunction::graphic])
+			.setFlags(vk::CommandPoolCreateFlagBits::eResetCommandBuffer);
+		
+		for (int i = 0; i < swapchainImages.size(); i++) {
+			commandPools.push_back(device.createCommandPool(pInfo));
+			vk::CommandBufferAllocateInfo info = vk::CommandBufferAllocateInfo()
+				.setCommandBufferCount(1)
+				.setCommandPool(commandPools[i])
+				.setLevel(vk::CommandBufferLevel::ePrimary);
+			commandBuffers.push_back(device.allocateCommandBuffers(info)[0]);
+		}
+	}
+
+	void Prototype::configureSynchronization() {
+		maxFramesLatency = 3;
+		imgAcquired.resize(maxFramesLatency);
+		rndrFinished.resize(maxFramesLatency);
+		frameFinished.resize(maxFramesLatency);
+		imageLease.resize(swapchainImages.size(), nullptr);
+		for (int i = 0; i < maxFramesLatency; i++) {
+			imgAcquired[i] = device.createSemaphore(vk::SemaphoreCreateInfo());
+			rndrFinished[i] = device.createSemaphore(vk::SemaphoreCreateInfo());
+			frameFinished[i] = device.createFence(vk::FenceCreateInfo());
+		}
+	}
+
+	void Prototype::setup() {
+		createInstance();
+		createSurface();
+		allocatePhysicalDevices();
+		createLogicalDevices();
+		configureSwapChain();
+		configureImageView();
+		configureRenderPass();
+		configureGraphicsPipeline();
+		configureFramebuffers();
+		configureCommandPool();
+	}
+
 	void Prototype::render() {
+		configureSynchronization();
+		unsigned fc = 0;
+
+		while (!glfwWindowShouldClose(window)) {
+			glfwPollEvents();
+			renderFrame(fc++);
+		}
 
 	}
 
+	void Prototype::renderFrame(unsigned f) {
+		unsigned id = f % swapchainImages.size();
+		unsigned il = f % maxFramesLatency;
+		device.waitForFences(frameFinished[il], true, UINT64_MAX);
+		device.resetCommandPool(commandPools[id], vk::CommandPoolResetFlagBits::eReleaseResources);		
+
+		if (imageLease[id]) {
+			device.waitForFences(imageLease[id], true, UINT64_MAX);
+		}
+
+		//a note on this reset and the imageLease
+		//this is a plug gap solution to solve the scenario where maxFramesLatency != swapchain image size
+		//however, it is not perfect, and leads to defects (back-frame stutters) when there are more images than frames in flight
+		//when possible, we should fix frame in flight to be equivalent to swapchain images, this eliminates the need for image leases
+		//failing that, we should avoid making frame in flight lesser than swapchain images, this lead to nasty stale induced stutter
+		device.resetFences(frameFinished[il]);
+		device.acquireNextImageKHR(swapchain, UINT64_MAX, imgAcquired[il], nullptr, &id);
+
+
+		//TODO: refactor and clean up boilerplate for info settings
+		auto& cb = commandBuffers[id];
+		cb.begin(vk::CommandBufferBeginInfo());
+		std::array<float, 4> cn = { 0,0,0,1 };
+		vk::ClearValue clearColor = cn;
+		cb.beginRenderPass(vk::RenderPassBeginInfo()
+			.setClearValueCount(1)
+			.setPClearValues(&clearColor)
+			.setRenderPass(renderPass)
+			.setRenderArea(vk::Rect2D()
+			.setExtent(display.resolution)
+				.setOffset({ 0,0 }))
+			.setFramebuffer(framebuffers[id])
+			, vk::SubpassContents::eInline);
+		cb.bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline);
+		cb.draw(3, 1, 0, 0);
+		cb.endRenderPass();
+		cb.end();
+
+		auto& gqs = queueMap[infr::QueueFunction::graphic];
+		auto& gq = gqs[f % gqs.size()];
+		//this may be entirely unnecessary if not counterproductive, we may remove the load balancing if this appears perverse
+
+		vk::PipelineStageFlags wstage = vk::PipelineStageFlagBits::eColorAttachmentOutput;
+
+		auto submit = vk::SubmitInfo()
+			.setCommandBufferCount(1)
+			.setPCommandBuffers(&commandBuffers[id])
+			.setSignalSemaphoreCount(1)
+			.setPSignalSemaphores(&rndrFinished[il])
+			.setWaitSemaphoreCount(1)
+			.setPWaitSemaphores(&imgAcquired[il])
+			.setPWaitDstStageMask(&wstage);
+
+		gq.submit(submit, frameFinished[il]);
+		
+		auto present = vk::PresentInfoKHR()
+			.setSwapchainCount(1)
+			.setPSwapchains(&swapchain)
+			.setPImageIndices(&id)
+			.setWaitSemaphoreCount(1)
+			.setPWaitSemaphores(&rndrFinished[il]);
+
+		gq.presentKHR(present);
+	}
+
+
 	void Prototype::cleanup() {
 
-		for (auto imageView : swapchainImageViews) {
+		for (int i = 0; i < maxFramesLatency; i++) {
+			device.destroySemaphore(imgAcquired[i]);
+			device.destroySemaphore(rndrFinished[i]);
+			device.destroyFence(frameFinished[i]);
+		}
+
+		for (auto& cp : commandPools) {
+			device.destroyCommandPool(cp);
+		}
+
+		for (auto& fb : framebuffers) {
+			device.destroyFramebuffer(fb);
+		}
+		for (auto& imageView : swapchainImageViews) {
 			device.destroyImageView(imageView);
 		}
 		device.destroySwapchainKHR(swapchain);

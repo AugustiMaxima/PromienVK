@@ -38,8 +38,19 @@ int confTest2() {
 	return 0;
 }
 
+int confTest3() {
+	Scope scope;
+	parseConfigs(scope, "test/testFiles/test2.json");
+	Scope scope2;
+	parseConfigs(scope2, "configs/settings.json");
+
+	return 0;
+
+}
+
 int confTest() {
-	confTest1();
-	confTest2();
+	//confTest1();
+	//confTest2();
+	confTest3();
 	return 0;
 }

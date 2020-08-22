@@ -11,7 +11,8 @@ namespace core {
 			std::vector<vk::AttachmentReference> input;
 			std::vector<vk::AttachmentReference> color;
 			std::vector<vk::AttachmentReference> resolve; // multisampling
-			vk::AttachmentReference stencil;
+			bool depthEnabled;
+			std::vector<vk::AttachmentReference> stencil;
 			std::vector<uint32_t> preserve;
 			vk::SubpassDescription subpass;
 			vk::SubpassDescription& assemble();
