@@ -43,9 +43,9 @@ namespace core {
 
 		PipelineLayoutCreateInfo& UniformEnclosure::assemble() {
 			info = info
-				.setPPushConstantRanges(constants.data())
+				.setPPushConstantRanges(constants.size()? constants.data() : nullptr)
 				.setPushConstantRangeCount(constants.size())
-				.setPSetLayouts(descriptors.data())
+				.setPSetLayouts(descriptors.size()? descriptors.data() : nullptr)
 				.setSetLayoutCount(descriptors.size());
 			return info;
 		}
@@ -53,8 +53,7 @@ namespace core {
 		vk::PipelineLayout& UniformEnclosure::construct(Device device) {
 			if (constructed)
 				return layout;
-			assemble();
-			layout = device.createPipelineLayout(info);
+			layout = device.createPipelineLayout(assemble());
 			constructed = true;
 			return layout;
 		}
@@ -95,7 +94,7 @@ namespace core {
 		}
 
 		Pipeline& GraphicsPipelineEnclosure::construct(Device device, RenderPass renderpass, int subpass, Pipeline base, int baseIndex, PipelineCache cache) {
-			pipeline = device.createGraphicsPipeline(cache, info);
+			pipeline = device.createGraphicsPipeline(cache, assemble(device, renderpass, subpass, base, baseIndex));
 			return pipeline;
 		}
 	}

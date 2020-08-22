@@ -6,7 +6,7 @@ namespace core {
 		using namespace vk;
 		using namespace std;
 		ShaderModule createShaderModule(vk::Device device, const string& path) {
-			ifstream src{ path, ios::ate, ios::binary};
+			ifstream src{ path, ios::ate | ios::binary};
 			if (!src.is_open())
 				throw std::runtime_error("failed to open file!");
 			int size = src.tellg();

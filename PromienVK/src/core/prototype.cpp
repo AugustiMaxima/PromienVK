@@ -227,7 +227,7 @@ namespace core {
 	void Prototype::configureGraphicsPipeline() {
 		pipeline::GraphicsPipelineEnclosure pip = pipeline::configureGraphicsPipeline(vk::PrimitiveTopology::eTriangleList, false, display.resolution);
 		pip.shaders.entryName = {"main","main"};
-		pip.shaders.srcs = { "shader/shader.vert.spv", "shader/shader.frag.spv" };
+		pip.shaders.srcs = { "shaders/shader.vert.spv", "shaders/shader.frag.spv" };
 		pip.shaders.stages = { vk::ShaderStageFlagBits::eVertex , vk::ShaderStageFlagBits::eFragment };
 
 		pipeline = pip.construct(device, renderPass, 0, nullptr, -1, nullptr);
@@ -259,7 +259,8 @@ namespace core {
 		std::map<infr::QueueFunction, int> result = dps::collectDeviceQueueIndex(grgpu, queuery);
 	
 		auto info = vk::CommandPoolCreateInfo()
-			.setQueueFamilyIndex(result[infr::QueueFunction::graphic]);
+			.setQueueFamilyIndex(result[infr::QueueFunction::graphic])
+			.setFlags(vk::CommandPoolCreateFlagBits::eResetCommandBuffer);
 		
 		for (int i = 0; i < swapchainImages.size(); i++) {
 			commandPools.push_back(device.createCommandPool(info));

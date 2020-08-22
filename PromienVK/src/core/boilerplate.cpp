@@ -89,6 +89,7 @@ namespace core {
 
 		UniformEnclosure configurePipelineLayout() {
 			UniformEnclosure ue;
+			ue.constructed = false;
 			//To be customized for each app
 			return ue;
 		}
