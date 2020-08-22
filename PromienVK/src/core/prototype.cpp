@@ -76,7 +76,10 @@ namespace core {
 			throw std::runtime_error("failed to create instance!");
 		}
 
-		dldi.init(instance);
+		vk::DynamicLoader dl;
+		PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr = dl.getProcAddress<PFN_vkGetInstanceProcAddr>("vkGetInstanceProcAddr");
+
+		dldi.init(instance, vkGetInstanceProcAddr);
 
 #if defined(_DEBUG)
 		debugMessenger = instance.createDebugUtilsMessengerEXT(msgInfo, nullptr, dldi);
@@ -135,11 +138,9 @@ namespace core {
 
 		device = dps::allocateDeviceQueue(grgpu, graphic, queuery);
 
-		dldd.init(device);
-
 		std::map<infr::QueueFunction, util::multIndex<float, vk::Queue>> indexedMap = dps::collectDeviceQueue(device, grgpu, queuery);
 		for (const auto& index : indexedMap) {
-			util::multIndex queues = index.second;
+			util::multIndex<float, vk::Queue> queues = index.second;
 			queueMap[index.first] = queues.query(1.0f, 1.0f);
 		}
 	}
@@ -174,7 +175,8 @@ namespace core {
 			.setPreTransform(cap.currentTransform)
 			.setCompositeAlpha(vk::CompositeAlphaFlagBitsKHR::eOpaque)
 			.setPresentMode(display.present)
-			.setClipped(true);
+			.setClipped(true)
+			.setSurface(surface);
 		//TODO: old Swap Chain for resizing ops
 
 		swapchain = device.createSwapchainKHR(info);
@@ -227,7 +229,7 @@ namespace core {
 		pip.shaders.entryName = {"main","main"};
 		pip.shaders.srcs = { "shader/shader.vert.spv", "shader/shader.frag.spv" };
 		pip.shaders.stages = { vk::ShaderStageFlagBits::eVertex , vk::ShaderStageFlagBits::eFragment };
-		
+
 		pipeline = pip.construct(device, renderPass, 0, nullptr, -1, nullptr);
 		pipelineLayout = pip.uniform.layout;
 

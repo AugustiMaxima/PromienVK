@@ -1,7 +1,7 @@
 #include "test/masterTest.hpp"
 #include <stdio.h>
 #include <Windows.h>
-
+#include "src/core/prototype.hpp"
 #include <iostream>
 using namespace std;
 
@@ -17,7 +17,10 @@ int main() {
 
 #endif
 	//insert your compiler flag here
-	masterTest();
+	//masterTest();
+
+	core::Prototype pt{ "configs/settings.json" };
+	pt.run();
 
 	char a;
 	cin >> a;

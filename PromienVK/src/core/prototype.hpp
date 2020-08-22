@@ -1,6 +1,7 @@
 #ifndef PROTOTYPE
 #define PROTOTYPE
 
+#define VULKAN_HPP_DISPATCH_LOADER_DYNAMIC 1
 #include <vulkan/vulkan.hpp>
 #include <GLFW/glfw3.h>
 #include "../infr/InfraVk.hpp"
@@ -8,6 +9,8 @@
 #include "../infr/type.hpp"
 #include "../utils/semaphore.hpp"
 #include "settings.hpp"
+
+VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE
 
 namespace core {
 	class Prototype : public infr::InfraVK {
@@ -30,7 +33,6 @@ namespace core {
 		std::map<infr::QueueFunction, std::vector<vk::Queue>> queueMap;
 		vk::SwapchainKHR swapchain;
 		settings::DisplaySettings display;
-		vk::Extent2D resolution;
 		std::vector<vk::Image> swapchainImages;
 		std::vector<vk::ImageView> swapchainImageViews;
 

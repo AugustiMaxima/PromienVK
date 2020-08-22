@@ -33,7 +33,7 @@ namespace core {
 		}
 
 		vk::RenderPass& RenderPassEnclosure::construct(vk::Device device){
-			renderPass = device.createRenderPass(info);
+			renderPass = device.createRenderPass(assemble());
 			return renderPass;
 		}
 	}

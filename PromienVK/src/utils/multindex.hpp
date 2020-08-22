@@ -94,10 +94,14 @@ namespace util {
 			iNode(const K& key, V value, iNode* parent = nullptr) :key(key), value(value), p(parent), height(1), l(nullptr), r(nullptr) {
 			}
 			iNode(iNode* parent, iNode* src) :key(src->key), value(src->value), height(src->height), p(parent) {
-				if (src->l) 
+				if (src->l)
 					l = new iNode(this, src->l);
+				else
+					l = nullptr;
 				if (src->r)
 					r = new iNode(this, src->r);
+				else
+					r = nullptr;
 			}
 			iNode* find(const K& key) {
 				if (key < this->key) {
