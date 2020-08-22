@@ -265,7 +265,20 @@ namespace core {
 				.setCommandBufferCount(1)
 				.setCommandPool(commandPools[i])
 				.setLevel(vk::CommandBufferLevel::ePrimary);
-			buffers.push_back(device.allocateCommandBuffers(info)[0]);
+			commandBuffers.push_back(device.allocateCommandBuffers(info)[0]);
+		}
+	}
+
+	void Prototype::configureSynchronization() {
+		maxFramesLatency = 3;
+		imgAcquired.resize(maxFramesLatency);
+		rndrFinished.resize(maxFramesLatency);
+		frameFinished.resize(maxFramesLatency);
+		imageLease.resize(swapchainImages.size(), nullptr);
+		for (int i = 0; i < maxFramesLatency; i++) {
+			imgAcquired[i] = device.createSemaphore(vk::SemaphoreCreateInfo());
+			rndrFinished[i] = device.createSemaphore(vk::SemaphoreCreateInfo());
+			frameFinished[i] = device.createFence(vk::FenceCreateInfo());
 		}
 	}
 
@@ -283,20 +296,93 @@ namespace core {
 	}
 
 	void Prototype::render() {
-		vk::Semaphore imageAcquired = device.createSemaphore(vk::SemaphoreCreateInfo());
-		vk::Semaphore renderFinished = device.createSemaphore(vk::SemaphoreCreateInfo());
+		configureSynchronization();
+		unsigned fc = 0;
 
-
-
-
-
-
+		while (!glfwWindowShouldClose(window)) {
+			glfwPollEvents();
+			renderFrame(fc++);
+		}
 
 	}
 
+	void Prototype::renderFrame(unsigned f) {
+		unsigned id = f % swapchainImages.size();
+		unsigned il = f % maxFramesLatency;
+		device.waitForFences(frameFinished[il], true, UINT64_MAX);
+		device.resetCommandPool(commandPools[id], vk::CommandPoolResetFlagBits::eReleaseResources);		
+
+		if (imageLease[id]) {
+			device.waitForFences(imageLease[id], true, UINT64_MAX);
+		}
+
+		//a note on this reset and the imageLease
+		//this is a plug gap solution to solve the scenario where maxFramesLatency != swapchain image size
+		//however, it is not perfect, and leads to defects (back-frame stutters) when there are more images than frames in flight
+		//when possible, we should fix frame in flight to be equivalent to swapchain images, this eliminates the need for image leases
+		//failing that, we should avoid making frame in flight lesser than swapchain images, this lead to nasty stale induced stutter
+		device.resetFences(frameFinished[il]);
+		device.acquireNextImageKHR(swapchain, UINT64_MAX, imgAcquired[il], nullptr, &id);
+
+
+		//TODO: refactor and clean up boilerplate for info settings
+		auto& cb = commandBuffers[id];
+		cb.begin(vk::CommandBufferBeginInfo());
+		std::array<float, 4> cn = { 0,0,0,1 };
+		vk::ClearValue clearColor = cn;
+		cb.beginRenderPass(vk::RenderPassBeginInfo()
+			.setClearValueCount(1)
+			.setPClearValues(&clearColor)
+			.setRenderPass(renderPass)
+			.setRenderArea(vk::Rect2D()
+			.setExtent(display.resolution)
+				.setOffset({ 0,0 }))
+			.setFramebuffer(framebuffers[id])
+			, vk::SubpassContents::eInline);
+		cb.bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline);
+		cb.draw(3, 1, 0, 0);
+		cb.endRenderPass();
+		cb.end();
+
+		auto& gqs = queueMap[infr::QueueFunction::graphic];
+		auto& gq = gqs[f % gqs.size()];
+		//this may be entirely unnecessary if not counterproductive, we may remove the load balancing if this appears perverse
+
+		vk::PipelineStageFlags wstage = vk::PipelineStageFlagBits::eColorAttachmentOutput;
+
+		auto submit = vk::SubmitInfo()
+			.setCommandBufferCount(1)
+			.setPCommandBuffers(&commandBuffers[id])
+			.setSignalSemaphoreCount(1)
+			.setPSignalSemaphores(&rndrFinished[il])
+			.setWaitSemaphoreCount(1)
+			.setPWaitSemaphores(&imgAcquired[il])
+			.setPWaitDstStageMask(&wstage);
+
+		gq.submit(submit, frameFinished[il]);
+		
+		auto present = vk::PresentInfoKHR()
+			.setSwapchainCount(1)
+			.setPSwapchains(&swapchain)
+			.setPImageIndices(&id)
+			.setWaitSemaphoreCount(1)
+			.setPWaitSemaphores(&rndrFinished[il]);
+
+		gq.presentKHR(present);
+	}
+
+
 	void Prototype::cleanup() {
 
+		for (int i = 0; i < maxFramesLatency; i++) {
+			device.destroySemaphore(imgAcquired[i]);
+			device.destroySemaphore(rndrFinished[i]);
+			device.destroyFence(frameFinished[i]);
+		}
 
+		for (auto& cp : commandPools) {
+			device.destroyCommandPool(cp);
+		}
 
 		for (auto& fb : framebuffers) {
 			device.destroyFramebuffer(fb);

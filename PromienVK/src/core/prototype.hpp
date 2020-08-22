@@ -6,6 +6,7 @@
 #include "../infr/InfraVk.hpp"
 #include "../infr/Conf.hpp"
 #include "../infr/type.hpp"
+#include "../utils/semaphore.hpp"
 #include "settings.hpp"
 
 namespace core {
@@ -40,7 +41,16 @@ namespace core {
 		std::vector<vk::Framebuffer> framebuffers;
 
 		std::vector<vk::CommandPool> commandPools;
-		std::vector<vk::CommandBuffer> buffers;
+		std::vector<vk::CommandBuffer> commandBuffers;
+
+		int maxFramesLatency;
+
+		std::vector<vk::Semaphore> imgAcquired;
+		std::vector<vk::Semaphore> rndrFinished;
+
+		std::vector<vk::Fence> frameFinished;
+		std::vector<vk::Fence> imageLease;
+
 
 		virtual void createInstance();
 		virtual void createSurface();
@@ -52,8 +62,10 @@ namespace core {
 		virtual void configureGraphicsPipeline();
 		virtual void configureFramebuffers();
 		virtual void configureCommandPool();
+		virtual void configureSynchronization();
 		virtual void setup();
 		virtual void render();
+		virtual void renderFrame(unsigned f);
 		virtual void cleanup();
 
 	public:

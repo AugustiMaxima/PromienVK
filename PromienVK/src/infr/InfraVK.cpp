@@ -4,7 +4,7 @@ namespace infr {
 
 	InfraVK::InfraVK() {}
 
-	void InfraVK::start() {
+	void InfraVK::run() {
 		setup();
 		render();
 		cleanup();

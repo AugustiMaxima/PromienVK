@@ -23,6 +23,7 @@
     <ProjectGuid>{5A4234BA-9B20-4CD4-B9F0-D7BC800EDB93}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>PromienVK</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -105,7 +106,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(VULKAN_SDK)\Include;$(VisualStudioDir)\Library\glfw\include</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -147,7 +148,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(VULKAN_SDK)\Include;$(VisualStudioDir)\Library\glfw\include</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -176,6 +177,7 @@
     <ClCompile Include="src\infr\Conf.cpp" />
     <ClCompile Include="src\infr\deviceSet.cpp" />
     <ClCompile Include="src\infr\InfraVK.cpp" />
+    <ClCompile Include="src\utils\semaphore.cpp" />
     <ClCompile Include="test\confTest.cpp" />
     <ClCompile Include="test\dictTest.cpp" />
     <ClCompile Include="test\masterTest.cpp" />
@@ -197,6 +199,7 @@
     <ClInclude Include="src\infr\InfraVK.hpp" />
     <ClInclude Include="src\infr\type.hpp" />
     <ClInclude Include="src\utils\multIndex.hpp" />
+    <ClInclude Include="src\utils\semaphore.hpp" />
     <ClInclude Include="test\masterTest.hpp" />
   </ItemGroup>
   <ItemGroup>

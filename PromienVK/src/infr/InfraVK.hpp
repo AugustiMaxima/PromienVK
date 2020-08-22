@@ -11,7 +11,7 @@ namespace infr {
 
 	public:
 		InfraVK();
-		virtual void start();
+		virtual void run();
 		virtual ~InfraVK();
 	};
 }
