@@ -179,6 +179,7 @@
     <ClCompile Include="src\infr\hvm.cpp" />
     <ClCompile Include="src\infr\InfraVK.cpp" />
     <ClCompile Include="src\utils\semaphore.cpp" />
+    <ClCompile Include="test\allocTest.cpp" />
     <ClCompile Include="test\confTest.cpp" />
     <ClCompile Include="test\dictTest.cpp" />
     <ClCompile Include="test\masterTest.cpp" />
@@ -211,7 +212,7 @@
     <None Include="shaders\shader.frag.spv" />
     <None Include="shaders\shader.vert" />
     <None Include="shaders\shader.vert.spv" />
-    <None Include="test\test.json" />
+    <None Include="test\testFiles\test.json" />
     <None Include="test\testFiles\test2.json" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

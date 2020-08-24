@@ -13,16 +13,16 @@ namespace infr {
 
 		//invariant: requests are made to valid leaf nodes
 		vNode* vNode::allocRequest(int size, HierarchicalVM& vm){
-			if (bytes > size * 2) {//condition for split
+			vm.removeRegistry(reg);
+			if (bytes/2 >= size) {//condition for split
 				l = new vNode(offset, bytes / 2, this, vm);
 				//invariant here, please let bytes be a multiple of 2
 				r = new vNode(offset + bytes / 2, bytes / 2, this, vm);
 
 				//we will defer to picking l, as randomization isnt really useful
-				l->allocRequest(size, vm);
+				return l->allocRequest(size, vm);
 			}
 			else {
-				vm.removeRegistry(reg);
 				return this;
 			}
 		}
@@ -50,15 +50,16 @@ namespace infr {
 		vNode* vNode::free(HierarchicalVM& vm) {
 			if (p) {
 				//check sibling
-				vNode* sib = p->l == this ? r : l;
-				if (sib->l || sib->reg) {
+				vNode* sib = p->l == this ? p->r : p->l;
+				if (sib->l || !sib->reg) {
 				}
 				else {
 					sib->purgeLeaf(vm);
-					purgeLeaf(vm);
-					p->l = nullptr;
-					p->r = nullptr;
-					return p->free(vm);
+					vNode* pr = p;
+					delete this;
+					pr->l = nullptr;
+					pr->r = nullptr;
+					return pr->free(vm);
 				}
 			}
 			reg = new allocRegistry(this);
@@ -75,8 +76,11 @@ namespace infr {
 
 		void HierarchicalVM::attachRegistry(allocRegistry* reg) {
 			auto result = fragmentList.get(reg->node->bytes);
-			if (result)
-				reg->back = result.value();
+			if (result) {
+				allocRegistry* back = result.value();
+				reg->back = back;
+				back->front = reg;
+			}
 			fragmentList.put(reg->node->bytes, reg);
 		}
 		
@@ -87,9 +91,12 @@ namespace infr {
 				reg->front->back = reg->back;
 			}
 			else {//front of the pack
-				fragmentList.put(reg->node->bytes, reg->back);
-				reg->node->reg = nullptr;
+				if (reg->back)
+					fragmentList.put(reg->node->bytes, reg->back);
+				else
+					fragmentList.remove(reg->node->bytes);
 			}
+			reg->node->reg = nullptr;
 			delete reg;
 		}
 
@@ -100,20 +107,15 @@ namespace infr {
 		int HierarchicalVM::malloc(int size) {
 			if (size < minHeapSize)
 				size = minHeapSize;
-			auto key = fragmentList.query(size);
+			auto key = fragmentList.probe(size);
 			allocRegistry* reg = nullptr;
 			if (key) {
-				if (key.getKey() < size) {
-					key = key++;
-				}
-				if (key) {
-					reg = key;
-				}
+				reg = key;
 			}
 			if (!reg)
 				throw std::exception("Allocation failed");
-			removeRegistry(reg);
-			return reg->node->offset - reg->node->offset % padding;
+			vNode* node = reg->node->allocRequest(size, *this);
+			return node->offset - node->offset % padding;
 		}
 
 		void HierarchicalVM::free(int offset) {
@@ -126,9 +128,10 @@ namespace infr {
 		HierarchicalVM::~HierarchicalVM() {
 			delete root;
 			std::vector<allocRegistry*> regs;
-			auto k = fragmentList.query(0);
-			while (k++) {
+			auto k = fragmentList.probe(0);
+			while (k) {
 				regs.push_back(k);
+				k++;
 			}
 			for (auto& r : regs) {
 				allocRegistry* reg = r;

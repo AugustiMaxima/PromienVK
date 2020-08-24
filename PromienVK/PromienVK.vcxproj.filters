@@ -14,15 +14,12 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="test">
+      <UniqueIdentifier>{a0b24a0d-9d07-4f42-a513-354648b49783}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="test\confTest.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="test\masterTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="not_main.cpp">
@@ -52,9 +49,6 @@
     <ClCompile Include="src\core\devicePick.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="test\dictTest.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\core\swapchain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -79,11 +73,20 @@
     <ClCompile Include="src\infr\hvm.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="test\masterTest.cpp">
+      <Filter>test</Filter>
+    </ClCompile>
+    <ClCompile Include="test\confTest.cpp">
+      <Filter>test</Filter>
+    </ClCompile>
+    <ClCompile Include="test\dictTest.cpp">
+      <Filter>test</Filter>
+    </ClCompile>
+    <ClCompile Include="test\allocTest.cpp">
+      <Filter>test</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="test\masterTest.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\core\prototype.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -138,11 +141,11 @@
     <ClInclude Include="src\infr\hvm.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="test\masterTest.hpp">
+      <Filter>test</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="test\test.json">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="configs\settings.json">
       <Filter>Resource Files</Filter>
     </None>
@@ -162,6 +165,9 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="test\testFiles\test2.json">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="test\testFiles\test.json">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>

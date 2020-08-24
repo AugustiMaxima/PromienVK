@@ -393,7 +393,8 @@ namespace util {
 				root = root->remove(key);
 		}
 		std::optional<V> get(const K& key) {
-			return std::optional<V>();
+			if(!root)
+				return std::optional<V>();
 			iNode* kn = root->find(key);
 			if (kn)
 				return std::optional<V>(kn->getValue());
@@ -435,10 +436,10 @@ namespace util {
 				return iKey(nullptr);
 			return iKey(root->find(key));
 		}
-		iKey query(const K& key) {
+		iKey probe(const K& key, int direction = 1) {
 			if (!root)
 				return iKey(nullptr);
-			return iKey(root->query(key));
+			return iKey(root->query(key, direction));
 		}
 		void _debug(int& width, int& height, std::vector<_debug_Tree_Vis>& dtv, std::string(*kk)(K), std::string(*vv)(V)) {
 			if (!root) {

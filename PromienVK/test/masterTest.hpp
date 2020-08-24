@@ -6,6 +6,8 @@ int confTest();
 
 int dictTest();
 
+int allocTest();
+
 int masterTest();
 
 #endif

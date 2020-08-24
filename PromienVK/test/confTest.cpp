@@ -7,7 +7,7 @@ using namespace conf;
 
 int confTest1() {
 	Scope scope;
-	parseConfigs(scope, "test/test.json");
+	parseConfigs(scope, "test/testFiles/test.json");
 	Scope& glossary = scope["glossary"];
 	Scope glossDiv = glossary["GlossDiv"];
 	Scope& glossList = glossDiv["GlossList"];
