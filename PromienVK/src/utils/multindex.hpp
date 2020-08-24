@@ -129,7 +129,7 @@ namespace util {
 							return this;
 						}
 						else {
-							return this->right();
+							return this->left();
 						}
 					}
 				}
@@ -144,7 +144,7 @@ namespace util {
 							return this;
 						}
 						else {
-							return this->left();
+							return this->right();
 						}
 					}
 				}

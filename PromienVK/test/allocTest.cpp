@@ -5,7 +5,7 @@
 using namespace infr::hvm;
 using namespace std;
 
-int overAllocTest() {
+static int overAllocTest() {
 	HierarchicalVM vm{ 2048, 1 };
 	vm.malloc(1024);
 	vm.malloc(512);
@@ -21,7 +21,7 @@ int overAllocTest() {
 	throw exception("Alloc budget exceeded and was not detected");
 }
 
-int rightAllocTest() {
+static int rightAllocTest() {
 	HierarchicalVM vm{ 2048, 1 };
 	int ptr[100];
 	ptr[0] = vm.malloc(1024);
@@ -46,15 +46,15 @@ int rightAllocTest() {
 	return 0;
 }
 
-int allocStressTest() {
+static int allocStressTest() {
 	int limit = 4194304;
-	int bound = limit / 2;
+	int bound = limit/2;
 	HierarchicalVM vm{limit , 1};
 
 	int ramtally = 0;
 	std::vector<int> batches;
 
-	for (int i = 1; i < bound/16; i=i*2) {
+	for (int i = 1; i < bound/4; i=i*2) {
 		batches.push_back(i);
 	}
 
@@ -64,19 +64,21 @@ int allocStressTest() {
 	std::vector<int> sizes;
 	int dex = 0;
 
-	while (e++ < 100) {
+	while (e++ < 10000) {
 		int action = e % 3;
+		cout << e << endl;
 		if (action < 2) {
-			int alx = e % batches.size();
+			int alx = e * 17 % batches.size();
 			if (ramtally + batches[alx] <= bound) {
+				cout << "Alloccing " << batches[alx] << "bytes" << endl;;
 				alloced.push_back(vm.malloc(batches[alx]));
 				sizes.push_back(batches[alx]);
 				ramtally += batches[alx];
 			}
 		}
 		else {
-			int kek = e * 13 % 6 % (alloced.size() - dex) + dex;
-			if (kek < dex) {
+			if (alloced.size() > dex) {
+				int kek = (e * 13 % (alloced.size() - dex)) + dex;
 				int temp = alloced[dex];
 				int temp2 = sizes[dex];
 				alloced[dex] = alloced[kek];
@@ -84,10 +86,13 @@ int allocStressTest() {
 				alloced[kek] = temp;
 				sizes[kek] = temp2;
 				vm.free(alloced[dex]);
+				cout << "Freeing " << sizes[dex] << " bytes" << endl;
 				ramtally -= sizes[dex++];
 			}
 		}
 	}
+
+	cout << "Pretty stable performance!" << endl;
 
 	return 0;
 }

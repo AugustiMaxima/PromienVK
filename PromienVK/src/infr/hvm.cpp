@@ -107,7 +107,7 @@ namespace infr {
 		int HierarchicalVM::malloc(int size) {
 			if (size < minHeapSize)
 				size = minHeapSize;
-			auto key = fragmentList.probe(size);
+			auto key = fragmentList.probe(size,-1);
 			allocRegistry* reg = nullptr;
 			if (key) {
 				reg = key;
