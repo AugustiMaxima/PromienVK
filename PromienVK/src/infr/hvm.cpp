@@ -132,11 +132,12 @@ namespace infr {
 			}
 			for (auto& r : regs) {
 				allocRegistry* reg = r;
-				allocRegistry* n = reg->back;
-				 do {
+				allocRegistry* n;
+				 while (n = reg->back) {
 					delete reg;
 					reg = n;
-				 } while (n = reg->back);
+				 }
+				 delete reg;
 			}
 		}
 	
