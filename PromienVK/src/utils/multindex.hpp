@@ -334,21 +334,25 @@ namespace util {
 			operator bool() {
 				return src;
 			}
+			K getKey() {
+				return src->getKey();
+			}
 			operator V&() {
 				return src->getValue();
-			}
-			iKey operator+(int l){
-				iNode* s = src;
-				for (int i = 0; i < l; i++)
-					s = s->right();
-				return iKey(s);
 			}
 			iKey operator++() {
 				src = src->right();
 				return *this;
 			}
+			iKey operator--() {
+				src = src->left();
+				return *this;
+			}
 			iKey operator++(int) {
 				return ++(*this);
+			}
+			iKey operator--(int) {
+				return --(*this);
 			}
 		};
 
@@ -430,6 +434,11 @@ namespace util {
 			if (!root)
 				return iKey(nullptr);
 			return iKey(root->find(key));
+		}
+		iKey query(const K& key) {
+			if (!root)
+				return iKey(nullptr);
+			return iKey(root->query(key));
 		}
 		void _debug(int& width, int& height, std::vector<_debug_Tree_Vis>& dtv, std::string(*kk)(K), std::string(*vv)(V)) {
 			if (!root) {
