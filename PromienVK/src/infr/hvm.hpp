@@ -49,7 +49,7 @@ namespace infr {
 		class HierarchicalVM {
 			int maxHeapSize;
 			int minHeapSize;
-			int padding;
+			int align;
 			vNode* root;
 			//exclusive mdoe, use put and not insert
 			util::multIndex<int, allocRegistry*> fragmentList;
@@ -57,9 +57,10 @@ namespace infr {
 			void removeRegistry(allocRegistry* reg);
 			friend vNode;
 		public:
-			HierarchicalVM(int maxHeapSize, int minHeapSize, int padding = 4);
+			HierarchicalVM(int maxHeapSize, int minHeapSize, int align = 4);
 			int malloc(int size);
 			void free(int offset);
+			bool errorChecking();
 			~HierarchicalVM();
 		};
 

@@ -100,7 +100,27 @@ namespace infr {
 			delete reg;
 		}
 
-		HierarchicalVM::HierarchicalVM(int maxHeapSize, int minHeapSize, int padding):maxHeapSize(maxHeapSize), minHeapSize(minHeapSize), padding(padding) {
+		bool HierarchicalVM::errorChecking() {
+			auto k = fragmentList.probe(0, -1);
+			std::vector<allocRegistry*> regs;
+			while (k) {
+				regs.push_back(k);
+				k++;
+			}
+			for (allocRegistry* reg : regs) {
+				allocRegistry* n;
+				if (reg->node->reg != reg)
+					return false;
+				while (n = reg->back) {
+					if (reg->node->reg != reg)
+						return false;
+					reg = n;
+				}
+			}
+			return true;
+		}
+
+		HierarchicalVM::HierarchicalVM(int maxHeapSize, int minHeapSize, int align):maxHeapSize(maxHeapSize), minHeapSize(minHeapSize), align(align) {
 			root = new vNode(0, maxHeapSize, nullptr, *this);
 		}
 	
@@ -115,7 +135,8 @@ namespace infr {
 			if (!reg)
 				throw std::exception("Allocation failed");
 			vNode* node = reg->node->allocRequest(size, *this);
-			return node->offset - node->offset % padding;
+			return node->offset;
+			//TODO: Fix non existent byte alignment
 		}
 
 		void HierarchicalVM::free(int offset) {
@@ -128,7 +149,7 @@ namespace infr {
 		HierarchicalVM::~HierarchicalVM() {
 			delete root;
 			std::vector<allocRegistry*> regs;
-			auto k = fragmentList.probe(0);
+			auto k = fragmentList.probe(0, -1);
 			while (k) {
 				regs.push_back(k);
 				k++;
