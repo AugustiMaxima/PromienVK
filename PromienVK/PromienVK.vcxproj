@@ -178,6 +178,7 @@
     <ClCompile Include="src\infr\deviceSet.cpp" />
     <ClCompile Include="src\infr\hvm.cpp" />
     <ClCompile Include="src\infr\InfraVK.cpp" />
+    <ClCompile Include="src\infr\lvm.cpp" />
     <ClCompile Include="src\utils\semaphore.cpp" />
     <ClCompile Include="test\allocTest.cpp" />
     <ClCompile Include="test\confTest.cpp" />
@@ -200,6 +201,7 @@
     <ClInclude Include="src\infr\deviceSet.hpp" />
     <ClInclude Include="src\infr\hvm.hpp" />
     <ClInclude Include="src\infr\InfraVK.hpp" />
+    <ClInclude Include="src\infr\lvm.hpp" />
     <ClInclude Include="src\infr\type.hpp" />
     <ClInclude Include="src\utils\multIndex.hpp" />
     <ClInclude Include="src\utils\semaphore.hpp" />

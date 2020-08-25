@@ -1,12 +1,13 @@
 #include <iostream>
 #include "../src/infr/hvm.hpp"
+#include "../src/infr/lvm.hpp"
 #include "masterTest.hpp"
 
-using namespace infr::hvm;
+using namespace infr;
 using namespace std;
 
 static int overAllocTest() {
-	HierarchicalVM vm{ 2048, 1 };
+	lvm::LinearVM vm{ 2048, 1 };
 	vm.malloc(1024);
 	vm.malloc(512);
 	vm.malloc(256);
@@ -22,7 +23,7 @@ static int overAllocTest() {
 }
 
 static int rightAllocTest() {
-	HierarchicalVM vm{ 2048, 1 };
+	hvm::HierarchicalVM vm{ 2048, 1 };
 	int ptr[100];
 	ptr[0] = vm.malloc(1024);
 	ptr[1] = vm.malloc(512);
@@ -48,14 +49,14 @@ static int rightAllocTest() {
 
 static int allocStressTest() {
 	int limit = 4194304;
-	int bound = limit*9/10;
+	int bound = limit * 93 / 100;
 	//A word on the fragmentation efficiency
 	//100% is impossible for any architecture
-	//the theoretical worst case for this allocator should be 50%
-	//in practise, i expect 75% to be the average utilization
-	//in this particular randomized "real world" benchmark, it seems to achieve 90% utilization
-	//that's way better than I can reasonably expect, but is quite exciting
-	HierarchicalVM vm{limit, 1, 1};
+	//the theoretical worst case for hvm should be 50%
+	//assuming good external fragmentation, this would imply worst bound of 50%, consistent with our real world testing
+	//lvm seems to perform much more admirably with a "real world" synthetic scenario achieving 93% utilization
+
+	lvm::LinearVM vm{limit, 1, 1};
 
 	int ramtally = 0;
 	std::vector<int> batches;
@@ -75,12 +76,15 @@ static int allocStressTest() {
 		cout << e << endl;
 		if (action < 2) {
 			int alx = e * 67 % batches.size();
-			if (ramtally + batches[alx] <= bound) {
-				cout << "Alloccing " << batches[alx] << " bytes" << endl;
-				alloced.push_back(vm.malloc(batches[alx]));
+			int dev = e * 17 % (alx + 1);
+			int plier = action % 2 ? -1 : 1;
+			int fsize = batches[alx] + plier * batches[dev];
+			if (ramtally + fsize <= bound) {
+				cout << "Alloccing " << fsize << " bytes" << endl;
+				alloced.push_back(vm.malloc(fsize));
 				cout << "Allocated at " << alloced[alloced.size() - 1] << endl;
-				sizes.push_back(batches[alx]);
-				ramtally += batches[alx];
+				sizes.push_back(fsize);
+				ramtally += fsize;
 			}
 		}
 		else {
@@ -98,7 +102,6 @@ static int allocStressTest() {
 				ramtally -= sizes[dex++];
 			}
 		}
-		vm.errorChecking();
 	}
 
 	cout << "Pretty stable performance!" << endl;
@@ -109,14 +112,8 @@ static int allocStressTest() {
 
 static int alignStressTest() {
 	int limit = 9663676416;
-	int bound = limit * 9 / 10;
-	//A word on the fragmentation efficiency
-	//100% is impossible for any architecture
-	//the theoretical worst case for this allocator should be 50%
-	//in practise, i expect 75% to be the average utilization
-	//in this particular randomized "real world" benchmark, it seems to achieve 90% utilization
-	//that's way better than I can reasonably expect, but is quite exciting
-	HierarchicalVM vm{ limit, 16, 16 };
+	int bound = limit * 93 / 100;
+	lvm::LinearVM vm{ limit, 16, 16 };
 
 	int ramtally = 0;
 	std::vector<int> batches;
@@ -136,12 +133,15 @@ static int alignStressTest() {
 		cout << e << endl;
 		if (action < 2) {
 			int alx = e * 67 % batches.size();
-			if (ramtally + batches[alx] <= bound) {
-				cout << "Alloccing " << batches[alx] << " bytes" << endl;
-				alloced.push_back(vm.malloc(batches[alx]));
+			int dev = e * 17 % (alx + 1);
+			int plier = action % 2 ? -1 : 1;
+			int fsize = batches[alx] + plier * batches[dev];
+			if (ramtally + fsize <= bound) {
+				cout << "Alloccing " << fsize << " bytes" << endl;
+				alloced.push_back(vm.malloc(fsize));
 				cout << "Allocated at " << alloced[alloced.size() - 1] << endl;
-				sizes.push_back(batches[alx]);
-				ramtally += batches[alx];
+				sizes.push_back(fsize);
+				ramtally += fsize;
 			}
 		}
 		else {
@@ -159,7 +159,6 @@ static int alignStressTest() {
 				ramtally -= sizes[dex++];
 			}
 		}
-		vm.errorChecking();
 	}
 
 	cout << "Pretty stable performance!" << endl;
@@ -176,7 +175,7 @@ int allocTest(bool stress) {
 	if (!stress)
 		return 0;
 
-	allocStressTest();
+	//allocStressTest();
 	alignStressTest();
 	return 0;
 }

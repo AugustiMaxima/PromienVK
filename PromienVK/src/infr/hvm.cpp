@@ -22,7 +22,7 @@ namespace infr {
 				//invariant here, please let bytes be a multiple of 2
 				r = new vNode(offset + split - padding, split + padding, this, vm);
 
-				vNode* alloced = split - padding > size ? l : r;
+				vNode* alloced = split - padding >= size ? l : r;
 
 				return alloced->allocRequest(size, vm);
 			}
@@ -140,7 +140,6 @@ namespace infr {
 				throw std::exception("Allocation failed");
 			vNode* node = reg->node->allocRequest(size, *this);
 			return node->offset;
-			//TODO: Fix non existent byte alignment
 		}
 
 		void HierarchicalVM::free(int offset) {
