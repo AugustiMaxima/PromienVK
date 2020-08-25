@@ -19,7 +19,7 @@ int main() {
 	//insert your compiler flag here
 #if defined(_DEBUG)
 	char a;
-	masterTest();
+	masterTest(true);
 	cout << "Enter a character to resume"<<endl;
 	cin >> a;
 #endif

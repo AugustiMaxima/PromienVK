@@ -85,6 +85,9 @@
     <ClCompile Include="test\allocTest.cpp">
       <Filter>test</Filter>
     </ClCompile>
+    <ClCompile Include="src\infr\lvm.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\core\prototype.hpp">
@@ -143,6 +146,9 @@
     </ClInclude>
     <ClInclude Include="test\masterTest.hpp">
       <Filter>test</Filter>
+    </ClInclude>
+    <ClInclude Include="src\infr\lvm.hpp">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
