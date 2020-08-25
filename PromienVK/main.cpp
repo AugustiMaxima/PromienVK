@@ -17,12 +17,15 @@ int main() {
 
 #endif
 	//insert your compiler flag here
-	//masterTest();
-
+#if defined(_DEBUG)
+	char a;
+	masterTest();
+	cout << "Enter a character to resume"<<endl;
+	cin >> a;
+#endif
 	core::Prototype pt{ "configs/settings.json" };
 	pt.run();
 
-	char a;
-	cin >> a;
+	
 
 }

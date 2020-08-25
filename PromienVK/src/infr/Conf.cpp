@@ -154,7 +154,7 @@ namespace conf {
 
 		dash(file, line, index);
 
-		while (!file.eof() || index<line.length()) {
+		while (!file.eof()) {
 			if (!empty && line[index++] != ',') {
 				throw exception("Missing delimiter ,");
 			}

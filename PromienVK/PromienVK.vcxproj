@@ -176,8 +176,10 @@
     <ClCompile Include="src\infr\Base.cpp" />
     <ClCompile Include="src\infr\Conf.cpp" />
     <ClCompile Include="src\infr\deviceSet.cpp" />
+    <ClCompile Include="src\infr\hvm.cpp" />
     <ClCompile Include="src\infr\InfraVK.cpp" />
     <ClCompile Include="src\utils\semaphore.cpp" />
+    <ClCompile Include="test\allocTest.cpp" />
     <ClCompile Include="test\confTest.cpp" />
     <ClCompile Include="test\dictTest.cpp" />
     <ClCompile Include="test\masterTest.cpp" />
@@ -196,6 +198,7 @@
     <ClInclude Include="src\infr\Base.hpp" />
     <ClInclude Include="src\infr\Conf.hpp" />
     <ClInclude Include="src\infr\deviceSet.hpp" />
+    <ClInclude Include="src\infr\hvm.hpp" />
     <ClInclude Include="src\infr\InfraVK.hpp" />
     <ClInclude Include="src\infr\type.hpp" />
     <ClInclude Include="src\utils\multIndex.hpp" />
@@ -209,7 +212,7 @@
     <None Include="shaders\shader.frag.spv" />
     <None Include="shaders\shader.vert" />
     <None Include="shaders\shader.vert.spv" />
-    <None Include="test\test.json" />
+    <None Include="test\testFiles\test.json" />
     <None Include="test\testFiles\test2.json" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

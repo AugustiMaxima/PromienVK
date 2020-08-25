@@ -5,9 +5,9 @@
 using namespace std;
 using namespace conf;
 
-int confTest1() {
+static int confTest1() {
 	Scope scope;
-	parseConfigs(scope, "test/test.json");
+	parseConfigs(scope, "test/testFiles/test.json");
 	Scope& glossary = scope["glossary"];
 	Scope glossDiv = glossary["GlossDiv"];
 	Scope& glossList = glossDiv["GlossList"];
@@ -24,7 +24,7 @@ int confTest1() {
 	}
 }
 
-int confTest2() {
+static int confTest2() {
 	Scope scope;
 	scope["Super"] = "Man";
 	scope["Num"] = 1;
@@ -38,7 +38,7 @@ int confTest2() {
 	return 0;
 }
 
-int confTest3() {
+static int confTest3() {
 	Scope scope;
 	parseConfigs(scope, "test/testFiles/test2.json");
 	Scope scope2;
@@ -49,8 +49,8 @@ int confTest3() {
 }
 
 int confTest() {
-	//confTest1();
-	//confTest2();
+	confTest1();
+	confTest2();
 	confTest3();
 	return 0;
 }

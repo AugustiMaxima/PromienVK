@@ -5,19 +5,19 @@
 
 using namespace std;
 
-string intoString(int i) {
+static string intoString(int i) {
 	ostringstream oss;
 	oss << i;
 	return oss.str();
 }
 
-string ftoString(float i) {
+static string ftoString(float i) {
 	ostringstream oss;
 	oss << i;
 	return oss.str();
 }
 
-void debugTree(util::multIndex<int, float>& mi) {
+static void debugTree(util::multIndex<int, float>& mi) {
 	vector<util::_debug_Tree_Vis> vkk;
 	int height, width;
 	mi._debug(width, height, vkk, intoString, ftoString);
@@ -66,7 +66,7 @@ void debugTree(util::multIndex<int, float>& mi) {
 	}
 }
 
-void multiplicityTest(){
+static void multiplicityTest(){
 	cout << "Multiplicity Test" << endl;
 	util::multIndex<int, float> multMap;
 	debugTree(multMap);
@@ -91,7 +91,7 @@ void multiplicityTest(){
 		cout << i << endl;
 }
 
-void compositeTest() {
+static void compositeTest() {
 	cout << "Composite Test" << endl;
 	util::multIndex<int, float> multMap;
 	multMap.put(5, 1.0f);
@@ -109,10 +109,24 @@ void compositeTest() {
 		cout << i << endl;
 }
 
+
+static void probeTest() {
+	util::multIndex<int, float> m;
+	for (int i = 0; i < 256; i++) {
+		if (i != 127)
+			m.put(i, 1);
+	}
+	auto l = m.probe(127, 1);
+	auto r = m.probe(127, -1);
+	cout << l.getKey() << endl;
+	cout << r.getKey() << endl;
+}
+
+
 int dictTest() {
 	multiplicityTest();
 	compositeTest();
-
+	probeTest();
 
 
 	return 0;
