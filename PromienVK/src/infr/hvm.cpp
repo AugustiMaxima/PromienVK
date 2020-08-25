@@ -15,12 +15,16 @@ namespace infr {
 		vNode* vNode::allocRequest(int size, HierarchicalVM& vm){
 			vm.removeRegistry(reg);
 			if (bytes/2 >= size) {//condition for split
-				l = new vNode(offset, bytes / 2, this, vm);
-				//invariant here, please let bytes be a multiple of 2
-				r = new vNode(offset + bytes / 2, bytes / 2, this, vm);
+				int split = bytes / 2;
+				int padding = split % vm.align;
 
-				//we will defer to picking l, as randomization isnt really useful
-				return l->allocRequest(size, vm);
+				l = new vNode(offset, split - padding, this, vm);
+				//invariant here, please let bytes be a multiple of 2
+				r = new vNode(offset + split - padding, split + padding, this, vm);
+
+				vNode* alloced = split - padding > size ? l : r;
+
+				return alloced->allocRequest(size, vm);
 			}
 			else {
 				return this;
@@ -120,7 +124,7 @@ namespace infr {
 			return true;
 		}
 
-		HierarchicalVM::HierarchicalVM(int maxHeapSize, int minHeapSize, int align):maxHeapSize(maxHeapSize), minHeapSize(minHeapSize), align(align) {
+		HierarchicalVM::HierarchicalVM(int maxHeapSize, int minHeapSize, int align):maxHeapSize(maxHeapSize), minHeapSize(minHeapSize < align? align : minHeapSize), align(align) {
 			root = new vNode(0, maxHeapSize, nullptr, *this);
 		}
 	

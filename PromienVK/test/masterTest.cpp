@@ -1,8 +1,8 @@
 #include "masterTest.hpp"
 
-int masterTest() {
+int masterTest(bool stress) {
 	confTest();
 	dictTest();
-	allocTest();
+	allocTest(stress);
 	return 0;
 }

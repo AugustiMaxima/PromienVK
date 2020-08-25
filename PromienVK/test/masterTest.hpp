@@ -6,8 +6,8 @@ int confTest();
 
 int dictTest();
 
-int allocTest();
+int allocTest(bool stress = false);
 
-int masterTest();
+int masterTest(bool stress = false);
 
 #endif
