@@ -25,6 +25,9 @@ namespace core {
 			vk::PhysicalDeviceFeatures deviceFeatures;
 		};
 
+		bool computeRankCmp(vk::PhysicalDevice d1, vk::PhysicalDevice d2);
+		bool graphicRankCmp(vk::PhysicalDevice d1, vk::PhysicalDevice d2);
+
 		bool presentReady(vk::PhysicalDevice device, vk::SurfaceKHR surface);
 
 		bool deviceCompatible(vk::PhysicalDevice device, vk::DeviceCreateInfo spec);

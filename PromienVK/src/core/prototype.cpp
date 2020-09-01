@@ -281,11 +281,13 @@ namespace core {
 		for (int i = 0; i < maxFramesLatency; i++) {
 			imgAcquired[i] = device.createSemaphore(vk::SemaphoreCreateInfo());
 			rndrFinished[i] = device.createSemaphore(vk::SemaphoreCreateInfo());
-			frameFinished[i] = device.createFence(vk::FenceCreateInfo());
+			frameFinished[i] = device.createFence(vk::FenceCreateInfo()
+			.setFlags(vk::FenceCreateFlagBits::eSignaled));
 		}
 	}
 
 	void Prototype::setup() {
+		using namespace std;
 		createInstance();
 		createSurface();
 		allocatePhysicalDevices();
@@ -299,12 +301,15 @@ namespace core {
 	}
 
 	void Prototype::render() {
+			using namespace std;
 		configureSynchronization();
 		unsigned fc = 0;
+		cout << fc << endl;
 
 		while (!glfwWindowShouldClose(window)) {
 			glfwPollEvents();
 			renderFrame(fc++);
+			cout << fc << endl;
 		}
 
 	}

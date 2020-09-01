@@ -94,7 +94,10 @@ namespace core {
 		}
 
 		Pipeline& GraphicsPipelineEnclosure::construct(Device device, RenderPass renderpass, int subpass, Pipeline base, int baseIndex, PipelineCache cache) {
-			pipeline = device.createGraphicsPipeline(cache, assemble(device, renderpass, subpass, base, baseIndex));
+			auto ret = device.createGraphicsPipeline(cache, assemble(device, renderpass, subpass, base, baseIndex));
+			if (ret.result != vk::Result::eSuccess)
+				throw std::runtime_error("Pipeline creation failed!");
+			pipeline = ret.value;
 			return pipeline;
 		}
 	}
