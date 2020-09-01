@@ -13,6 +13,14 @@ struct featureList {
 
 namespace core {
 	namespace dps {
+		bool computeRankCmp(PhysicalDevice d1, PhysicalDevice d2) {
+			return infr::dvs::computeRank(d1, d2) > 0;
+		}
+		
+		bool graphicRankCmp(PhysicalDevice d1, PhysicalDevice d2) {
+			return infr::dvs::graphicRank(d1, d2) > 0;
+		}
+
 		bool presentReady(PhysicalDevice device, SurfaceKHR surface) {
 			auto qs = device.getQueueFamilyProperties();
 			bool surport = false;
@@ -24,7 +32,7 @@ namespace core {
 			}
 			vector<SurfaceFormatKHR> fmt = device.getSurfaceFormatsKHR(surface);
 			vector<PresentModeKHR> pm = device.getSurfacePresentModesKHR(surface);
-			return surport & fmt.size() & pm.size();
+			return surport && fmt.size() && pm.size();
 		}
 
 		bool deviceCompatible(PhysicalDevice device, DeviceCreateInfo spec) {
@@ -56,8 +64,8 @@ namespace core {
 					deviceMap[infr::DeviceFunction::compute].push_back(device);
 				}
 			}
-			std::sort(deviceMap[infr::DeviceFunction::graphic].begin(), deviceMap[infr::DeviceFunction::graphic].end(), infr::dvs::graphicRank);
-			std::sort(deviceMap[infr::DeviceFunction::compute].begin(), deviceMap[infr::DeviceFunction::compute].end(), infr::dvs::computeRank);
+			std::sort(deviceMap[infr::DeviceFunction::graphic].begin(), deviceMap[infr::DeviceFunction::graphic].end(), graphicRankCmp);
+			std::sort(deviceMap[infr::DeviceFunction::compute].begin(), deviceMap[infr::DeviceFunction::compute].end(), computeRankCmp);
 		}
 
 		//merges multiple device dependencies
