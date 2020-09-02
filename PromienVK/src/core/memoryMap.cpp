@@ -34,5 +34,13 @@ namespace core {
 				throw std::exception("No pointer of the correct offset found");
 			allocator.free(ptr.offset);
 		}
+
+		vk::DeviceMemory allocateDeviceMemory(vk::PhysicalDevice device, vk::Device lDevice, int size, int typeFilter, vk::MemoryPropertyFlagBits flag) {
+			vk::MemoryAllocateInfo info = vk::MemoryAllocateInfo()
+				.setAllocationSize(size)
+				.setMemoryTypeIndex(vMemory::selectMemoryType(device, typeFilter, flag));
+			return lDevice.allocateMemory(info);
+		}
+
 	}
 }

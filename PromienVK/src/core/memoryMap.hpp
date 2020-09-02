@@ -25,7 +25,7 @@ namespace core {
 			void free(vPointer ptr);
 		};
 
-
+		vk::DeviceMemory allocateDeviceMemory(vk::PhysicalDevice device, vk::Device lDevice, int size, int typeFilter, vk::MemoryPropertyFlagBits flag);
 	}
 }
 
