@@ -88,6 +88,12 @@
     <ClCompile Include="src\infr\lvm.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\core\memoryMap.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\infr\Async.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\core\prototype.hpp">
@@ -148,6 +154,15 @@
       <Filter>test</Filter>
     </ClInclude>
     <ClInclude Include="src\infr\lvm.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\core\memoryMap.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\utils\heap.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\infr\Async.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
