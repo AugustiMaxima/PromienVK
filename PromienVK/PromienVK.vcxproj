@@ -183,6 +183,7 @@
     <ClCompile Include="src\infr\lvm.cpp" />
     <ClCompile Include="src\utils\semaphore.cpp" />
     <ClCompile Include="test\allocTest.cpp" />
+    <ClCompile Include="test\asyncTest.cpp" />
     <ClCompile Include="test\confTest.cpp" />
     <ClCompile Include="test\dictTest.cpp" />
     <ClCompile Include="test\masterTest.cpp" />

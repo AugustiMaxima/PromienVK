@@ -8,6 +8,8 @@ int dictTest();
 
 int allocTest(bool stress = false);
 
+int asyncTest();
+
 int masterTest(bool stress = false);
 
 #endif

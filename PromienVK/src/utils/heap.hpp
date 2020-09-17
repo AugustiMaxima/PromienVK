@@ -8,7 +8,7 @@ namespace util {
 	template<typename K, typename V>
 	class minHeap {
 		std::vector<std::pair<K, V>> entries;
-	public:
+
 		void heapFloat() {
 			int p = entries.size() - 1;
 			int np = p / 2;
@@ -23,8 +23,8 @@ namespace util {
 		void heapSink() {
 			int p = 0;
 			while (2*p + 1 < entries.size()) {
-				int np = entries[2 * p + 1] > (2 * p + 2 < entires.size() ? entries[2 * p + 2] : 0) ? 2 * p + 1 : 2 * p + 2;
-				if (entries[np] < entries[p]) {
+				int np = 2 * p + 2 < entries.size() || entries[2 * p + 1].first < entries[2 * p + 2].first ? 2 * p + 1 : 2 * p + 2;
+				if (entries[np].first < entries[p].first) {
 					auto temp = entries[p];
 					entries[p] = entries[np];
 					entries[np] = temp;
@@ -35,14 +35,20 @@ namespace util {
 			}
 		}
 
+	public:
 		void insert(K priority, V value) {
 			entries.push_back(std::pair(priority, value));
 			heapFloat();
 		}
 
 		V removeMin() {
-			V ret = entries[entries.size() - 1];
+			if (!entries.size()) {
+				throw "Null";
+			}
+			V ret = entries[0].second;
+			entries[0] = entries[entries.size() - 1];
 			entries.pop_back();
+			heapSink();
 			return ret;
 		}
 	};

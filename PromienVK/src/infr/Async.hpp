@@ -15,13 +15,15 @@ namespace infr {
 		public:
 			Job();
 			virtual void work() = 0;
+			void start();
+			bool isComplete();
 			virtual ~Job();
 		};
 
 		class WaitableJob : public Job {
 		public:
 			WaitableJob();
-			virtual void wait();
+			virtual void wait() = 0;
 			virtual ~WaitableJob();
 		};
 
@@ -29,11 +31,13 @@ namespace infr {
 			std::mutex lock;
 			util::Semaphore tracker;
 			std::vector<std::thread> workers;
-			util::minHeap<int, Job*> jobs;
+			util::minHeap<float, Job*> jobs;
 		public:
 			Orchestra(int workerCount = 4);
-			void submitJob(int priority, Job& job);
+			void submitJob(float priority, Job& job);
+			Job& requestJob();
 			void orchestrate();
+			~Orchestra();
 		};
 
 
