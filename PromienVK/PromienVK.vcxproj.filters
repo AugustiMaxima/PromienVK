@@ -97,6 +97,9 @@
     <ClCompile Include="test\asyncTest.cpp">
       <Filter>test</Filter>
     </ClCompile>
+    <ClCompile Include="test\heapTest.cpp">
+      <Filter>test</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\core\prototype.hpp">

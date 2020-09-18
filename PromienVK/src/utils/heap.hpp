@@ -23,7 +23,7 @@ namespace util {
 		void heapSink() {
 			int p = 0;
 			while (2*p + 1 < entries.size()) {
-				int np = 2 * p + 2 < entries.size() || entries[2 * p + 1].first < entries[2 * p + 2].first ? 2 * p + 1 : 2 * p + 2;
+				int np = (2 * p + 2 >= entries.size() || entries[2 * p + 1].first < entries[2 * p + 2].first) ? 2 * p + 1 : 2 * p + 2;
 				if (entries[np].first < entries[p].first) {
 					auto temp = entries[p];
 					entries[p] = entries[np];
@@ -43,7 +43,7 @@ namespace util {
 
 		V removeMin() {
 			if (!entries.size()) {
-				throw "Null";
+				throw std::exception("Empty heap");
 			}
 			V ret = entries[0].second;
 			entries[0] = entries[entries.size() - 1];

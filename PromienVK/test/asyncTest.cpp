@@ -15,7 +15,6 @@ public:
 	}
 	void work() {
 		using namespace std;
-		cout << "Work" << endl;
 		base++;
 		syc.V();
 	}

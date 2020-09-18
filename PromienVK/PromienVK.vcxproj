@@ -186,6 +186,7 @@
     <ClCompile Include="test\asyncTest.cpp" />
     <ClCompile Include="test\confTest.cpp" />
     <ClCompile Include="test\dictTest.cpp" />
+    <ClCompile Include="test\heapTest.cpp" />
     <ClCompile Include="test\masterTest.cpp" />
   </ItemGroup>
   <ItemGroup>
