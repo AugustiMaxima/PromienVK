@@ -165,6 +165,7 @@
     <ClCompile Include="not_main.cpp" />
     <ClCompile Include="src\core\boilerplate.cpp" />
     <ClCompile Include="src\core\devicePick.cpp" />
+    <ClCompile Include="src\core\memoryMap.cpp" />
     <ClCompile Include="src\core\pipeline.cpp" />
     <ClCompile Include="src\core\prototype.cpp" />
     <ClCompile Include="src\core\renderPass.cpp" />
@@ -173,6 +174,7 @@
     <ClCompile Include="src\core\swapchain.cpp" />
     <ClCompile Include="src\dbg\dbg.cpp" />
     <ClCompile Include="src\dbg\vLog.cpp" />
+    <ClCompile Include="src\infr\Async.cpp" />
     <ClCompile Include="src\infr\Base.cpp" />
     <ClCompile Include="src\infr\Conf.cpp" />
     <ClCompile Include="src\infr\deviceSet.cpp" />
@@ -181,13 +183,16 @@
     <ClCompile Include="src\infr\lvm.cpp" />
     <ClCompile Include="src\utils\semaphore.cpp" />
     <ClCompile Include="test\allocTest.cpp" />
+    <ClCompile Include="test\asyncTest.cpp" />
     <ClCompile Include="test\confTest.cpp" />
     <ClCompile Include="test\dictTest.cpp" />
+    <ClCompile Include="test\heapTest.cpp" />
     <ClCompile Include="test\masterTest.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\core\boilerplate.hpp" />
     <ClInclude Include="src\core\devicePick.hpp" />
+    <ClInclude Include="src\core\memoryMap.hpp" />
     <ClInclude Include="src\core\pipeline.hpp" />
     <ClInclude Include="src\core\prototype.hpp" />
     <ClInclude Include="src\core\renderPass.hpp" />
@@ -196,6 +201,7 @@
     <ClInclude Include="src\core\swapchain.hpp" />
     <ClInclude Include="src\dbg\dbg.hpp" />
     <ClInclude Include="src\dbg\vLog.hpp" />
+    <ClInclude Include="src\infr\Async.hpp" />
     <ClInclude Include="src\infr\Base.hpp" />
     <ClInclude Include="src\infr\Conf.hpp" />
     <ClInclude Include="src\infr\deviceSet.hpp" />
@@ -203,6 +209,7 @@
     <ClInclude Include="src\infr\InfraVK.hpp" />
     <ClInclude Include="src\infr\lvm.hpp" />
     <ClInclude Include="src\infr\type.hpp" />
+    <ClInclude Include="src\utils\heap.hpp" />
     <ClInclude Include="src\utils\multIndex.hpp" />
     <ClInclude Include="src\utils\semaphore.hpp" />
     <ClInclude Include="test\masterTest.hpp" />
