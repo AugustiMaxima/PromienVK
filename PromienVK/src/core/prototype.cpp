@@ -410,7 +410,6 @@ namespace core {
 	}
 
 	Prototype::~Prototype() {
-		cleanup();
 	}
 
 }
