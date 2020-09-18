@@ -4,7 +4,6 @@
 #include "../src/infr/Async.hpp"
 
 class atomicTest : public infr::asyc::WaitableJob {
-	util::Semaphore syc;
 public:
 	int base;
 	atomicTest():WaitableJob(){}
@@ -14,12 +13,7 @@ public:
 		return *this;
 	}
 	void work() {
-		using namespace std;
 		base++;
-		syc.V();
-	}
-	void wait() {
-		syc.P();
 	}
 };
 

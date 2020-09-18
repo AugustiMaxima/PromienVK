@@ -15,15 +15,17 @@ namespace infr {
 		public:
 			Job();
 			virtual void work() = 0;
-			void start();
-			bool isComplete();
+			virtual void start();
+			virtual bool isComplete();
 			virtual ~Job();
 		};
 
 		class WaitableJob : public Job {
+			util::Semaphore syc;
 		public:
 			WaitableJob();
-			virtual void wait() = 0;
+			virtual void start();
+			virtual void wait();
 			virtual ~WaitableJob();
 		};
 
@@ -32,6 +34,7 @@ namespace infr {
 			util::Semaphore tracker;
 			std::vector<std::thread> workers;
 			util::minHeap<float, Job*> jobs;
+			bool terminal;
 		public:
 			Orchestra(int workerCount = 4);
 			void submitJob(float priority, Job& job);

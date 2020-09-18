@@ -1,9 +1,14 @@
 #include "Async.hpp"
 
 void workerThread(infr::asyc::Orchestra& orchestra) {
-	while (true) {
-		infr::asyc::Job& j = orchestra.requestJob();
-		j.start();
+	try {
+		while (true) {
+			infr::asyc::Job& j = orchestra.requestJob();
+			j.start();
+		}
+	}
+	catch (...) {
+		//thread termination
 	}
 }
 
@@ -24,9 +29,18 @@ namespace infr {
 
 		WaitableJob::WaitableJob():Job(){}
 
+		void WaitableJob::start(){
+			Job::start();
+			syc.V();
+		}
+
+		void WaitableJob::wait() {
+			syc.P();
+		}
+
 		WaitableJob::~WaitableJob(){}
 
-		Orchestra::Orchestra(int workerCount){
+		Orchestra::Orchestra(int workerCount):terminal(false){
 			workers.resize(workerCount);
 		}
 
@@ -39,6 +53,8 @@ namespace infr {
 
 		Job& Orchestra::requestJob() {
 			tracker.P();
+			if (terminal)
+				throw std::exception("Terminating Execution");
 			lock.lock();
 			Job* job = jobs.removeMin();
 			lock.unlock();
@@ -52,7 +68,12 @@ namespace infr {
 		}
 
 		Orchestra::~Orchestra() {
-
+			terminal = true;
+			for (int i = 0; i < workers.size(); i++)
+				tracker.V();
+			for (int i = 0; i < workers.size(); i++) {
+				workers[i].join();
+			}
 		}
 
 	}
