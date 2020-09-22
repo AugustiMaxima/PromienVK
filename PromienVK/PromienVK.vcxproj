@@ -165,6 +165,7 @@
     <ClCompile Include="not_main.cpp" />
     <ClCompile Include="src\core\boilerplate.cpp" />
     <ClCompile Include="src\core\devicePick.cpp" />
+    <ClCompile Include="src\core\loader.cpp" />
     <ClCompile Include="src\core\memoryMap.cpp" />
     <ClCompile Include="src\core\pipeline.cpp" />
     <ClCompile Include="src\core\prototype.cpp" />
@@ -192,6 +193,7 @@
   <ItemGroup>
     <ClInclude Include="src\core\boilerplate.hpp" />
     <ClInclude Include="src\core\devicePick.hpp" />
+    <ClInclude Include="src\core\loader.hpp" />
     <ClInclude Include="src\core\memoryMap.hpp" />
     <ClInclude Include="src\core\pipeline.hpp" />
     <ClInclude Include="src\core\prototype.hpp" />
