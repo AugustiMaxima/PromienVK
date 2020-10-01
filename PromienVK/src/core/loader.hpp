@@ -1,31 +1,54 @@
 #ifndef LOADING_H
 #define LOADING_H
-
+#include <map>
+#include <vector>
 #include "memoryMap.hpp"
 
 namespace core {
 	namespace ast {
-		
-		class LoadPoint {
+		class StreamHost;
+
+		struct Vueue {
 			vk::Device device;
+			ram::vPointer mem;
+			vk::Buffer buffer;
+			void bindBuffer();
+			void cleanUp();
+		};
+
+		class StreamHandle {
+			StreamHost& src;
+			vk::Device device;
+			vk::CommandBuffer cmd;
+			vk::Fence fence;
 			int size;
 			ram::vPointer vram;
 			ram::vPointer stage;
-			LoadPoint(vk::Device device, int size, ram::vPointer vram, ram::vPointer stage);
+			vk::Buffer vs;
+			vk::Buffer ss;
+			vk::BufferCopy cpy;
+		public:
+			StreamHandle(StreamHost& src, vk::CommandBuffer buffer, int size, ram::vPointer vram, ram::vPointer stage, vk::Buffer vs, vk::Buffer ss);
 			void* stagingGround();
 			void flushCache();
 			vk::Fence transfer();
-			void freeStagingBuffer();
-			ram::vPointer getVram();
+			bool transferComplete();
+			void purgeStage();
+			Vueue collectVram();
 		};
 
-		class Loader{
+		class StreamHost{
 			vk::Device device;
+			vk::CommandPool cmd;
 			ram::vMemory vram;
 			ram::vMemory stage;
-			Loader(vk::Device device, int vSize, int sSize);
-			LoadPoint allocateBuffer(int size);
+		public:
+			StreamHost(vk::Device, int vram, int stage);
+			vk::Device getDevice();
+			StreamHandle allocateStream(vk::Buffer dst, int size);
+			~StreamHost();
 		};
+
 	}
 }
 

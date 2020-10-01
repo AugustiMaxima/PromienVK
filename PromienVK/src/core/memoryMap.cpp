@@ -2,15 +2,31 @@
 
 namespace core {
 	namespace ram {
-		vPointer::vPointer(vk::DeviceMemory memory, int offset):memory(memory), offset(offset){}
+		vPointer::vPointer(vMemory& src, int offset) : src(src), offset(offset){}
 
-		vMemory::vMemory(vk::DeviceMemory src, int size) : src(src), allocator{ size, 4 }{}
+		int vPointer::getOffset() const {
+			return offset;
+		}
+
+		vk::DeviceMemory vPointer::getDeviceMemory() {
+			return src.getDeviceMemory();
+		}
+
+		vMemory::vMemory(vk::Device device, vk::DeviceMemory src, int size) : device(device), src(src), allocator{ size, 4 }{}
+
+		vk::DeviceMemory vMemory::getDeviceMemory() {
+			return src;
+		}
+
+		void vPointer::free() {
+			src.free(*this);
+		}
 
 		vMemory vMemory::createMemoryPool(vk::Device device, int size, int memoryType) {
 			vk::DeviceMemory vram = device.allocateMemory(vk::MemoryAllocateInfo()
 				.setAllocationSize(size)
 				.setMemoryTypeIndex(memoryType));
-			return vMemory(vram, size);
+			return vMemory(device, vram, size);
 		}
 
 		int vMemory::selectMemoryType(vk::PhysicalDevice device, int typeFilter, vk::MemoryPropertyFlags flag) {
@@ -24,15 +40,15 @@ namespace core {
 		vPointer vMemory::malloc(int bytes) {
 			int offset = allocator.malloc(bytes);
 			allocRegistry.put(offset, true);
-			return vPointer(src, offset);
+			return vPointer(*this, offset);
 		}
 
 		void vMemory::free(vPointer ptr) {
-			if (ptr.memory != src)
+			if (ptr.getDeviceMemory() != src)
 				throw std::exception("This memory was allocated from a different heap of deviceMemory");
-			if (!allocRegistry.get(ptr.offset))
+			if (!allocRegistry.get(ptr.getOffset()))
 				throw std::exception("No pointer of the correct offset found");
-			allocator.free(ptr.offset);
+			allocator.free(ptr.getOffset());
 		}
 
 		vk::DeviceMemory allocateDeviceMemory(vk::PhysicalDevice device, vk::Device lDevice, int size, int typeFilter, vk::MemoryPropertyFlagBits flag) {

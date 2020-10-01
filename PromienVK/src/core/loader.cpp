@@ -2,20 +2,35 @@
 
 namespace core {
 	namespace ast {
-		using namespace ram;
-		LoadPoint::LoadPoint(vk::Device device, int size, vPointer vram, vPointer stage):device(device), size(size), vram(vram), stage(stage){}
-
-		void* LoadPoint::stagingGround() {
-			return device.mapMemory(stage.memory, stage.offset, size);
+		void Vueue::bindBuffer() {
+			device.bindBufferMemory(buffer, mem.getDeviceMemory(), mem.getOffset());
 		}
 
-		void LoadPoint::flushCache() {
-			vk::MappedMemoryRange rng = vk::MappedMemoryRange()
-				.setMemory(stage.memory)
-				.setOffset(stage.offset)
+		void Vueue::cleanUp() {
+			mem.free();
+			device.destroyBuffer(buffer);
+		}
+
+		StreamHandle::StreamHandle(StreamHost& src, vk::CommandBuffer cmd, int size, ram::vPointer vram, ram::vPointer stage, vk::Buffer vs, vk::Buffer ss)
+		:src(src), cmd(cmd), size(size), vram(vram), stage(stage), vs(vs), ss(ss){
+			device = src.getDevice();
+		}
+
+		void* StreamHandle::stagingGround() {
+			return device.mapMemory(stage.getDeviceMemory(), stage.getOffset(), size);
+		}
+
+		void StreamHandle::flushCache() {
+			vk::MappedMemoryRange range = vk::MappedMemoryRange()
+				.setMemory(stage.getDeviceMemory())
+				.setOffset(stage.getOffset())
 				.setSize(size);
-			device.flushMappedMemoryRanges(rng);
+			device.flushMappedMemoryRanges(range);
 		}
 
+		vk::Fence StreamHandle::transfer() {
+			fence = device.createFence(vk::FenceCreateInfo());
+
+		}
 	}
 }
