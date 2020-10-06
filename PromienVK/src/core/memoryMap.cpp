@@ -22,6 +22,8 @@ namespace core {
 			src.free(*this);
 		}
 
+		vMemory::vMemory(int size):allocator(size, 4) {}
+
 		vMemory vMemory::createMemoryPool(vk::Device device, int size, int memoryType) {
 			vk::DeviceMemory vram = device.allocateMemory(vk::MemoryAllocateInfo()
 				.setAllocationSize(size)
@@ -29,7 +31,12 @@ namespace core {
 			return vMemory(device, vram, size);
 		}
 
-		int vMemory::selectMemoryType(vk::PhysicalDevice device, int typeFilter, vk::MemoryPropertyFlags flag) {
+		void vMemory::init(vk::Device device, vk::DeviceMemory src) {
+			device = device;
+			src = src;
+		}
+
+		int vMemory::selectMemoryType(vk::PhysicalDevice device, vk::MemoryPropertyFlags flag, uint32_t typeFilter) {
 			vk::PhysicalDeviceMemoryProperties prop = device.getMemoryProperties();
 			for (int i = 0; i < prop.memoryTypeCount; i++) {
 				if (typeFilter & (1 << i) && (prop.memoryTypes[i].propertyFlags & flag) == flag)

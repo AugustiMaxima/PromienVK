@@ -2,6 +2,7 @@
 #define LOADING_H
 #include <map>
 #include <vector>
+#include <mutex>
 #include "memoryMap.hpp"
 
 namespace core {
@@ -37,15 +38,34 @@ namespace core {
 			Vueue collectVram();
 		};
 
-		class StreamHost{
-			vk::Device device;
-			vk::CommandPool cmd;
-			ram::vMemory vram;
-			ram::vMemory stage;
+		class vramProxy {
+			ram::vMemory src;
+			int capacity;
+			int occupancy;
+			std::map<int, int> registry;
 		public:
-			StreamHost(vk::Device, int vram, int stage);
+			vramProxy(ram::vMemory src, int capacity);
+			bool haveCapacity(int size);
+			ram::vPointer allocate(int size);
+			void free(ram::vPointer vp);
+		};
+
+		class StreamHost{
+			int rId;
+			int granularity;
+			std::mutex sync;
+			vk::PhysicalDevice pDevice;
+			vk::Device device;
+			uint32_t queueIndex;
+			vk::CommandPool cmd;
+			std::vector<vk::Queue>& transferQueue;
+			ram::vMemory stage;
+			std::map<uint32_t, std::vector<ram::vMemory>> vram;
+		public:
+			StreamHost(vk::PhysicalDevice pd, vk::Device, int queueIndex, std::vector<vk::Queue>& transferQueue, int granularity, int stage);
 			vk::Device getDevice();
 			StreamHandle allocateStream(vk::Buffer dst, int size);
+			vk::Queue& requestQueue();
 			~StreamHost();
 		};
 

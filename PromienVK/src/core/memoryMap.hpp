@@ -23,10 +23,12 @@ namespace core {
 			infr::lvm::LinearVM allocator;
 			util::multIndex<int, bool> allocRegistry; //An additional safety check to prevent bad free
 		public:
+			vMemory(int size);
 			vMemory(vk::Device device, vk::DeviceMemory src, int size);
+			void init(vk::Device device, vk::DeviceMemory src);
 			vk::DeviceMemory getDeviceMemory();
 			static vMemory createMemoryPool(vk::Device device, int size, int memoryType);
-			static int selectMemoryType(vk::PhysicalDevice device, int typeFilter, vk::MemoryPropertyFlags flag);
+			static int selectMemoryType(vk::PhysicalDevice device, vk::MemoryPropertyFlags flag, uint32_t typeFilter = 0xFFFFFFFF);
 			vPointer malloc(int bytes);
 			void free(vPointer ptr);
 		};
