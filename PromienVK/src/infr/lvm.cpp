@@ -108,8 +108,23 @@ namespace infr {
 			return node->offset;
 		}
 
+		rNode* LinearVM::try_alloc(int size) {
+			auto result = freeList.probe(size, -1);
+			rNode* reg = nullptr;
+			if (result) {
+				reg = result;
+			}
+			return reg;
+		}
+
+		int LinearVM::fin_alloc(rNode* reg, int size) {
+			mNode* node = reg->node->allocRequest(size, *this);
+			allocRecord.put(node->offset, node);
+			return node->offset;
+		}
+
 		void LinearVM::free(int offset) {
-			auto rec = allocRecord.get(offset);
+			auto rec = allocRecord.pop(offset);
 			mNode* node = nullptr;
 			if (rec)
 				node = rec.value();

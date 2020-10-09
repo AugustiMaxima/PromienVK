@@ -3,10 +3,26 @@
 #include <map>
 #include <vector>
 #include <mutex>
+#include "../utils/multindex.hpp"
 #include "memoryMap.hpp"
 
 namespace core {
 	namespace ast {
+		
+		class trackedMemory : public ram::vMemory {
+		protected:
+			int occupancy;
+			int capacity;
+			util::multIndex<int, int> sReg;
+		public:
+			trackedMemory(int size);
+			void init(vk::Device, vk::DeviceMemory src);
+			void* tryAlloc(int bytes);
+			ram::vPointer alloc(int bytes, void* key);
+			virtual void free(ram::vPointer ptr);
+			virtual ~trackedMemory();
+		};
+		
 		class StreamHost;
 
 		struct Vueue {
@@ -38,18 +54,6 @@ namespace core {
 			Vueue collectVram();
 		};
 
-		class vramProxy {
-			ram::vMemory src;
-			int capacity;
-			int occupancy;
-			std::map<int, int> registry;
-		public:
-			vramProxy(ram::vMemory src, int capacity);
-			bool haveCapacity(int size);
-			ram::vPointer allocate(int size);
-			void free(ram::vPointer vp);
-		};
-
 		class StreamHost{
 			int rId;
 			int granularity;
@@ -60,7 +64,7 @@ namespace core {
 			vk::CommandPool cmd;
 			std::vector<vk::Queue>& transferQueue;
 			ram::vMemory stage;
-			std::map<uint32_t, std::vector<ram::vMemory>> vram;
+			std::map<uint32_t, std::vector<trackedMemory>> vram;
 		public:
 			StreamHost(vk::PhysicalDevice pd, vk::Device, int queueIndex, std::vector<vk::Queue>& transferQueue, int granularity, int stage);
 			vk::Device getDevice();

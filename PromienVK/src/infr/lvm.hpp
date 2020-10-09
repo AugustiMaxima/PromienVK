@@ -40,6 +40,8 @@ namespace infr {
 			const int align;
 			LinearVM(int maxHeapSize, int minHeapSize, int align = 4);
 			int malloc(int size);
+			rNode* try_alloc(int size);
+			int fin_alloc(rNode* node, int size);
 			void free(int offset);
 			~LinearVM();
 		};

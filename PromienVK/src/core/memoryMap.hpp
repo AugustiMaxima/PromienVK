@@ -18,6 +18,7 @@ namespace core {
 		};
 
 		class vMemory {
+		protected:
 			vk::Device device;
 			vk::DeviceMemory src;
 			infr::lvm::LinearVM allocator;
@@ -27,10 +28,10 @@ namespace core {
 			vMemory(vk::Device device, vk::DeviceMemory src, int size);
 			void init(vk::Device device, vk::DeviceMemory src);
 			vk::DeviceMemory getDeviceMemory();
-			static vMemory createMemoryPool(vk::Device device, int size, int memoryType);
 			static int selectMemoryType(vk::PhysicalDevice device, vk::MemoryPropertyFlags flag, uint32_t typeFilter = 0xFFFFFFFF);
-			vPointer malloc(int bytes);
-			void free(vPointer ptr);
+			virtual vPointer malloc(int bytes);
+			virtual void free(vPointer ptr);
+			virtual ~vMemory();
 		};
 
 		vk::DeviceMemory allocateDeviceMemory(vk::PhysicalDevice device, vk::Device lDevice, int size, int typeFilter, vk::MemoryPropertyFlagBits flag);

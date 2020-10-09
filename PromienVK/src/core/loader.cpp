@@ -2,6 +2,39 @@
 
 namespace core {
 	namespace ast {
+		trackedMemory::trackedMemory(int size) :ram::vMemory(size), capacity(size), occupancy(0) {}
+		
+		void trackedMemory::init(vk::Device device, vk::DeviceMemory src) {
+			ram::vMemory::init(device, src);
+		}
+
+		void* trackedMemory::tryAlloc(int bytes) {
+			//80% is a megic number
+			//we may switch to attempts instead, but so far this magic number have worked well
+			if (occupancy + bytes < capacity * 4 / 5) {
+				return allocator.try_alloc(bytes);
+			}
+			return nullptr;
+		}
+
+		ram::vPointer trackedMemory::alloc(int bytes, void* key) {
+			occupancy += bytes;
+			int offset = allocator.fin_alloc((infr::lvm::rNode*)key, bytes);
+			sReg.put(offset, bytes);
+			return ram::vPointer(*this, offset);
+		}
+
+		void trackedMemory::free(ram::vPointer ptr) {
+			std::optional<int> s = sReg.pop(ptr.getOffset());
+			if (!s) {
+				return;
+			}
+			occupancy -= s.value();
+			allocator.free(ptr.getOffset());
+		}
+
+		trackedMemory::~trackedMemory() {}
+
 		void Vueue::bindBuffer() {
 			device.bindBufferMemory(buffer, mem.getDeviceMemory(), mem.getOffset());
 		}
@@ -56,27 +89,6 @@ namespace core {
 			return Vueue{ device, vram, vs };
 		}
 
-		vramProxy::vramProxy(ram::vMemory src, int capacity) :src(src), capacity(capacity), occupancy(0) {}
-
-		bool vramProxy::haveCapacity(int size) {
-			if (occupancy + size < capacity * 4 / 5) //the 80% utilization is a magic number, need more work here
-				return true;
-			else
-				return false;
-		}
-
-		ram::vPointer vramProxy::allocate(int size) {
-			occupancy += size;
-			ram::vPointer vp = src.malloc(size);
-			registry[vp.getOffset()] = size;
-			return vp;
-		}
-
-		void vramProxy::free(ram::vPointer vp) {
-			int size = registry[vp.getOffset()];
-			registry.erase(vp.getOffset());
-			occupancy -= size;
-		}	
 
 		StreamHost::StreamHost(vk::PhysicalDevice pd, vk::Device device, int queueIndex, std::vector<vk::Queue>& transferQueue, int granularity, int stage)
 			:rId(0), pDevice(pd), device(device), queueIndex(queueIndex), granularity(granularity), stage(stage), transferQueue(transferQueue){
@@ -105,7 +117,10 @@ namespace core {
 				.setSize(size)
 				.setUsage(vk::BufferUsageFlagBits::eTransferSrc));
 
-
+			vk::MemoryRequirements prop = device.getBufferMemoryRequirements(dst);
+			using vm = ram::vMemory;
+			uint32_t index = vm::selectMemoryType(pDevice, vk::MemoryPropertyFlagBits::eDeviceLocal, prop.memoryTypeBits);
+			
 
 		}
 	}

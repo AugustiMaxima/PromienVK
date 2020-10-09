@@ -285,23 +285,40 @@ namespace util {
 			}
 			iNode* remove(iNode* node) {
 				iNode* ps = node->p;
-				bool null = false;
+				if (!ps) {
+					return remove();
+				}
+				iNode* re;
 				if (ps->l == node) {
-					ps->l = node->remove();
+					re = node->remove();
+					ps->l = re;
 				}
 				else if (ps->r == node) {
-					ps->r = node->remove();
+					re = node->remove();
+					ps->r = re;
 				}
 				else {
-					null = true;
+					return nullptr;
 				}
-				if (!null) {
-					while (ps) {
-						if(ps->updateHeight())
-							break;
-						ps = ps->p;
-					}
+				while (ps) {
+					if(ps->updateHeight())
+						break;
+					ps = ps->p;
 				}
+				return re;
+			}
+			iNode* remove(const K& key, std::optional<V>& ret) {
+				if (key < this->key) {
+					l = l->remove(key, ret);
+				}
+				else if (key == this->key) {
+					ret.emplace(value);
+					return remove();
+				}
+				else {
+					r = r->remove(key, ret);
+				}
+				return balance();
 			}
 			void _debug(int radius, int pos, int height, std::vector<_debug_Tree_Vis>& dtv, std::string(*kk)(K), std::string(*vv)(V)) {
 				dtv.push_back(_debug_Tree_Vis{ kk(key), vv(value), pos, height });
@@ -391,6 +408,12 @@ namespace util {
 		void remove(K key) {
 			if (root)
 				root = root->remove(key);
+		}
+		std::optional<V> pop(const K& key) {
+			std::optional<V> ret;
+			if (!root)
+				return std::optional<V>();
+			root = root->remove(key, ret);
 		}
 		std::optional<V> get(const K& key) {
 			if(!root)
