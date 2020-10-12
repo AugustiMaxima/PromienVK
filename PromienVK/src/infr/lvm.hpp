@@ -16,7 +16,9 @@ namespace infr {
 			mNode* r;
 			rNode* reg;
 			mNode(int offset, int bytes, LinearVM& vm, bool alloced = false);
-			mNode* allocRequest(int size, LinearVM& vm);
+			bool compatible(int size, int align);
+			int alignedSize(int size, int align);
+			mNode* allocRequest(int size, LinearVM& vm, int align);
 			void free(LinearVM& vm);
 		};
 
@@ -36,12 +38,10 @@ namespace infr {
 			void removeRegistry(rNode* reg);
 			friend mNode;
 		public:
-			const int minHeapSize;
-			const int align;
-			LinearVM(int maxHeapSize, int minHeapSize, int align = 4);
-			int malloc(int size);
-			rNode* try_alloc(int size);
-			int fin_alloc(rNode* node, int size);
+			LinearVM(int maxHeapSize);
+			int malloc(int size, int align = 4, bool prealigned = true);
+			rNode* try_alloc(int size, int align = 4, bool prealigned = true);
+			int fin_alloc(rNode* node, int size, int align = 4);
 			void free(int offset);
 			~LinearVM();
 		};

@@ -17,8 +17,9 @@ namespace core {
 		public:
 			trackedMemory(int size);
 			void init(vk::Device, vk::DeviceMemory src);
-			void* tryAlloc(int bytes);
+			void* tryAlloc(int bytes, int alignment);
 			ram::vPointer alloc(int bytes, void* key);
+			ram::vPointer malloc(int bytes, int alignment);
 			virtual void free(ram::vPointer ptr);
 			virtual ~trackedMemory();
 		};
@@ -65,8 +66,9 @@ namespace core {
 			std::vector<vk::Queue>& transferQueue;
 			ram::vMemory stage;
 			std::map<uint32_t, std::vector<trackedMemory>> vram;
+			ram::vPointer allocateMemory(uint32_t type, int bytes, int alignment);
 		public:
-			StreamHost(vk::PhysicalDevice pd, vk::Device, int queueIndex, std::vector<vk::Queue>& transferQueue, int granularity, int stage);
+			StreamHost(vk::PhysicalDevice pd, vk::Device, uint32_t queueIndex, std::vector<vk::Queue>& transferQueue, int granularity, int stage);
 			vk::Device getDevice();
 			StreamHandle allocateStream(vk::Buffer dst, int size);
 			vk::Queue& requestQueue();

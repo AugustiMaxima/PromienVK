@@ -8,11 +8,11 @@ namespace core {
 			ram::vMemory::init(device, src);
 		}
 
-		void* trackedMemory::tryAlloc(int bytes) {
+		void* trackedMemory::tryAlloc(int bytes, int alignment) {
 			//80% is a megic number
 			//we may switch to attempts instead, but so far this magic number have worked well
 			if (occupancy + bytes < capacity * 4 / 5) {
-				return allocator.try_alloc(bytes);
+				return allocator.try_alloc(bytes, alignment);
 			}
 			return nullptr;
 		}
@@ -20,6 +20,13 @@ namespace core {
 		ram::vPointer trackedMemory::alloc(int bytes, void* key) {
 			occupancy += bytes;
 			int offset = allocator.fin_alloc((infr::lvm::rNode*)key, bytes);
+			sReg.put(offset, bytes);
+			return ram::vPointer(*this, offset);
+		}
+		//this occupancy is coarse grained and misses padding info
+		ram::vPointer trackedMemory::malloc(int bytes, int alignment) {
+			occupancy += bytes;
+			int offset = allocator.malloc(bytes, alignment);
 			sReg.put(offset, bytes);
 			return ram::vPointer(*this, offset);
 		}
@@ -89,15 +96,41 @@ namespace core {
 			return Vueue{ device, vram, vs };
 		}
 
+		ram::vPointer StreamHost::allocateMemory(uint32_t type, int bytes, int alignment) {
+			std::vector<trackedMemory>& vrs = vram[type];
+			for (auto& vm : vrs) {
+				void* k = vm.tryAlloc(bytes, alignment);
+				if (k) {
+					return vm.alloc(bytes, k);
+				}
+			}
+			vk::DeviceMemory dm = device.allocateMemory(vk::MemoryAllocateInfo()
+				.setAllocationSize(granularity)
+				.setMemoryTypeIndex(type));
+			vrs.emplace_back(granularity);
+			trackedMemory& vm = vrs[vrs.size() - 1];
+			vm.init(device, dm);
+			return vm.malloc(bytes, alignment);
+		}
 
-		StreamHost::StreamHost(vk::PhysicalDevice pd, vk::Device device, int queueIndex, std::vector<vk::Queue>& transferQueue, int granularity, int stage)
+		StreamHost::StreamHost(vk::PhysicalDevice pd, vk::Device device, uint32_t queueIndex, std::vector<vk::Queue>& transferQueue, int granularity, int stage)
 			:rId(0), pDevice(pd), device(device), queueIndex(queueIndex), granularity(granularity), stage(stage), transferQueue(transferQueue){
 			using vm = ram::vMemory;
 			cmd = device.createCommandPool(vk::CommandPoolCreateInfo()
 				.setQueueFamilyIndex(queueIndex));
+
+			vk::Buffer stgr = device.createBuffer(vk::BufferCreateInfo()
+				.setPQueueFamilyIndices(&queueIndex)
+				.setQueueFamilyIndexCount(1)
+				.setSharingMode(vk::SharingMode::eExclusive)
+				.setSize(0)
+				.setUsage(vk::BufferUsageFlagBits::eTransferSrc));
+
+			vk::MemoryRequirements prop = device.getBufferMemoryRequirements(stgr);
+
 			vk::DeviceMemory mstage = device.allocateMemory(vk::MemoryAllocateInfo()
 				.setAllocationSize(stage)
-				.setMemoryTypeIndex(vm::selectMemoryType(pd, vk::MemoryPropertyFlagBits::eHostVisible)));
+				.setMemoryTypeIndex(vm::selectMemoryType(pd, vk::MemoryPropertyFlagBits::eHostVisible, prop.memoryTypeBits)));
 			this->stage.init(device, mstage);
 		}
 
@@ -116,11 +149,21 @@ namespace core {
 				.setSharingMode(vk::SharingMode::eExclusive)
 				.setSize(size)
 				.setUsage(vk::BufferUsageFlagBits::eTransferSrc));
-
+			vk::MemoryRequirements stgprop = device.getBufferMemoryRequirements(dst);
+			using vp = ram::vPointer;
+			vp stgp = stage.malloc(stgprop.size, stgprop.alignment);
 			vk::MemoryRequirements prop = device.getBufferMemoryRequirements(dst);
 			using vm = ram::vMemory;
 			uint32_t index = vm::selectMemoryType(pDevice, vk::MemoryPropertyFlagBits::eDeviceLocal, prop.memoryTypeBits);
 			
 
+		}
+
+		vk::Queue& StreamHost::requestQueue() {
+			return transferQueue[0];
+		}
+
+		StreamHost::~StreamHost() {
+			
 		}
 	}

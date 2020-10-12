@@ -22,7 +22,7 @@ namespace core {
 			src.free(*this);
 		}
 
-		vMemory::vMemory(int size):allocator(size, 4) {}
+		vMemory::vMemory(int size):allocator(size) {}
 
 		vMemory vMemory::createMemoryPool(vk::Device device, int size, int memoryType) {
 			vk::DeviceMemory vram = device.allocateMemory(vk::MemoryAllocateInfo()
@@ -44,11 +44,13 @@ namespace core {
 			}
 		}
 
-		vPointer vMemory::malloc(int bytes) {
-			int offset = allocator.malloc(bytes);
+		vPointer vMemory::malloc(int bytes, int alignment) {
+			int offset = allocator.malloc(bytes, alignment);
 			allocRegistry.put(offset, true);
 			return vPointer(*this, offset);
 		}
+
+		vMemory::~vMemory(){}
 
 		void vMemory::free(vPointer ptr) {
 			if (ptr.getDeviceMemory() != src)

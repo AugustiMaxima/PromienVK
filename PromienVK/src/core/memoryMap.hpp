@@ -28,8 +28,9 @@ namespace core {
 			vMemory(vk::Device device, vk::DeviceMemory src, int size);
 			void init(vk::Device device, vk::DeviceMemory src);
 			vk::DeviceMemory getDeviceMemory();
+			static vMemory createMemoryPool(vk::Device device, int size, int memoryType);
 			static int selectMemoryType(vk::PhysicalDevice device, vk::MemoryPropertyFlags flag, uint32_t typeFilter = 0xFFFFFFFF);
-			virtual vPointer malloc(int bytes);
+			virtual vPointer malloc(int bytes, int alignment = 4);
 			virtual void free(vPointer ptr);
 			virtual ~vMemory();
 		};
