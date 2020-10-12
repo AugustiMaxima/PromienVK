@@ -3,7 +3,7 @@
 namespace core {
 	namespace ast {
 		trackedMemory::trackedMemory(int size) :ram::vMemory(size), capacity(size), occupancy(0) {}
-		
+
 		void trackedMemory::init(vk::Device device, vk::DeviceMemory src) {
 			ram::vMemory::init(device, src);
 		}
@@ -52,7 +52,7 @@ namespace core {
 		}
 
 		StreamHandle::StreamHandle(StreamHost& src, vk::CommandBuffer cmd, int size, ram::vPointer vram, ram::vPointer stage, vk::Buffer vs, vk::Buffer ss)
-		:src(src), cmd(cmd), size(size), vram(vram), stage(stage), vs(vs), ss(ss){
+			:src(src), cmd(cmd), size(size), vram(vram), stage(stage), vs(vs), ss(ss) {
 			device = src.getDevice();
 		}
 
@@ -114,7 +114,7 @@ namespace core {
 		}
 
 		StreamHost::StreamHost(vk::PhysicalDevice pd, vk::Device device, uint32_t queueIndex, std::vector<vk::Queue>& transferQueue, int granularity, int stage)
-			:rId(0), pDevice(pd), device(device), queueIndex(queueIndex), granularity(granularity), stage(stage), transferQueue(transferQueue){
+			:rId(0), pDevice(pd), device(device), queueIndex(queueIndex), granularity(granularity), stage(stage), transferQueue(transferQueue) {
 			using vm = ram::vMemory;
 			cmd = device.createCommandPool(vk::CommandPoolCreateInfo()
 				.setQueueFamilyIndex(queueIndex));
@@ -155,8 +155,8 @@ namespace core {
 			vk::MemoryRequirements prop = device.getBufferMemoryRequirements(dst);
 			using vm = ram::vMemory;
 			uint32_t index = vm::selectMemoryType(pDevice, vk::MemoryPropertyFlagBits::eDeviceLocal, prop.memoryTypeBits);
-			
-
+			vp vrmp = allocateMemory(index, prop.size, prop.alignment);
+			return StreamHandle(*this, cmdb, size, vrmp, stgp, dst, stgr);
 		}
 
 		vk::Queue& StreamHost::requestQueue() {
@@ -164,6 +164,7 @@ namespace core {
 		}
 
 		StreamHost::~StreamHost() {
-			
+
 		}
 	}
+}

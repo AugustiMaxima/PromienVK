@@ -7,7 +7,7 @@ using namespace infr;
 using namespace std;
 
 static int overAllocTest() {
-	lvm::LinearVM vm{ 2048, 1 };
+	lvm::LinearVM vm{ 2048 };
 	vm.malloc(1024);
 	vm.malloc(512);
 	vm.malloc(256);
@@ -56,7 +56,7 @@ static int allocStressTest() {
 	//assuming good external fragmentation, this would imply worst bound of 50%, consistent with our real world testing
 	//lvm seems to perform much more admirably with a "real world" synthetic scenario achieving 93% utilization
 
-	lvm::LinearVM vm{limit, 1, 1};
+	lvm::LinearVM vm{limit};
 
 	int ramtally = 0;
 	std::vector<int> batches;
@@ -113,7 +113,7 @@ static int allocStressTest() {
 static int alignStressTest() {
 	int limit = 9663676416;
 	int bound = limit * 93 / 100;
-	lvm::LinearVM vm{ limit, 16, 16 };
+	lvm::LinearVM vm{ limit };
 
 	int ramtally = 0;
 	std::vector<int> batches;

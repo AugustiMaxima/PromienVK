@@ -12,14 +12,14 @@ namespace core {
 			return src.getDeviceMemory();
 		}
 
-		vMemory::vMemory(vk::Device device, vk::DeviceMemory src, int size) : device(device), src(src), allocator{ size, 4 }{}
+		void vPointer::free() {
+			src.free(*this);
+		}
+
+		vMemory::vMemory(vk::Device device, vk::DeviceMemory src, int size) : device(device), src(src), allocator(size){}
 
 		vk::DeviceMemory vMemory::getDeviceMemory() {
 			return src;
-		}
-
-		void vPointer::free() {
-			src.free(*this);
 		}
 
 		vMemory::vMemory(int size):allocator(size) {}
@@ -63,7 +63,7 @@ namespace core {
 		vk::DeviceMemory allocateDeviceMemory(vk::PhysicalDevice device, vk::Device lDevice, int size, int typeFilter, vk::MemoryPropertyFlagBits flag) {
 			vk::MemoryAllocateInfo info = vk::MemoryAllocateInfo()
 				.setAllocationSize(size)
-				.setMemoryTypeIndex(vMemory::selectMemoryType(device, typeFilter, flag));
+				.setMemoryTypeIndex(vMemory::selectMemoryType(device, flag, typeFilter));
 			return lDevice.allocateMemory(info);
 		}
 

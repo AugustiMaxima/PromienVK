@@ -6,6 +6,7 @@
 
 namespace core {
 	namespace ram {
+		class vMemory;
 		//incomplete draft -- more to be done with interface & abstraction
 		class vPointer {
 			vMemory& src;
@@ -38,8 +39,6 @@ namespace core {
 		vk::DeviceMemory allocateDeviceMemory(vk::PhysicalDevice device, vk::Device lDevice, int size, int typeFilter, vk::MemoryPropertyFlagBits flag);
 	}
 }
-
-
 
 
 #endif
