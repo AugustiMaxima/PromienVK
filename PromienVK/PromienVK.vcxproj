@@ -163,6 +163,8 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="not_main.cpp" />
+    <ClCompile Include="src\asset\model.cpp" />
+    <ClCompile Include="src\core\AssetManager.cpp" />
     <ClCompile Include="src\core\boilerplate.cpp" />
     <ClCompile Include="src\core\devicePick.cpp" />
     <ClCompile Include="src\core\loader.cpp" />
@@ -172,6 +174,7 @@
     <ClCompile Include="src\core\renderPass.cpp" />
     <ClCompile Include="src\core\settings.cpp" />
     <ClCompile Include="src\core\shader.cpp" />
+    <ClCompile Include="src\core\streamUnit.cpp" />
     <ClCompile Include="src\core\swapchain.cpp" />
     <ClCompile Include="src\dbg\dbg.cpp" />
     <ClCompile Include="src\dbg\vLog.cpp" />
@@ -191,6 +194,8 @@
     <ClCompile Include="test\masterTest.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\asset\model.hpp" />
+    <ClInclude Include="src\core\AssetManager.hpp" />
     <ClInclude Include="src\core\boilerplate.hpp" />
     <ClInclude Include="src\core\devicePick.hpp" />
     <ClInclude Include="src\core\loader.hpp" />
@@ -200,6 +205,7 @@
     <ClInclude Include="src\core\renderPass.hpp" />
     <ClInclude Include="src\core\settings.hpp" />
     <ClInclude Include="src\core\shader.hpp" />
+    <ClInclude Include="src\core\streamUnit.hpp" />
     <ClInclude Include="src\core\swapchain.hpp" />
     <ClInclude Include="src\dbg\dbg.hpp" />
     <ClInclude Include="src\dbg\vLog.hpp" />

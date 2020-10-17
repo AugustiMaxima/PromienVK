@@ -96,12 +96,14 @@ namespace core {
 			return Vueue{ device, vram, vs };
 		}
 
-		ram::vPointer StreamHost::allocateMemory(uint32_t type, int bytes, int alignment) {
+		ram::vPointer StreamHost::allocateMemory(vk::Buffer dst) {
+			vk::MemoryRequirements prop = device.getBufferMemoryRequirements(dst);
+			uint32_t type = ram::vMemory::selectMemoryType(pDevice, vk::MemoryPropertyFlagBits::eDeviceLocal, prop.memoryTypeBits);
 			std::vector<trackedMemory>& vrs = vram[type];
 			for (auto& vm : vrs) {
-				void* k = vm.tryAlloc(bytes, alignment);
+				void* k = vm.tryAlloc(prop.size, prop.alignment);
 				if (k) {
-					return vm.alloc(bytes, k);
+					return vm.alloc(prop.size, k);
 				}
 			}
 			vk::DeviceMemory dm = device.allocateMemory(vk::MemoryAllocateInfo()
@@ -110,7 +112,7 @@ namespace core {
 			vrs.emplace_back(granularity);
 			trackedMemory& vm = vrs[vrs.size() - 1];
 			vm.init(device, dm);
-			return vm.malloc(bytes, alignment);
+			return vm.malloc(prop.size, prop.alignment);
 		}
 
 		StreamHost::StreamHost(vk::PhysicalDevice pd, vk::Device device, uint32_t queueIndex, std::vector<vk::Queue>& transferQueue, int granularity, int stage)
@@ -139,28 +141,33 @@ namespace core {
 		}
 
 		StreamHandle StreamHost::allocateStream(vk::Buffer dst, int size) {
-			vk::CommandBuffer cmdb = device.allocateCommandBuffers(vk::CommandBufferAllocateInfo()
+			vk::MemoryRequirements stgprop = device.getBufferMemoryRequirements(dst);
+			auto cmdInfo = vk::CommandBufferAllocateInfo()
 				.setCommandBufferCount(1)
 				.setCommandPool(cmd)
-				.setLevel(vk::CommandBufferLevel::ePrimary))[0];
-			vk::Buffer stgr = device.createBuffer(vk::BufferCreateInfo()
+				.setLevel(vk::CommandBufferLevel::ePrimary);
+			auto dstInfo = vk::BufferCreateInfo()
 				.setPQueueFamilyIndices(&queueIndex)
 				.setQueueFamilyIndexCount(1)
 				.setSharingMode(vk::SharingMode::eExclusive)
 				.setSize(size)
-				.setUsage(vk::BufferUsageFlagBits::eTransferSrc));
-			vk::MemoryRequirements stgprop = device.getBufferMemoryRequirements(dst);
+				.setUsage(vk::BufferUsageFlagBits::eTransferSrc);
+			sync.lock();
+			vk::CommandBuffer cmdb = device.allocateCommandBuffers(cmdInfo)[0];
+			vk::Buffer stgr = device.createBuffer(dstInfo);
 			using vp = ram::vPointer;
 			vp stgp = stage.malloc(stgprop.size, stgprop.alignment);
-			vk::MemoryRequirements prop = device.getBufferMemoryRequirements(dst);
-			using vm = ram::vMemory;
-			uint32_t index = vm::selectMemoryType(pDevice, vk::MemoryPropertyFlagBits::eDeviceLocal, prop.memoryTypeBits);
-			vp vrmp = allocateMemory(index, prop.size, prop.alignment);
+			vp vrmp = allocateMemory(dst);
+			sync.unlock();
 			return StreamHandle(*this, cmdb, size, vrmp, stgp, dst, stgr);
 		}
 
 		vk::Queue& StreamHost::requestQueue() {
-			return transferQueue[0];
+			//synchronization actually optional if you dont mind uneven queues
+			sync.lock();
+			int r = rId++;
+			sync.unlock();
+			return transferQueue[r++%transferQueue.size()];
 		}
 
 		StreamHost::~StreamHost() {

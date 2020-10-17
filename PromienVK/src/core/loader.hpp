@@ -66,7 +66,7 @@ namespace core {
 			std::vector<vk::Queue>& transferQueue;
 			ram::vMemory stage;
 			std::map<uint32_t, std::vector<trackedMemory>> vram;
-			ram::vPointer allocateMemory(uint32_t type, int bytes, int alignment);
+			ram::vPointer allocateMemory(vk::Buffer dst);
 		public:
 			StreamHost(vk::PhysicalDevice pd, vk::Device, uint32_t queueIndex, std::vector<vk::Queue>& transferQueue, int granularity, int stage);
 			vk::Device getDevice();
