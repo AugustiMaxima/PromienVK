@@ -44,8 +44,8 @@ namespace core {
 			}
 		}
 
-		vPointer vMemory::malloc(int bytes, int alignment) {
-			int offset = allocator.malloc(bytes, alignment);
+		vPointer vMemory::malloc(int bytes, int alignment, bool opt) {
+			int offset = allocator.malloc(bytes, alignment, opt);
 			allocRegistry.put(offset, true);
 			return vPointer(*this, offset);
 		}

@@ -51,28 +51,28 @@ namespace core {
 			device.destroyBuffer(buffer);
 		}
 
-		StreamHandle::StreamHandle(StreamHost& src, vk::CommandBuffer cmd, int size, ram::vPointer vram, ram::vPointer stage, vk::Buffer vs, vk::Buffer ss)
-			:src(src), cmd(cmd), size(size), vram(vram), stage(stage), vs(vs), ss(ss) {
+		StreamHandle::StreamHandle(StreamHost& src, vk::CommandBuffer cmd, int size, Vueue stage, Vueue vram)
+			:src(src), cmd(cmd), size(size), vram(vram), stage(stage) {
 			device = src.getDevice();
 		}
 
 		void* StreamHandle::stagingGround() {
-			return device.mapMemory(stage.getDeviceMemory(), stage.getOffset(), size);
+			return device.mapMemory(stage.mem.getDeviceMemory(), stage.mem.getOffset(), size);
 		}
 
 		void StreamHandle::flushCache() {
 			vk::MappedMemoryRange range = vk::MappedMemoryRange()
-				.setMemory(stage.getDeviceMemory())
-				.setOffset(stage.getOffset())
+				.setMemory(stage.mem.getDeviceMemory())
+				.setOffset(stage.mem.getOffset())
 				.setSize(size);
 			device.flushMappedMemoryRanges(range);
 		}
 
 		vk::Fence StreamHandle::transfer() {
 			fence = device.createFence(vk::FenceCreateInfo());
-			cpy.setSize(size).setSrcOffset(stage.getOffset()).setDstOffset(vram.getOffset());
+			cpy.setSize(size).setSrcOffset(stage.mem.getOffset()).setDstOffset(vram.mem.getOffset());
 			cmd.begin(vk::CommandBufferBeginInfo());
-			cmd.copyBuffer(ss, vs, cpy);
+			cmd.copyBuffer(stage.buffer, vram.buffer, cpy);
 			cmd.end();
 			vk::Queue& q = src.requestQueue();
 			q.submit(vk::SubmitInfo()
@@ -85,15 +85,6 @@ namespace core {
 				return true;
 			else
 				return false;
-		}
-
-		void StreamHandle::purgeStage() {
-			device.destroy(ss);
-			stage.free();
-		}
-
-		Vueue StreamHandle::collectVram() {
-			return Vueue{ device, vram, vs };
 		}
 
 		ram::vPointer StreamHost::allocateMemory(vk::Buffer dst) {
@@ -146,7 +137,7 @@ namespace core {
 				.setCommandBufferCount(1)
 				.setCommandPool(cmd)
 				.setLevel(vk::CommandBufferLevel::ePrimary);
-			auto dstInfo = vk::BufferCreateInfo()
+			auto srcInfo = vk::BufferCreateInfo()
 				.setPQueueFamilyIndices(&queueIndex)
 				.setQueueFamilyIndexCount(1)
 				.setSharingMode(vk::SharingMode::eExclusive)
@@ -154,13 +145,54 @@ namespace core {
 				.setUsage(vk::BufferUsageFlagBits::eTransferSrc);
 			sync.lock();
 			vk::CommandBuffer cmdb = device.allocateCommandBuffers(cmdInfo)[0];
-			vk::Buffer stgr = device.createBuffer(dstInfo);
+			vk::Buffer stgr = device.createBuffer(srcInfo);
 			using vp = ram::vPointer;
 			vp stgp = stage.malloc(stgprop.size, stgprop.alignment);
 			vp vrmp = allocateMemory(dst);
 			sync.unlock();
 			return StreamHandle(*this, cmdb, size, vrmp, stgp, dst, stgr);
 		}
+
+		Vueue StreamHost::allocateStageBuffer(int size) {
+			auto srcInfo = vk::BufferCreateInfo()
+				.setPQueueFamilyIndices(&queueIndex)
+				.setQueueFamilyIndexCount(1)
+				.setSharingMode(vk::SharingMode::eExclusive)
+				.setSize(size)
+				.setUsage(vk::BufferUsageFlagBits::eTransferSrc);
+			vk::Buffer stgr = device.createBuffer(srcInfo);
+			vk::MemoryRequirements stgProp = device.getBufferMemoryRequirements(stgr);
+			sync.lock();
+			ram::vPointer stgp = stage.malloc(stgProp.size, stgProp.alignment);
+			sync.unlock();
+			return Vueue{device, stgp, stgr};
+		}
+
+		Vueue StreamHost::allocateVRAM(vk::Buffer dst) {
+			vk::MemoryRequirements prop = device.getBufferMemoryRequirements(dst);
+			uint32_t type = ram::vMemory::selectMemoryType(pDevice, vk::MemoryPropertyFlagBits::eDeviceLocal, prop.memoryTypeBits);
+			std::vector<trackedMemory>& vrs = vram[type];
+
+			sync.lock();
+			for (auto& vm : vrs) {
+				void* k = vm.tryAlloc(prop.size, prop.alignment);
+				if (k) {
+					Vueue vs{ device, vm.alloc(prop.size, k), dst };
+					sync.unlock();
+					return vs;
+				}
+			}
+			vk::DeviceMemory dm = device.allocateMemory(vk::MemoryAllocateInfo()
+				.setAllocationSize(granularity)
+				.setMemoryTypeIndex(type));
+			vrs.emplace_back(granularity);
+			trackedMemory& vm = vrs[vrs.size() - 1];
+			vm.init(device, dm);
+			Vueue vs{ device, vm.malloc(prop.size, prop.alignment), dst };
+			sync.unlock();
+			return vs;
+		}
+
 
 		vk::Queue& StreamHost::requestQueue() {
 			//synchronization actually optional if you dont mind uneven queues

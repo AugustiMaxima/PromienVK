@@ -39,20 +39,16 @@ namespace core {
 			vk::Device device;
 			vk::CommandBuffer cmd;
 			vk::Fence fence;
+			Vueue stage;
+			Vueue vram;
 			int size;
-			ram::vPointer vram;
-			ram::vPointer stage;
-			vk::Buffer vs;
-			vk::Buffer ss;
 			vk::BufferCopy cpy;
 		public:
-			StreamHandle(StreamHost& src, vk::CommandBuffer buffer, int size, ram::vPointer vram, ram::vPointer stage, vk::Buffer vs, vk::Buffer ss);
+			StreamHandle(StreamHost& src, vk::CommandBuffer cmd, int size, Vueue stage, Vueue vram);
 			void* stagingGround();
 			void flushCache();
 			vk::Fence transfer();
 			bool transferComplete();
-			void purgeStage();
-			Vueue collectVram();
 		};
 
 		class StreamHost{
@@ -71,6 +67,8 @@ namespace core {
 			StreamHost(vk::PhysicalDevice pd, vk::Device, uint32_t queueIndex, std::vector<vk::Queue>& transferQueue, int granularity, int stage);
 			vk::Device getDevice();
 			StreamHandle allocateStream(vk::Buffer dst, int size);
+			Vueue allocateStageBuffer(int size);
+			Vueue allocateVRAM(vk::Buffer dst);
 			vk::Queue& requestQueue();
 			~StreamHost();
 		};

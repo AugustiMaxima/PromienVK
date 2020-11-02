@@ -3,8 +3,7 @@
 
 namespace asset {
 	struct Model {
-		float* verts;
-		int vCount;
+
 	};
 
 }
