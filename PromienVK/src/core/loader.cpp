@@ -87,6 +87,11 @@ namespace core {
 				return false;
 		}
 
+		Vueue StreamHandle::collectVram() {
+			//TODO: add cleanup for commandBuffer
+			return vram;
+		}
+
 		ram::vPointer StreamHost::allocateMemory(vk::Buffer dst) {
 			vk::MemoryRequirements prop = device.getBufferMemoryRequirements(dst);
 			uint32_t type = ram::vMemory::selectMemoryType(pDevice, vk::MemoryPropertyFlagBits::eDeviceLocal, prop.memoryTypeBits);
@@ -131,28 +136,6 @@ namespace core {
 			return device;
 		}
 
-		StreamHandle StreamHost::allocateStream(vk::Buffer dst, int size) {
-			vk::MemoryRequirements stgprop = device.getBufferMemoryRequirements(dst);
-			auto cmdInfo = vk::CommandBufferAllocateInfo()
-				.setCommandBufferCount(1)
-				.setCommandPool(cmd)
-				.setLevel(vk::CommandBufferLevel::ePrimary);
-			auto srcInfo = vk::BufferCreateInfo()
-				.setPQueueFamilyIndices(&queueIndex)
-				.setQueueFamilyIndexCount(1)
-				.setSharingMode(vk::SharingMode::eExclusive)
-				.setSize(size)
-				.setUsage(vk::BufferUsageFlagBits::eTransferSrc);
-			sync.lock();
-			vk::CommandBuffer cmdb = device.allocateCommandBuffers(cmdInfo)[0];
-			vk::Buffer stgr = device.createBuffer(srcInfo);
-			using vp = ram::vPointer;
-			vp stgp = stage.malloc(stgprop.size, stgprop.alignment);
-			vp vrmp = allocateMemory(dst);
-			sync.unlock();
-			return StreamHandle(*this, cmdb, size, vrmp, stgp, dst, stgr);
-		}
-
 		Vueue StreamHost::allocateStageBuffer(int size) {
 			auto srcInfo = vk::BufferCreateInfo()
 				.setPQueueFamilyIndices(&queueIndex)
@@ -165,19 +148,18 @@ namespace core {
 			sync.lock();
 			ram::vPointer stgp = stage.malloc(stgProp.size, stgProp.alignment);
 			sync.unlock();
-			return Vueue{device, stgp, stgr};
+			return Vueue{device, stgp, stgr, size};
 		}
 
-		Vueue StreamHost::allocateVRAM(vk::Buffer dst) {
+		Vueue StreamHost::allocateVRAM(vk::Buffer dst, int size) {
 			vk::MemoryRequirements prop = device.getBufferMemoryRequirements(dst);
 			uint32_t type = ram::vMemory::selectMemoryType(pDevice, vk::MemoryPropertyFlagBits::eDeviceLocal, prop.memoryTypeBits);
 			std::vector<trackedMemory>& vrs = vram[type];
-
 			sync.lock();
 			for (auto& vm : vrs) {
 				void* k = vm.tryAlloc(prop.size, prop.alignment);
 				if (k) {
-					Vueue vs{ device, vm.alloc(prop.size, k), dst };
+					Vueue vs{ device, vm.alloc(prop.size, k), dst, size };
 					sync.unlock();
 					return vs;
 				}
@@ -188,11 +170,22 @@ namespace core {
 			vrs.emplace_back(granularity);
 			trackedMemory& vm = vrs[vrs.size() - 1];
 			vm.init(device, dm);
-			Vueue vs{ device, vm.malloc(prop.size, prop.alignment), dst };
+			Vueue vs{ device, vm.malloc(prop.size, prop.alignment), dst, size };
 			sync.unlock();
 			return vs;
 		}
 
+		StreamHandle StreamHost::allocateStream(Vueue src, Vueue dst) {
+			auto cmdInfo = vk::CommandBufferAllocateInfo()
+				.setCommandBufferCount(1)
+				.setCommandPool(cmd)
+				.setLevel(vk::CommandBufferLevel::ePrimary);
+			sync.lock();
+			vk::CommandBuffer cmdb = device.allocateCommandBuffers(cmdInfo)[0];
+			sync.unlock();
+			//question -> should vueue hold sizes
+			return StreamHandle(*this, cmdb, src.size, src, dst);
+		}
 
 		vk::Queue& StreamHost::requestQueue() {
 			//synchronization actually optional if you dont mind uneven queues

@@ -30,6 +30,7 @@ namespace core {
 			vk::Device device;
 			ram::vPointer mem;
 			vk::Buffer buffer;
+			int size;
 			void bindBuffer();
 			void cleanUp();
 		};
@@ -49,6 +50,7 @@ namespace core {
 			void flushCache();
 			vk::Fence transfer();
 			bool transferComplete();
+			Vueue collectVram();
 		};
 
 		class StreamHost{
@@ -66,9 +68,9 @@ namespace core {
 		public:
 			StreamHost(vk::PhysicalDevice pd, vk::Device, uint32_t queueIndex, std::vector<vk::Queue>& transferQueue, int granularity, int stage);
 			vk::Device getDevice();
-			StreamHandle allocateStream(vk::Buffer dst, int size);
 			Vueue allocateStageBuffer(int size);
-			Vueue allocateVRAM(vk::Buffer dst);
+			Vueue allocateVRAM(vk::Buffer dst, int size);
+			StreamHandle allocateStream(Vueue src, Vueue dst);
 			vk::Queue& requestQueue();
 			~StreamHost();
 		};

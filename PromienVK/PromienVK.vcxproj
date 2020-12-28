@@ -164,7 +164,6 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="not_main.cpp" />
     <ClCompile Include="src\asset\model.cpp" />
-    <ClCompile Include="src\core\AssetManager.cpp" />
     <ClCompile Include="src\core\boilerplate.cpp" />
     <ClCompile Include="src\core\devicePick.cpp" />
     <ClCompile Include="src\core\loader.cpp" />
@@ -195,7 +194,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\asset\model.hpp" />
-    <ClInclude Include="src\core\AssetManager.hpp" />
     <ClInclude Include="src\core\boilerplate.hpp" />
     <ClInclude Include="src\core\devicePick.hpp" />
     <ClInclude Include="src\core\loader.hpp" />
