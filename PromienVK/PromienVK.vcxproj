@@ -164,6 +164,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="not_main.cpp" />
     <ClCompile Include="src\asset\model.cpp" />
+    <ClCompile Include="src\asset\obj.cpp" />
     <ClCompile Include="src\core\boilerplate.cpp" />
     <ClCompile Include="src\core\devicePick.cpp" />
     <ClCompile Include="src\core\loader.cpp" />
@@ -194,6 +195,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\asset\model.hpp" />
+    <ClInclude Include="src\asset\obj.hpp" />
     <ClInclude Include="src\core\boilerplate.hpp" />
     <ClInclude Include="src\core\devicePick.hpp" />
     <ClInclude Include="src\core\loader.hpp" />
@@ -222,11 +224,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="configs\settings.json" />
-    <None Include="shaders\compileShader.bat" />
     <None Include="shaders\shader.frag" />
-    <None Include="shaders\shader.frag.spv" />
     <None Include="shaders\shader.vert" />
-    <None Include="shaders\shader.vert.spv" />
     <None Include="test\testFiles\test.json" />
     <None Include="test\testFiles\test2.json" />
   </ItemGroup>

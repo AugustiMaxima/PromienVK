@@ -109,6 +109,9 @@
     <ClCompile Include="src\asset\model.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\asset\obj.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\core\prototype.hpp">
@@ -189,24 +192,18 @@
     <ClInclude Include="src\asset\model.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\asset\obj.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="configs\settings.json">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="shaders\compileShader.bat">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="shaders\shader.frag">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="shaders\shader.frag.spv">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="shaders\shader.vert">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="shaders\shader.vert.spv">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="test\testFiles\test2.json">

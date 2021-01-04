@@ -79,7 +79,7 @@ namespace core {
 		vk::DynamicLoader dl;
 		PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr = dl.getProcAddress<PFN_vkGetInstanceProcAddr>("vkGetInstanceProcAddr");
 
-		dldi.init(instance, vkGetInstanceProcAddr);
+		dldi.init((VkInstance)instance, vkGetInstanceProcAddr);
 
 #if defined(_DEBUG)
 		debugMessenger = instance.createDebugUtilsMessengerEXT(msgInfo, nullptr, dldi);
@@ -301,15 +301,12 @@ namespace core {
 	}
 
 	void Prototype::render() {
-			using namespace std;
 		configureSynchronization();
 		unsigned fc = 0;
-		cout << fc << endl;
 
 		while (!glfwWindowShouldClose(window)) {
 			glfwPollEvents();
 			renderFrame(fc++);
-			cout << fc << endl;
 		}
 
 	}

@@ -16,12 +16,13 @@ namespace core {
 				.setQueueFamilyIndexCount(0)
 				.setSize(size)
 				.setUsage(usage));
-			StreamHandle handler = host.allocateStream(dst, size);
+			/* TODO: Clean up streamUnit related code
+			StreamHandle handler = host.allocateStream();
 			bytes = (char*)handler.stagingGround();
 			src.read(bytes, size);
 			src.close();
 			handler.flushCache();
-			fence = handler.transfer();
+			fence = handler.transfer();*/
 		}
 
 		vk::Fence streamUnit::getFence() {
