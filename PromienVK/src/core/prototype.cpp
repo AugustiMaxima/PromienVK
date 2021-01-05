@@ -4,10 +4,10 @@
 #include "devicePick.hpp"
 #include "../utils/multindex.hpp"
 #include "swapchain.hpp"
-#include "shader.hpp"
-#include "pipeline.hpp"
-#include "boilerplate.hpp"
-#include "renderpass.hpp"
+#include "pipeline/shader.hpp"
+#include "pipeline/pipeline.hpp"
+#include "pipeline/boilerplate.hpp"
+#include "pipeline/renderpass.hpp"
 #include "prototype.hpp"
 
 namespace core {

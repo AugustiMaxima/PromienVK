@@ -1,8 +1,8 @@
-#include "streamUnit.hpp"
+#include "streamWorks.hpp"
 #include <fstream>
 
-namespace core {
-	namespace ast {
+namespace asset {
+	namespace io {
 		streamUnit::streamUnit(vk::Device device, StreamHost& host, std::string assetPath, vk::BufferUsageFlags usage)
 			:device(device), host(host), assetPath(assetPath), usage(usage){}
 

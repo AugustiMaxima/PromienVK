@@ -4,7 +4,7 @@
 #include <vulkan/vulkan.hpp>
 
 namespace core {
-	namespace shader {
+	namespace pipeline {
 		vk::ShaderModule createShaderModule(vk::Device device, const std::string& path);
 		vk::PipelineShaderStageCreateInfo createShaderStage(vk::ShaderModule module, vk::ShaderStageFlagBits flag, const std::string& entry = "main");
 	}

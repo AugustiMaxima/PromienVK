@@ -12,5 +12,4 @@ namespace core {
 	}
 }
 
-
 #endif

@@ -3,7 +3,6 @@
 #include <Windows.h>
 #include "src/core/prototype.hpp"
 #include <iostream>
-using namespace std;
 
 
 int main() {
@@ -18,6 +17,7 @@ int main() {
 #endif
 	//insert your compiler flag here
 #if defined(_DEBUG)
+	using namespace std;
 	char a;
 	masterTest();
 	cout << "Enter a character to resume"<<endl;

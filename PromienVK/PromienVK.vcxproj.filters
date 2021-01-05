@@ -55,18 +55,6 @@
     <ClCompile Include="src\core\settings.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\core\shader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\core\pipeline.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\core\renderPass.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\core\boilerplate.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\utils\semaphore.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -100,16 +88,28 @@
     <ClCompile Include="test\heapTest.cpp">
       <Filter>test</Filter>
     </ClCompile>
-    <ClCompile Include="src\core\loader.cpp">
+    <ClCompile Include="src\core\pipeline\boilerplate.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\core\streamUnit.cpp">
+    <ClCompile Include="src\asset\io\loader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\asset\model.cpp">
+    <ClCompile Include="src\asset\format\model.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\asset\obj.cpp">
+    <ClCompile Include="src\asset\format\obj.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\core\pipeline\pipeline.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\core\pipeline\renderPass.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\asset\io\streamWorks.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\core\pipeline\shader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -147,18 +147,6 @@
     <ClInclude Include="src\core\settings.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\core\shader.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\core\pipeline.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\core\renderPass.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\core\boilerplate.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\infr\type.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -183,16 +171,28 @@
     <ClInclude Include="src\infr\Async.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\core\loader.hpp">
+    <ClInclude Include="src\core\pipeline\boilerplate.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\core\streamUnit.hpp">
+    <ClInclude Include="src\core\pipeline\pipeline.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\asset\model.hpp">
+    <ClInclude Include="src\core\pipeline\renderPass.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\asset\obj.hpp">
+    <ClInclude Include="src\core\pipeline\shader.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\asset\format\model.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\asset\format\obj.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\asset\io\loader.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\asset\io\streamWorks.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

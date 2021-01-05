@@ -163,18 +163,18 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="not_main.cpp" />
-    <ClCompile Include="src\asset\model.cpp" />
-    <ClCompile Include="src\asset\obj.cpp" />
-    <ClCompile Include="src\core\boilerplate.cpp" />
+    <ClCompile Include="src\asset\format\model.cpp" />
+    <ClCompile Include="src\asset\format\obj.cpp" />
+    <ClCompile Include="src\asset\io\loader.cpp" />
+    <ClCompile Include="src\asset\io\streamWorks.cpp" />
     <ClCompile Include="src\core\devicePick.cpp" />
-    <ClCompile Include="src\core\loader.cpp" />
     <ClCompile Include="src\core\memoryMap.cpp" />
-    <ClCompile Include="src\core\pipeline.cpp" />
+    <ClCompile Include="src\core\pipeline\boilerplate.cpp" />
+    <ClCompile Include="src\core\pipeline\pipeline.cpp" />
+    <ClCompile Include="src\core\pipeline\renderPass.cpp" />
+    <ClCompile Include="src\core\pipeline\shader.cpp" />
     <ClCompile Include="src\core\prototype.cpp" />
-    <ClCompile Include="src\core\renderPass.cpp" />
     <ClCompile Include="src\core\settings.cpp" />
-    <ClCompile Include="src\core\shader.cpp" />
-    <ClCompile Include="src\core\streamUnit.cpp" />
     <ClCompile Include="src\core\swapchain.cpp" />
     <ClCompile Include="src\dbg\dbg.cpp" />
     <ClCompile Include="src\dbg\vLog.cpp" />
@@ -194,18 +194,18 @@
     <ClCompile Include="test\masterTest.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\asset\model.hpp" />
-    <ClInclude Include="src\asset\obj.hpp" />
-    <ClInclude Include="src\core\boilerplate.hpp" />
+    <ClInclude Include="src\asset\format\model.hpp" />
+    <ClInclude Include="src\asset\format\obj.hpp" />
+    <ClInclude Include="src\asset\io\loader.hpp" />
+    <ClInclude Include="src\asset\io\streamWorks.hpp" />
     <ClInclude Include="src\core\devicePick.hpp" />
-    <ClInclude Include="src\core\loader.hpp" />
     <ClInclude Include="src\core\memoryMap.hpp" />
-    <ClInclude Include="src\core\pipeline.hpp" />
+    <ClInclude Include="src\core\pipeline\boilerplate.hpp" />
+    <ClInclude Include="src\core\pipeline\pipeline.hpp" />
+    <ClInclude Include="src\core\pipeline\renderPass.hpp" />
+    <ClInclude Include="src\core\pipeline\shader.hpp" />
     <ClInclude Include="src\core\prototype.hpp" />
-    <ClInclude Include="src\core\renderPass.hpp" />
     <ClInclude Include="src\core\settings.hpp" />
-    <ClInclude Include="src\core\shader.hpp" />
-    <ClInclude Include="src\core\streamUnit.hpp" />
     <ClInclude Include="src\core\swapchain.hpp" />
     <ClInclude Include="src\dbg\dbg.hpp" />
     <ClInclude Include="src\dbg\vLog.hpp" />

@@ -1,11 +1,11 @@
-#ifndef STREAM_UNIT_H
-#define STREAM_UNIT_H
+#ifndef STREAM_WORKS_H
+#define STREAM_WORKS_H
 
-#include "../infr/Async.hpp"
+#include "../../infr/Async.hpp"
 #include "loader.hpp"
 
-namespace core {
-	namespace ast {
+namespace asset {
+	namespace io {
 		class streamUnit : public infr::asyc::Job {
 			vk::Device device;
 			StreamHost& host;

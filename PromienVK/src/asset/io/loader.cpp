@@ -1,11 +1,11 @@
 #include "loader.hpp"
 
-namespace core {
-	namespace ast {
-		trackedMemory::trackedMemory(int size) :ram::vMemory(size), capacity(size), occupancy(0) {}
+namespace asset {
+	namespace io {
+		trackedMemory::trackedMemory(int size) :core::vMemory(size), capacity(size), occupancy(0) {}
 
 		void trackedMemory::init(vk::Device device, vk::DeviceMemory src) {
-			ram::vMemory::init(device, src);
+			core::vMemory::init(device, src);
 		}
 
 		void* trackedMemory::tryAlloc(int bytes, int alignment) {
@@ -17,21 +17,21 @@ namespace core {
 			return nullptr;
 		}
 
-		ram::vPointer trackedMemory::alloc(int bytes, void* key) {
+		core::vPointer trackedMemory::alloc(int bytes, void* key) {
 			occupancy += bytes;
 			int offset = allocator.fin_alloc((infr::lvm::rNode*)key, bytes);
 			sReg.put(offset, bytes);
-			return ram::vPointer(*this, offset);
+			return core::vPointer(*this, offset);
 		}
 		//this occupancy is coarse grained and misses padding info
-		ram::vPointer trackedMemory::malloc(int bytes, int alignment) {
+		core::vPointer trackedMemory::malloc(int bytes, int alignment) {
 			occupancy += bytes;
 			int offset = allocator.malloc(bytes, alignment);
 			sReg.put(offset, bytes);
-			return ram::vPointer(*this, offset);
+			return core::vPointer(*this, offset);
 		}
 
-		void trackedMemory::free(ram::vPointer ptr) {
+		void trackedMemory::free(core::vPointer ptr) {
 			std::optional<int> s = sReg.pop(ptr.getOffset());
 			if (!s) {
 				return;
@@ -92,9 +92,9 @@ namespace core {
 			return vram;
 		}
 
-		ram::vPointer StreamHost::allocateMemory(vk::Buffer dst) {
+		core::vPointer StreamHost::allocateMemory(vk::Buffer dst) {
 			vk::MemoryRequirements prop = device.getBufferMemoryRequirements(dst);
-			uint32_t type = ram::vMemory::selectMemoryType(pDevice, vk::MemoryPropertyFlagBits::eDeviceLocal, prop.memoryTypeBits);
+			uint32_t type = core::vMemory::selectMemoryType(pDevice, vk::MemoryPropertyFlagBits::eDeviceLocal, prop.memoryTypeBits);
 			std::vector<trackedMemory>& vrs = vram[type];
 			for (auto& vm : vrs) {
 				void* k = vm.tryAlloc(prop.size, prop.alignment);
@@ -113,7 +113,7 @@ namespace core {
 
 		StreamHost::StreamHost(vk::PhysicalDevice pd, vk::Device device, uint32_t queueIndex, std::vector<vk::Queue>& transferQueue, int granularity, int stage)
 			:rId(0), pDevice(pd), device(device), queueIndex(queueIndex), granularity(granularity), stage(stage), transferQueue(transferQueue) {
-			using vm = ram::vMemory;
+			using vm = core::vMemory;
 			cmd = device.createCommandPool(vk::CommandPoolCreateInfo()
 				.setQueueFamilyIndex(queueIndex));
 
@@ -146,14 +146,14 @@ namespace core {
 			vk::Buffer stgr = device.createBuffer(srcInfo);
 			vk::MemoryRequirements stgProp = device.getBufferMemoryRequirements(stgr);
 			sync.lock();
-			ram::vPointer stgp = stage.malloc(stgProp.size, stgProp.alignment);
+			core::vPointer stgp = stage.malloc(stgProp.size, stgProp.alignment);
 			sync.unlock();
 			return Vueue{device, stgp, stgr, size};
 		}
 
 		Vueue StreamHost::allocateVRAM(vk::Buffer dst, int size) {
 			vk::MemoryRequirements prop = device.getBufferMemoryRequirements(dst);
-			uint32_t type = ram::vMemory::selectMemoryType(pDevice, vk::MemoryPropertyFlagBits::eDeviceLocal, prop.memoryTypeBits);
+			uint32_t type = core::vMemory::selectMemoryType(pDevice, vk::MemoryPropertyFlagBits::eDeviceLocal, prop.memoryTypeBits);
 			std::vector<trackedMemory>& vrs = vram[type];
 			sync.lock();
 			for (auto& vm : vrs) {

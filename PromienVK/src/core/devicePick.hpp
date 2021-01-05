@@ -11,7 +11,6 @@
 
 namespace core {
 	namespace dps {
-
 		//frustration free packaging
 		struct deviceCreateEnclosure {
 			vk::DeviceCreateInfo ref;

@@ -3,13 +3,13 @@
 #include <map>
 #include <vector>
 #include <mutex>
-#include "../utils/multindex.hpp"
-#include "memoryMap.hpp"
+#include "../../utils/multindex.hpp"
+#include "../../core/memoryMap.hpp"
 
-namespace core {
-	namespace ast {
+namespace asset {
+	namespace io {
 		
-		class trackedMemory : public ram::vMemory {
+		class trackedMemory : public core::vMemory {
 		protected:
 			int occupancy;
 			int capacity;
@@ -18,9 +18,9 @@ namespace core {
 			trackedMemory(int size);
 			void init(vk::Device, vk::DeviceMemory src);
 			void* tryAlloc(int bytes, int alignment);
-			ram::vPointer alloc(int bytes, void* key);
-			ram::vPointer malloc(int bytes, int alignment);
-			virtual void free(ram::vPointer ptr);
+			core::vPointer alloc(int bytes, void* key);
+			core::vPointer malloc(int bytes, int alignment);
+			virtual void free(core::vPointer ptr);
 			virtual ~trackedMemory();
 		};
 		
@@ -28,7 +28,7 @@ namespace core {
 
 		struct Vueue {
 			vk::Device device;
-			ram::vPointer mem;
+			core::vPointer mem;
 			vk::Buffer buffer;
 			int size;
 			void bindBuffer();
@@ -62,9 +62,9 @@ namespace core {
 			uint32_t queueIndex;
 			vk::CommandPool cmd;
 			std::vector<vk::Queue>& transferQueue;
-			ram::vMemory stage;
+			core::vMemory stage;
 			std::map<uint32_t, std::vector<trackedMemory>> vram;
-			ram::vPointer allocateMemory(vk::Buffer dst);
+			core::vPointer allocateMemory(vk::Buffer dst);
 		public:
 			StreamHost(vk::PhysicalDevice pd, vk::Device, uint32_t queueIndex, std::vector<vk::Queue>& transferQueue, int granularity, int stage);
 			vk::Device getDevice();
