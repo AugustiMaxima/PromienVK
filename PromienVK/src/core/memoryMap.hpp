@@ -8,7 +8,7 @@ namespace core {
 	class vMemory;
 	//incomplete draft -- more to be done with interface & abstraction
 	class vPointer {
-		vMemory& src;
+		vMemory* src;
 		int offset;
 	public:
 		vPointer(vMemory& src, int offset);
@@ -31,7 +31,7 @@ namespace core {
 		static vMemory createMemoryPool(vk::Device device, int size, int memoryType);
 		static int selectMemoryType(vk::PhysicalDevice device, vk::MemoryPropertyFlags flag, uint32_t typeFilter = 0xFFFFFFFF);
 		virtual vPointer malloc(int bytes, int alignment = 4, bool opt = true);
-		virtual void free(vPointer ptr);
+		virtual void free(vPointer& ptr);
 		virtual ~vMemory();
 	};
 

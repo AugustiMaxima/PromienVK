@@ -2,22 +2,33 @@
 #define STREAM_WORKS_H
 
 #include "../../infr/Async.hpp"
+#include "../format/model.hpp"
 #include "loader.hpp"
 
 namespace asset {
 	namespace io {
-		class streamUnit : public infr::asyc::Job {
-			vk::Device device;
+		class ModelToStage : public infr::asyc::Job {
 			StreamHost& host;
-			std::string assetPath;
-			vk::BufferUsageFlags usage;
+			format::Model& model;
+			StageVueue stage;
+		public:
+			ModelToStage(StreamHost& host, format::Model& model);
+			virtual void work() override;
+			StageVueue& collectStage();
+			virtual ~ModelToStage();
+		};
+
+		class StagePropagation : public infr::asyc::Job {
+			StreamHost& host;
+			vk::Buffer& binding;
+			StageVueue& stage;
+			StreamHandle stream;
 			vk::Fence fence;
 		public:
-			streamUnit(vk::Device device, StreamHost& host, std::string assetPath, vk::BufferUsageFlags usage);
+			StagePropagation(StreamHost& host, vk::Buffer& binding, StageVueue& vueue);
 			virtual void work() override;
-			vk::Fence getFence();
 			bool transferComplete();
-			virtual ~streamUnit();
+			virtual ~StagePropagation();
 		};
 	}
 }

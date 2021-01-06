@@ -31,12 +31,19 @@ namespace asset {
 			core::vPointer mem;
 			vk::Buffer buffer;
 			int size;
+			Vueue(vk::Device device, core::vPointer mem, vk::Buffer buffer, int size);
 			void bindBuffer();
 			void cleanUp();
 		};
 
+		struct StageVueue : public Vueue {
+			StageVueue(vk::Device device, core::vPointer mem, vk::Buffer buffer, int size);
+			void* getStageSource();
+			void flushCache();
+		};
+
 		class StreamHandle {
-			StreamHost& src;
+			StreamHost* src;
 			vk::Device device;
 			vk::CommandBuffer cmd;
 			vk::Fence fence;
@@ -46,8 +53,6 @@ namespace asset {
 			vk::BufferCopy cpy;
 		public:
 			StreamHandle(StreamHost& src, vk::CommandBuffer cmd, int size, Vueue stage, Vueue vram);
-			void* stagingGround();
-			void flushCache();
 			vk::Fence transfer();
 			bool transferComplete();
 			Vueue collectVram();
@@ -68,7 +73,7 @@ namespace asset {
 		public:
 			StreamHost(vk::PhysicalDevice pd, vk::Device, uint32_t queueIndex, std::vector<vk::Queue>& transferQueue, int granularity, int stage);
 			vk::Device getDevice();
-			Vueue allocateStageBuffer(int size);
+			StageVueue allocateStageBuffer(int size);
 			Vueue allocateVRAM(vk::Buffer dst, int size);
 			StreamHandle allocateStream(Vueue src, Vueue dst);
 			vk::Queue& requestQueue();

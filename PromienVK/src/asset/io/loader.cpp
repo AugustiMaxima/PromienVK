@@ -51,21 +51,25 @@ namespace asset {
 			device.destroyBuffer(buffer);
 		}
 
-		StreamHandle::StreamHandle(StreamHost& src, vk::CommandBuffer cmd, int size, Vueue stage, Vueue vram)
-			:src(src), cmd(cmd), size(size), vram(vram), stage(stage) {
-			device = src.getDevice();
+		Vueue::Vueue(vk::Device device, core::vPointer mem, vk::Buffer buffer, int size):device(device), mem(mem), buffer(buffer), size(size){}
+
+		StageVueue::StageVueue(vk::Device device, core::vPointer mem, vk::Buffer buffer, int size):Vueue(device, mem, buffer, size){}
+
+		void* StageVueue::getStageSource() {
+			return device.mapMemory(mem.getDeviceMemory(), mem.getOffset(), size);
 		}
 
-		void* StreamHandle::stagingGround() {
-			return device.mapMemory(stage.mem.getDeviceMemory(), stage.mem.getOffset(), size);
-		}
-
-		void StreamHandle::flushCache() {
+		void StageVueue::flushCache() {
 			vk::MappedMemoryRange range = vk::MappedMemoryRange()
-				.setMemory(stage.mem.getDeviceMemory())
-				.setOffset(stage.mem.getOffset())
+				.setMemory(mem.getDeviceMemory())
+				.setOffset(mem.getOffset())
 				.setSize(size);
 			device.flushMappedMemoryRanges(range);
+		}
+
+		StreamHandle::StreamHandle(StreamHost& src, vk::CommandBuffer cmd, int size, Vueue stage, Vueue vram)
+			:src(&src), cmd(cmd), size(size), vram(vram), stage(stage) {
+			device = src.getDevice();
 		}
 
 		vk::Fence StreamHandle::transfer() {
@@ -74,7 +78,7 @@ namespace asset {
 			cmd.begin(vk::CommandBufferBeginInfo());
 			cmd.copyBuffer(stage.buffer, vram.buffer, cpy);
 			cmd.end();
-			vk::Queue& q = src.requestQueue();
+			vk::Queue& q = src->requestQueue();
 			q.submit(vk::SubmitInfo()
 				.setCommandBuffers(cmd), fence);
 			return fence;
@@ -115,7 +119,8 @@ namespace asset {
 			:rId(0), pDevice(pd), device(device), queueIndex(queueIndex), granularity(granularity), stage(stage), transferQueue(transferQueue) {
 			using vm = core::vMemory;
 			cmd = device.createCommandPool(vk::CommandPoolCreateInfo()
-				.setQueueFamilyIndex(queueIndex));
+				.setQueueFamilyIndex(queueIndex)
+				.setFlags(vk::CommandPoolCreateFlagBits::eResetCommandBuffer));
 
 			vk::Buffer stgr = device.createBuffer(vk::BufferCreateInfo()
 				.setPQueueFamilyIndices(&queueIndex)
@@ -136,7 +141,7 @@ namespace asset {
 			return device;
 		}
 
-		Vueue StreamHost::allocateStageBuffer(int size) {
+		StageVueue StreamHost::allocateStageBuffer(int size) {
 			auto srcInfo = vk::BufferCreateInfo()
 				.setPQueueFamilyIndices(&queueIndex)
 				.setQueueFamilyIndexCount(1)
@@ -148,7 +153,7 @@ namespace asset {
 			sync.lock();
 			core::vPointer stgp = stage.malloc(stgProp.size, stgProp.alignment);
 			sync.unlock();
-			return Vueue{device, stgp, stgr, size};
+			return StageVueue(device, stgp, stgr, size);
 		}
 
 		Vueue StreamHost::allocateVRAM(vk::Buffer dst, int size) {

@@ -1,41 +1,40 @@
 #include "streamWorks.hpp"
-#include <fstream>
 
 namespace asset {
 	namespace io {
-		streamUnit::streamUnit(vk::Device device, StreamHost& host, std::string assetPath, vk::BufferUsageFlags usage)
-			:device(device), host(host), assetPath(assetPath), usage(usage){}
+		ModelToStage::ModelToStage(StreamHost& host, format::Model& model):host(host), model(model){}
 
-		void streamUnit::work() {
-			using namespace std;
-			char* bytes;
-			ifstream src{ assetPath, ios::ate | ios::binary };
-			int size = src.tellg();
-			vk::Buffer dst = device.createBuffer(vk::BufferCreateInfo()
-				.setSharingMode(vk::SharingMode::eExclusive)
-				.setQueueFamilyIndexCount(0)
-				.setSize(size)
-				.setUsage(usage));
-			/* TODO: Clean up streamUnit related code
-			StreamHandle handler = host.allocateStream();
-			bytes = (char*)handler.stagingGround();
-			src.read(bytes, size);
-			src.close();
-			handler.flushCache();
-			fence = handler.transfer();*/
+		void ModelToStage::work() {
+			const int bufferSize = model.getAttributes() * model.getVerticeCount() * sizeof(float);
+			stage = host.allocateStageBuffer(bufferSize);
+			model.copy(stage.getStageSource());
+			stage.flushCache();
 		}
 
-		vk::Fence streamUnit::getFence() {
-			if(isComplete())
-				return fence;
-			return nullptr;
+		StageVueue& ModelToStage::collectStage() {
+			return stage;
 		}
 
-		bool streamUnit::transferComplete() {
-			return device.getFenceStatus(fence) == vk::Result::eSuccess;
+		ModelToStage::~ModelToStage(){}
+
+		StagePropagation::StagePropagation(StreamHost& host, vk::Buffer& binding, StageVueue& vueue) :host(host), binding(binding), stage(vueue) {
+			vk::Device device = host.getDevice();
+			device.createFence(vk::FenceCreateInfo());
 		}
 
-		streamUnit::~streamUnit(){}
+		void StagePropagation::work() {
+			vk::Device device = host.getDevice();
+			Vueue vram = host.allocateVRAM(binding, stage.size);
+			stream = host.allocateStream(stage, vram);
+			stream.transfer();
+		}
 
+		bool StagePropagation::transferComplete() {
+			return stream.transferComplete();
+		}
+
+		StagePropagation::~StagePropagation() {
+
+		}
 	}
 }

@@ -1,18 +1,18 @@
 #include "memoryMap.hpp"
 
 namespace core {
-	vPointer::vPointer(vMemory& src, int offset) : src(src), offset(offset){}
+	vPointer::vPointer(vMemory& src, int offset) : src(&src), offset(offset){}
 
 	int vPointer::getOffset() const {
 		return offset;
 	}
 
 	vk::DeviceMemory vPointer::getDeviceMemory() {
-		return src.getDeviceMemory();
+		return src->getDeviceMemory();
 	}
 
 	void vPointer::free() {
-		src.free(*this);
+		src->free(*this);
 	}
 
 	vMemory::vMemory(vk::Device device, vk::DeviceMemory src, int size) : device(device), src(src), allocator(size){}
@@ -51,7 +51,7 @@ namespace core {
 
 	vMemory::~vMemory(){}
 
-	void vMemory::free(vPointer ptr) {
+	void vMemory::free(vPointer& ptr) {
 		if (ptr.getDeviceMemory() != src)
 			throw std::exception("This memory was allocated from a different heap of deviceMemory");
 		if (!allocRegistry.get(ptr.getOffset()))
