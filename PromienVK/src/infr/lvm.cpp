@@ -98,9 +98,18 @@ namespace infr {
 			delete reg;
 		}
 
+		LinearVM::LinearVM(){
+			src = new mNode(0, 0, *this, true);
+		}
+
 		LinearVM::LinearVM(int maxHeapSize) : maxHeapSize(maxHeapSize){
 			src = new mNode(0, 0, *this, true);
 			//meme first slot to avoid the assignment problem
+			src->r = new mNode(0, maxHeapSize, *this);
+			src->r->f = src;
+		}
+
+		void LinearVM::initialize(int maxHeapSize){
 			src->r = new mNode(0, maxHeapSize, *this);
 			src->r->f = src;
 		}

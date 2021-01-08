@@ -286,6 +286,14 @@ namespace core {
 		}
 	}
 
+	void Prototype::configureAssets() {
+		using namespace asset::format;
+		lux = new obj("assets/lux.obj");
+
+
+
+	}
+
 	void Prototype::setup() {
 		using namespace std;
 		createInstance();
@@ -298,10 +306,11 @@ namespace core {
 		configureGraphicsPipeline();
 		configureFramebuffers();
 		configureCommandPool();
+		configureAssets();
+		configureSynchronization();
 	}
 
 	void Prototype::render() {
-		configureSynchronization();
 		unsigned fc = 0;
 
 		while (!glfwWindowShouldClose(window)) {

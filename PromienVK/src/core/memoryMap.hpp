@@ -11,7 +11,9 @@ namespace core {
 		vMemory* src;
 		int offset;
 	public:
+		vPointer();
 		vPointer(vMemory& src, int offset);
+		void initialize(vMemory& src, int offset);
 		int getOffset() const;
 		vk::DeviceMemory getDeviceMemory();
 		void free();
@@ -24,9 +26,9 @@ namespace core {
 		infr::lvm::LinearVM allocator;
 		util::multIndex<int, bool> allocRegistry; //An additional safety check to prevent bad free
 	public:
-		vMemory(int size);
+		vMemory();
 		vMemory(vk::Device device, vk::DeviceMemory src, int size);
-		void init(vk::Device device, vk::DeviceMemory src);
+		void init(vk::Device device, vk::DeviceMemory src, int size);
 		vk::DeviceMemory getDeviceMemory();
 		static vMemory createMemoryPool(vk::Device device, int size, int memoryType);
 		static int selectMemoryType(vk::PhysicalDevice device, vk::MemoryPropertyFlags flag, uint32_t typeFilter = 0xFFFFFFFF);

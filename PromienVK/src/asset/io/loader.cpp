@@ -2,10 +2,11 @@
 
 namespace asset {
 	namespace io {
-		trackedMemory::trackedMemory(int size) :core::vMemory(size), capacity(size), occupancy(0) {}
+		trackedMemory::trackedMemory() :occupancy(0) {}
 
-		void trackedMemory::init(vk::Device device, vk::DeviceMemory src) {
-			core::vMemory::init(device, src);
+		void trackedMemory::init(vk::Device device, vk::DeviceMemory src, int size) {
+			occupancy = size;
+			core::vMemory::init(device, src, size);
 		}
 
 		void* trackedMemory::tryAlloc(int bytes, int alignment) {
@@ -51,7 +52,11 @@ namespace asset {
 			device.destroyBuffer(buffer);
 		}
 
+		Vueue::Vueue(){}
+
 		Vueue::Vueue(vk::Device device, core::vPointer mem, vk::Buffer buffer, int size):device(device), mem(mem), buffer(buffer), size(size){}
+
+		StageVueue::StageVueue(){}
 
 		StageVueue::StageVueue(vk::Device device, core::vPointer mem, vk::Buffer buffer, int size):Vueue(device, mem, buffer, size){}
 
@@ -67,9 +72,20 @@ namespace asset {
 			device.flushMappedMemoryRanges(range);
 		}
 
+		StreamHandle::StreamHandle(){}
+
 		StreamHandle::StreamHandle(StreamHost& src, vk::CommandBuffer cmd, int size, Vueue stage, Vueue vram)
 			:src(&src), cmd(cmd), size(size), vram(vram), stage(stage) {
 			device = src.getDevice();
+		}
+
+		void StreamHandle::initialize(StreamHost& src, vk::CommandBuffer cmd, int size, Vueue stage, Vueue vram) {
+			this->src = &src;
+			this->cmd = cmd;
+			this->size = size;
+			this->stage = stage;
+			this->vram = vram;
+			this->device = src.getDevice();
 		}
 
 		vk::Fence StreamHandle::transfer() {
@@ -107,16 +123,15 @@ namespace asset {
 				}
 			}
 			vk::DeviceMemory dm = device.allocateMemory(vk::MemoryAllocateInfo()
-				.setAllocationSize(granularity)
+				.setAllocationSize(vramBlockSize)
 				.setMemoryTypeIndex(type));
-			vrs.emplace_back(granularity);
+			vrs.emplace_back();
 			trackedMemory& vm = vrs[vrs.size() - 1];
-			vm.init(device, dm);
+			vm.init(device, dm, vramBlockSize);
 			return vm.malloc(prop.size, prop.alignment);
 		}
 
-		StreamHost::StreamHost(vk::PhysicalDevice pd, vk::Device device, uint32_t queueIndex, std::vector<vk::Queue>& transferQueue, int granularity, int stage)
-			:rId(0), pDevice(pd), device(device), queueIndex(queueIndex), granularity(granularity), stage(stage), transferQueue(transferQueue) {
+		void StreamHost::init() {
 			using vm = core::vMemory;
 			cmd = device.createCommandPool(vk::CommandPoolCreateInfo()
 				.setQueueFamilyIndex(queueIndex)
@@ -132,9 +147,27 @@ namespace asset {
 			vk::MemoryRequirements prop = device.getBufferMemoryRequirements(stgr);
 
 			vk::DeviceMemory mstage = device.allocateMemory(vk::MemoryAllocateInfo()
-				.setAllocationSize(stage)
-				.setMemoryTypeIndex(vm::selectMemoryType(pd, vk::MemoryPropertyFlagBits::eHostVisible, prop.memoryTypeBits)));
-			this->stage.init(device, mstage);
+				.setAllocationSize(stageBlockSize)
+				.setMemoryTypeIndex(vm::selectMemoryType(pDevice, vk::MemoryPropertyFlagBits::eHostVisible, prop.memoryTypeBits)));
+			this->stage.init(device, mstage, stageBlockSize);
+		}
+
+		StreamHost::StreamHost(){}
+
+		StreamHost::StreamHost(vk::PhysicalDevice pd, vk::Device device, uint32_t queueIndex, std::vector<vk::Queue>& transferQueue, int vramBlockSize, int stageBlockSize)
+			:rId(0), pDevice(pd), device(device), queueIndex(queueIndex), vramBlockSize(vramBlockSize), transferQueue(&transferQueue), stageBlockSize(stageBlockSize) {
+			init();
+		}
+
+		void StreamHost::initialize(vk::PhysicalDevice pd, vk::Device device, uint32_t queueIndex, std::vector<vk::Queue>& transferQueue, int vramBlockSize, int stageBlockSize) {
+			rId = 0;
+			pDevice = pd;
+			this->device = device;
+			this->queueIndex = queueIndex;
+			this->transferQueue = &transferQueue;
+			this->vramBlockSize = vramBlockSize;
+			this->stageBlockSize = stageBlockSize;
+			init();
 		}
 
 		vk::Device StreamHost::getDevice() {
@@ -170,11 +203,11 @@ namespace asset {
 				}
 			}
 			vk::DeviceMemory dm = device.allocateMemory(vk::MemoryAllocateInfo()
-				.setAllocationSize(granularity)
+				.setAllocationSize(vramBlockSize)
 				.setMemoryTypeIndex(type));
-			vrs.emplace_back(granularity);
+			vrs.emplace_back();
 			trackedMemory& vm = vrs[vrs.size() - 1];
-			vm.init(device, dm);
+			vm.init(device, dm, vramBlockSize);
 			Vueue vs{ device, vm.malloc(prop.size, prop.alignment), dst, size };
 			sync.unlock();
 			return vs;
@@ -197,7 +230,7 @@ namespace asset {
 			sync.lock();
 			int r = rId++;
 			sync.unlock();
-			return transferQueue[r++%transferQueue.size()];
+			return transferQueue->at(r++%transferQueue->size());
 		}
 
 		StreamHost::~StreamHost() {

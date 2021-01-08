@@ -11,7 +11,7 @@ namespace asset {
 		//note: simple obj aren't really optimized for redundancy free io
 		//this is something we can deal with later when we design our own model format :)
 		struct obj : public Model {
-			const std::string fileName;
+			std::string fileName;
 			int attributes;
 			//The pattern is that the Models hold the minimum necessary content in order to retrieve from disk
 			//creating a hierarchy of disk => (staging) ram => vram
@@ -23,11 +23,11 @@ namespace asset {
 			std::vector<float> faces;
 		public:
 			obj(const std::string& fileName);
-			virtual int getAttributes() = 0;
-			virtual int getVerticeCount() = 0;
-			virtual int getPolygonCount() = 0;
-			virtual void copy(void* vertex, void* indice) = 0;
-			virtual void copy(void* vertex) = 0;
+			virtual int getAttributes();
+			virtual int getVerticeCount();
+			virtual int getPolygonCount();
+			virtual void copy(void* vertex, void* indice);
+			virtual void copy(void* vertex);
 			virtual ~obj();
 		};
 	}

@@ -9,6 +9,8 @@
 #include "../infr/type.hpp"
 #include "../utils/semaphore.hpp"
 #include "settings.hpp"
+#include "../asset/io/loader.hpp"
+#include "../asset/format/obj.hpp"
 
 VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE
 
@@ -53,6 +55,8 @@ namespace core {
 		std::vector<vk::Fence> frameFinished;
 		std::vector<vk::Fence> imageLease;
 
+		asset::io::StreamHost host;
+		asset::format::obj* lux;
 
 		virtual void createInstance();
 		virtual void createSurface();
@@ -65,6 +69,7 @@ namespace core {
 		virtual void configureFramebuffers();
 		virtual void configureCommandPool();
 		virtual void configureSynchronization();
+		virtual void configureAssets();
 		virtual void setup();
 		virtual void render();
 		virtual void renderFrame(unsigned f);

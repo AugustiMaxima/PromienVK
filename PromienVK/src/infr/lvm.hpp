@@ -30,7 +30,7 @@ namespace infr {
 		};
 
 		class LinearVM {
-			const int maxHeapSize;
+			int maxHeapSize;
 			mNode* src;
 			util::multIndex<int, rNode*> freeList;
 			util::multIndex<int, mNode*> allocRecord;
@@ -38,7 +38,9 @@ namespace infr {
 			void removeRegistry(rNode* reg);
 			friend mNode;
 		public:
+			LinearVM();
 			LinearVM(int maxHeapSize);
+			void initialize(int maxHeapSize);
 			int malloc(int size, int align = 4, bool prealigned = true);
 			rNode* try_alloc(int size, int align = 4, bool prealigned = true);
 			int fin_alloc(rNode* node, int size, int align = 4);

@@ -1,7 +1,14 @@
 #include "memoryMap.hpp"
 
 namespace core {
+	vPointer::vPointer(){}
+
 	vPointer::vPointer(vMemory& src, int offset) : src(&src), offset(offset){}
+
+	void vPointer::initialize(vMemory& src, int offset) {
+		this->src = &src;
+		this->offset = offset;
+	}
 
 	int vPointer::getOffset() const {
 		return offset;
@@ -15,13 +22,13 @@ namespace core {
 		src->free(*this);
 	}
 
+	vMemory::vMemory(){}
+
 	vMemory::vMemory(vk::Device device, vk::DeviceMemory src, int size) : device(device), src(src), allocator(size){}
 
 	vk::DeviceMemory vMemory::getDeviceMemory() {
 		return src;
 	}
-
-	vMemory::vMemory(int size):allocator(size) {}
 
 	vMemory vMemory::createMemoryPool(vk::Device device, int size, int memoryType) {
 		vk::DeviceMemory vram = device.allocateMemory(vk::MemoryAllocateInfo()
@@ -30,9 +37,10 @@ namespace core {
 		return vMemory(device, vram, size);
 	}
 
-	void vMemory::init(vk::Device device, vk::DeviceMemory src) {
+	void vMemory::init(vk::Device device, vk::DeviceMemory src, int size) {
 		device = device;
 		src = src;
+		allocator.initialize(size);
 	}
 
 	int vMemory::selectMemoryType(vk::PhysicalDevice device, vk::MemoryPropertyFlags flag, uint32_t typeFilter) {

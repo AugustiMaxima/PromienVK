@@ -15,8 +15,8 @@ namespace asset {
 			int capacity;
 			util::multIndex<int, int> sReg;
 		public:
-			trackedMemory(int size);
-			void init(vk::Device, vk::DeviceMemory src);
+			trackedMemory();
+			void init(vk::Device, vk::DeviceMemory src, int size);
 			void* tryAlloc(int bytes, int alignment);
 			core::vPointer alloc(int bytes, void* key);
 			core::vPointer malloc(int bytes, int alignment);
@@ -31,12 +31,14 @@ namespace asset {
 			core::vPointer mem;
 			vk::Buffer buffer;
 			int size;
+			Vueue();
 			Vueue(vk::Device device, core::vPointer mem, vk::Buffer buffer, int size);
 			void bindBuffer();
 			void cleanUp();
 		};
 
 		struct StageVueue : public Vueue {
+			StageVueue();
 			StageVueue(vk::Device device, core::vPointer mem, vk::Buffer buffer, int size);
 			void* getStageSource();
 			void flushCache();
@@ -52,7 +54,9 @@ namespace asset {
 			int size;
 			vk::BufferCopy cpy;
 		public:
+			StreamHandle();
 			StreamHandle(StreamHost& src, vk::CommandBuffer cmd, int size, Vueue stage, Vueue vram);
+			void initialize(StreamHost& src, vk::CommandBuffer cmd, int size, Vueue stage, Vueue vram);
 			vk::Fence transfer();
 			bool transferComplete();
 			Vueue collectVram();
@@ -60,18 +64,22 @@ namespace asset {
 
 		class StreamHost{
 			int rId;
-			int granularity;
+			int stageBlockSize;
+			int vramBlockSize;
 			std::mutex sync;
 			vk::PhysicalDevice pDevice;
 			vk::Device device;
 			uint32_t queueIndex;
 			vk::CommandPool cmd;
-			std::vector<vk::Queue>& transferQueue;
+			std::vector<vk::Queue>* transferQueue;
 			core::vMemory stage;
 			std::map<uint32_t, std::vector<trackedMemory>> vram;
 			core::vPointer allocateMemory(vk::Buffer dst);
+			void init();
 		public:
-			StreamHost(vk::PhysicalDevice pd, vk::Device, uint32_t queueIndex, std::vector<vk::Queue>& transferQueue, int granularity, int stage);
+			StreamHost();
+			StreamHost(vk::PhysicalDevice pd, vk::Device device, uint32_t queueIndex, std::vector<vk::Queue>& transferQueue, int vramBlockSize, int stageBlockSize);
+			void initialize(vk::PhysicalDevice pd, vk::Device device, uint32_t queueIndex, std::vector<vk::Queue>& transferQueue, int vramBlockSize, int stageBlockSize);
 			vk::Device getDevice();
 			StageVueue allocateStageBuffer(int size);
 			Vueue allocateVRAM(vk::Buffer dst, int size);
