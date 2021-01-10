@@ -32,6 +32,7 @@ namespace core {
 		vk::PhysicalDevice grgpu;
 		vk::Device device;
 		vk::DispatchLoaderDynamic dldd;
+		std::map<infr::QueueFunction, int> queueIndex;
 		std::map<infr::QueueFunction, std::vector<vk::Queue>> queueMap;
 		vk::SwapchainKHR swapchain;
 		settings::DisplaySettings display;
@@ -55,8 +56,12 @@ namespace core {
 		std::vector<vk::Fence> frameFinished;
 		std::vector<vk::Fence> imageLease;
 
+
 		asset::io::StreamHost host;
 		asset::format::obj* lux;
+
+		asset::io::StageVueue stageBuffer;
+		asset::io::Vueue vram;
 
 		virtual void createInstance();
 		virtual void createSurface();

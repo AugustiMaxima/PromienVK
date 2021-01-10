@@ -7,7 +7,7 @@
 
 int main() {
 
-#if defined(_DEBUG)
+#if defined(_CONSOLE)
 
 	AllocConsole();
 	freopen("conin$", "r", stdin);
@@ -16,13 +16,14 @@ int main() {
 
 #endif
 	//insert your compiler flag here
-#if defined(_DEBUG)
+#if defined(_DEVELOPMENT)
 	using namespace std;
 	char a;
-	masterTest();
+	masterTest(false);
 	cout << "Enter a character to resume"<<endl;
 	cin >> a;
 #endif
+
 	core::Prototype pt{ "configs/settings.json" };
 	pt.run();
 

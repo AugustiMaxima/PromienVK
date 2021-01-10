@@ -162,6 +162,8 @@ namespace asset {
 		void StreamHost::initialize(vk::PhysicalDevice pd, vk::Device device, uint32_t queueIndex, std::vector<vk::Queue>& transferQueue, int vramBlockSize, int stageBlockSize) {
 			rId = 0;
 			pDevice = pd;
+			int a = 0;
+			a = 1;
 			this->device = device;
 			this->queueIndex = queueIndex;
 			this->transferQueue = &transferQueue;

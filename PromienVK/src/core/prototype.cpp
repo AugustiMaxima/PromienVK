@@ -8,6 +8,7 @@
 #include "pipeline/pipeline.hpp"
 #include "pipeline/boilerplate.hpp"
 #include "pipeline/renderpass.hpp"
+#include "../asset/io/streamWorks.hpp"
 #include "prototype.hpp"
 
 namespace core {
@@ -138,7 +139,9 @@ namespace core {
 
 		device = dps::allocateDeviceQueue(grgpu, graphic, queuery);
 
-		std::map<infr::QueueFunction, util::multIndex<float, vk::Queue>> indexedMap = dps::collectDeviceQueue(device, grgpu, queuery);
+		queueIndex = dps::collectDeviceQueueIndex(grgpu, queuery);
+
+		std::map<infr::QueueFunction, util::multIndex<float, vk::Queue>> indexedMap = dps::fetchDeviceQueue(grgpu, device, queueIndex);
 		for (const auto& index : indexedMap) {
 			util::multIndex<float, vk::Queue> queues = index.second;
 			queueMap[index.first] = queues.query(1.0f, 1.0f);
@@ -256,10 +259,9 @@ namespace core {
 	void Prototype::configureCommandPool() {
 		std::map<infr::QueueFunction, std::function<bool(vk::QueueFamilyProperties)>> queuery;
 		queuery[infr::QueueFunction::graphic] = infr::dvs::isGraphicQueue;
-		std::map<infr::QueueFunction, int> result = dps::collectDeviceQueueIndex(grgpu, queuery);
 	
 		auto pInfo = vk::CommandPoolCreateInfo()
-			.setQueueFamilyIndex(result[infr::QueueFunction::graphic])
+			.setQueueFamilyIndex(queueIndex[infr::QueueFunction::graphic])
 			.setFlags(vk::CommandPoolCreateFlagBits::eResetCommandBuffer);
 		
 		for (int i = 0; i < swapchainImages.size(); i++) {
@@ -288,10 +290,19 @@ namespace core {
 
 	void Prototype::configureAssets() {
 		using namespace asset::format;
+		host.initialize(grgpu, device, queueIndex[infr::QueueFunction::transfer], queueMap[infr::QueueFunction::transfer], 536870912, 536870912);
 		lux = new obj("assets/lux.obj");
-
-
-
+		const int size = lux->getAttributes() * lux->getVerticeCount() * sizeof(float);
+		asset::io::ModelToStage load{host, *lux};
+		load.start();
+		stageBuffer = load.collectStage();
+		vk::Buffer vr = device.createBuffer(vk::BufferCreateInfo()
+			.setUsage(vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferDst)
+			.setSharingMode(vk::SharingMode::eExclusive)
+			.setSize(size));
+		asset::io::StagePropagation transfer{ host, vr, stageBuffer };
+		transfer.start();
+		device.waitForFences(transfer.getFence(), true, UINT64_MAX);
 	}
 
 	void Prototype::setup() {

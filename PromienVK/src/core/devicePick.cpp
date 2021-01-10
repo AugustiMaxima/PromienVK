@@ -220,6 +220,7 @@ namespace core {
 			for (int i = 0; i < qs.size(); i++) {
 				for (const auto& entry : query) {
 					if (!fill[entry.first] && entry.second(qs[i])) {
+						fill[entry.first] = true;
 						for (int j = 0; j < qs[i].queueCount; j++)
 							qMap[entry.first].insert(1.0f, device.getQueue(i, j));
 						break;
@@ -245,6 +246,17 @@ namespace core {
 				}
 			}
 			return index;
+		}
+
+		std::map<infr::QueueFunction, util::multIndex<float, vk::Queue>> fetchDeviceQueue(vk::PhysicalDevice pDevice, vk::Device device, std::map<infr::QueueFunction, int>& index) {
+			map<infr::QueueFunction, util::multIndex<float, Queue>> qMap;
+			auto qs = pDevice.getQueueFamilyProperties();
+			for (const auto& entry : index) {
+				for (int i = 0; i < qs[entry.second].queueCount; i++) {
+					qMap[entry.first].insert(1.0f, device.getQueue(entry.second, i));
+				}
+			}
+			return qMap;
 		}
 	}
 }

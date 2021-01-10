@@ -33,6 +33,10 @@ namespace asset {
 			return stream.transferComplete();
 		}
 
+		vk::Fence StagePropagation::getFence() {
+			return fence;
+		}
+
 		StagePropagation::~StagePropagation() {
 
 		}

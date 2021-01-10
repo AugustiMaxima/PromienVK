@@ -2,7 +2,7 @@
 
 namespace infr {
 	namespace lvm {
-		mNode::mNode(int offset, int bytes, LinearVM& vm, bool alloced) :offset(offset), bytes(bytes), f(nullptr), r(nullptr) {
+		mNode::mNode(uint64_t offset, uint64_t bytes, LinearVM& vm, bool alloced) :offset(offset), bytes(bytes), f(nullptr), r(nullptr) {
 			if (alloced)
 				reg = nullptr;
 			else {
@@ -11,17 +11,17 @@ namespace infr {
 			}
 		}
 
-		bool mNode::compatible(int size, int align) {
+		bool mNode::compatible(uint64_t size, uint64_t align) {
 			return alignedSize(size, align) <= bytes;
 		}
 
-		int mNode::alignedSize(int size, int align) {
-			return size + (align - offset % align);
+		uint64_t mNode::alignedSize(uint64_t size, uint64_t align) {
+			return (offset % align ? (align - offset % align) : 0) + size;
 		}
 
-		mNode* mNode::allocRequest(int size, LinearVM& vm, int align) {
+		mNode* mNode::allocRequest(uint64_t size, LinearVM& vm, uint64_t align) {
 			vm.removeRegistry(reg);
-			int fSize = alignedSize(size, align);
+			uint64_t fSize = alignedSize(size, align);
 			if (fSize < bytes) {
 				//split condition
 				mNode* nf = new mNode(offset, fSize, vm, true);
@@ -102,14 +102,14 @@ namespace infr {
 			src = new mNode(0, 0, *this, true);
 		}
 
-		LinearVM::LinearVM(int maxHeapSize) : maxHeapSize(maxHeapSize){
+		LinearVM::LinearVM(uint64_t maxHeapSize) : maxHeapSize(maxHeapSize){
 			src = new mNode(0, 0, *this, true);
 			//meme first slot to avoid the assignment problem
 			src->r = new mNode(0, maxHeapSize, *this);
 			src->r->f = src;
 		}
 
-		void LinearVM::initialize(int maxHeapSize){
+		void LinearVM::initialize(uint64_t maxHeapSize){
 			src->r = new mNode(0, maxHeapSize, *this);
 			src->r->f = src;
 		}
@@ -118,10 +118,12 @@ namespace infr {
 		//align buffer will always guarantee success, at the cost of some fragmentation
 		//but most of the time, we can assume that the headers are aligned
 		//optimistic alignment scheme will attempt to align without padding, and retry if failed
-		int LinearVM::malloc(int size, int align, bool prealigned) {
-			for (int i = 0; i < 2; i++) {
-				if (!prealigned)
+		uint64_t LinearVM::malloc(uint64_t size, uint64_t align, bool prealigned) {
+			for (uint64_t i = 0; i < 2; i++) {
+				if (!prealigned) {
 					size += align - 1;
+					align = 1;
+				}
 				auto result = freeList.probe(size, -1);
 				rNode* reg = nullptr;
 				if (result) {
@@ -137,13 +139,15 @@ namespace infr {
 				allocRecord.put(node->offset, node);
 				return node->offset;
 			}
-			return -1;
+			throw std::exception("Alignment failure");
 		}
 
-		rNode* LinearVM::try_alloc(int size, int align, bool prealigned) {
-			for (int i = 0; i < 2; i++) {
-				if (!prealigned)
+		rNode* LinearVM::try_alloc(uint64_t size, uint64_t align, bool prealigned) {
+			for (uint64_t i = 0; i < 2; i++) {
+				if (!prealigned) {
 					size += align - 1;
+					align = 1;
+				}
 				auto result = freeList.probe(size, -1);
 				rNode* reg = nullptr;
 				if (result) {
@@ -157,15 +161,16 @@ namespace infr {
 				}
 				return reg;
 			}
+			throw std::exception("Alignment failure");
 		}
 
-		int LinearVM::fin_alloc(rNode* reg, int size, int align) {
+		uint64_t LinearVM::fin_alloc(rNode* reg, uint64_t size, uint64_t align) {
 			mNode* node = reg->node->allocRequest(size, *this, align);
 			allocRecord.put(node->offset, node);
 			return node->offset;
 		}
 
-		void LinearVM::free(int offset) {
+		void LinearVM::free(uint64_t offset) {
 			auto rec = allocRecord.pop(offset);
 			mNode* node = nullptr;
 			if (rec)

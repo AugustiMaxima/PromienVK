@@ -57,6 +57,8 @@ namespace core {
 	
 		std::map<infr::QueueFunction, int> collectDeviceQueueIndex(vk::PhysicalDevice device,
 			std::map<infr::QueueFunction, std::function<bool(vk::QueueFamilyProperties)>>& query);
+
+		std::map<infr::QueueFunction, util::multIndex<float, vk::Queue>> fetchDeviceQueue(vk::PhysicalDevice pDevice, vk::Device device, std::map<infr::QueueFunction, int>& index);
 	}
 }
 

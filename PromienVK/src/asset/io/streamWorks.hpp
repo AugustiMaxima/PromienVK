@@ -28,6 +28,7 @@ namespace asset {
 			StagePropagation(StreamHost& host, vk::Buffer& binding, StageVueue& vueue);
 			virtual void work() override;
 			bool transferComplete();
+			vk::Fence getFence();
 			virtual ~StagePropagation();
 		};
 	}

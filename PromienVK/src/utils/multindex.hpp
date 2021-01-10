@@ -414,6 +414,7 @@ namespace util {
 			if (!root)
 				return std::optional<V>();
 			root = root->remove(key, ret);
+			return ret;
 		}
 		std::optional<V> get(const K& key) {
 			if(!root)

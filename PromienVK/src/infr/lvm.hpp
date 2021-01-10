@@ -10,15 +10,15 @@ namespace infr {
 		struct rNode;
 		class LinearVM;
 		struct mNode {
-			int offset;
-			int bytes;
+			uint64_t offset;
+			uint64_t bytes;
 			mNode* f;
 			mNode* r;
 			rNode* reg;
-			mNode(int offset, int bytes, LinearVM& vm, bool alloced = false);
-			bool compatible(int size, int align);
-			int alignedSize(int size, int align);
-			mNode* allocRequest(int size, LinearVM& vm, int align);
+			mNode(uint64_t offset, uint64_t bytes, LinearVM& vm, bool alloced = false);
+			bool compatible(uint64_t size, uint64_t align);
+			uint64_t alignedSize(uint64_t size, uint64_t align);
+			mNode* allocRequest(uint64_t size, LinearVM& vm, uint64_t align);
 			void free(LinearVM& vm);
 		};
 
@@ -32,19 +32,19 @@ namespace infr {
 		class LinearVM {
 			int maxHeapSize;
 			mNode* src;
-			util::multIndex<int, rNode*> freeList;
-			util::multIndex<int, mNode*> allocRecord;
+			util::multIndex<uint64_t, rNode*> freeList;
+			util::multIndex<uint64_t, mNode*> allocRecord;
 			void attachRegistry(rNode* reg);
 			void removeRegistry(rNode* reg);
 			friend mNode;
 		public:
 			LinearVM();
-			LinearVM(int maxHeapSize);
-			void initialize(int maxHeapSize);
-			int malloc(int size, int align = 4, bool prealigned = true);
-			rNode* try_alloc(int size, int align = 4, bool prealigned = true);
-			int fin_alloc(rNode* node, int size, int align = 4);
-			void free(int offset);
+			LinearVM(uint64_t maxHeapSize);
+			void initialize(uint64_t maxHeapSize);
+			uint64_t malloc(uint64_t size, uint64_t align = 4, bool prealigned = true);
+			rNode* try_alloc(uint64_t size, uint64_t align = 4, bool prealigned = true);
+			uint64_t fin_alloc(rNode* node, uint64_t size, uint64_t align = 4);
+			void free(uint64_t offset);
 			~LinearVM();
 		};
 	}

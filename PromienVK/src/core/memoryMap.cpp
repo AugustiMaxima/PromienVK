@@ -49,6 +49,7 @@ namespace core {
 			if (typeFilter & (1 << i) && (prop.memoryTypes[i].propertyFlags & flag) == flag)
 				return i;
 		}
+		return -1;
 	}
 
 	vPointer vMemory::malloc(int bytes, int alignment, bool opt) {
