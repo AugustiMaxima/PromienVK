@@ -11,15 +11,15 @@ namespace asset {
 		
 		class trackedMemory : public core::vMemory {
 		protected:
-			int occupancy;
-			int capacity;
-			util::multIndex<int, int> sReg;
+			uint64_t occupancy;
+			uint64_t capacity;
+			util::multIndex<uint64_t, uint64_t> sReg;
 		public:
 			trackedMemory();
-			void init(vk::Device, vk::DeviceMemory src, int size);
-			void* tryAlloc(int bytes, int alignment);
-			core::vPointer alloc(int bytes, void* key);
-			core::vPointer malloc(int bytes, int alignment);
+			void init(vk::Device, vk::DeviceMemory src, uint64_t size);
+			void* tryAlloc(uint64_t bytes, uint64_t alignment);
+			core::vPointer alloc(uint64_t bytes, void* key);
+			core::vPointer malloc(uint64_t bytes, uint64_t alignment);
 			virtual void free(core::vPointer ptr);
 			virtual ~trackedMemory();
 		};
@@ -30,16 +30,16 @@ namespace asset {
 			vk::Device device;
 			core::vPointer mem;
 			vk::Buffer buffer;
-			int size;
+			uint64_t size;
 			Vueue();
-			Vueue(vk::Device device, core::vPointer mem, vk::Buffer buffer, int size);
+			Vueue(vk::Device device, core::vPointer mem, vk::Buffer buffer, uint64_t size);
 			void bindBuffer();
 			void cleanUp();
 		};
 
 		struct StageVueue : public Vueue {
 			StageVueue();
-			StageVueue(vk::Device device, core::vPointer mem, vk::Buffer buffer, int size);
+			StageVueue(vk::Device device, core::vPointer mem, vk::Buffer buffer, uint64_t size);
 			void* getStageSource();
 			void flushCache();
 		};
@@ -51,21 +51,21 @@ namespace asset {
 			vk::Fence fence;
 			Vueue stage;
 			Vueue vram;
-			int size;
+			uint64_t size;
 			vk::BufferCopy cpy;
 		public:
 			StreamHandle();
-			StreamHandle(StreamHost& src, vk::CommandBuffer cmd, int size, Vueue stage, Vueue vram);
-			void initialize(StreamHost& src, vk::CommandBuffer cmd, int size, Vueue stage, Vueue vram);
+			StreamHandle(StreamHost& src, vk::CommandBuffer cmd, uint64_t size, Vueue stage, Vueue vram);
+			void initialize(StreamHost& src, vk::CommandBuffer cmd, uint64_t size, Vueue stage, Vueue vram);
 			vk::Fence transfer();
 			bool transferComplete();
 			Vueue collectVram();
 		};
 
 		class StreamHost{
-			int rId;
-			int stageBlockSize;
-			int vramBlockSize;
+			uint64_t rId;
+			uint64_t stageBlockSize;
+			uint64_t vramBlockSize;
 			std::mutex sync;
 			vk::PhysicalDevice pDevice;
 			vk::Device device;
@@ -78,16 +78,15 @@ namespace asset {
 			void init();
 		public:
 			StreamHost();
-			StreamHost(vk::PhysicalDevice pd, vk::Device device, uint32_t queueIndex, std::vector<vk::Queue>& transferQueue, int vramBlockSize, int stageBlockSize);
-			void initialize(vk::PhysicalDevice pd, vk::Device device, uint32_t queueIndex, std::vector<vk::Queue>& transferQueue, int vramBlockSize, int stageBlockSize);
+			StreamHost(vk::PhysicalDevice pd, vk::Device device, uint32_t queueIndex, std::vector<vk::Queue>& transferQueue, uint64_t vramBlockSize, uint64_t stageBlockSize);
+			void initialize(vk::PhysicalDevice pd, vk::Device device, uint32_t queueIndex, std::vector<vk::Queue>& transferQueue, uint64_t vramBlockSize, uint64_t stageBlockSize);
 			vk::Device getDevice();
-			StageVueue allocateStageBuffer(int size);
-			Vueue allocateVRAM(vk::Buffer dst, int size);
+			StageVueue allocateStageBuffer(uint64_t size);
+			Vueue allocateVRAM(vk::Buffer dst, uint64_t size);
 			StreamHandle allocateStream(Vueue src, Vueue dst);
 			vk::Queue& requestQueue();
 			~StreamHost();
 		};
-
 	}
 }
 

@@ -254,6 +254,7 @@
     <ClCompile Include="src\infr\InfraVK.cpp" />
     <ClCompile Include="src\infr\lvm.cpp" />
     <ClCompile Include="src\utils\semaphore.cpp" />
+    <ClCompile Include="src\utils\stdpp.cpp" />
     <ClCompile Include="test\allocTest.cpp" />
     <ClCompile Include="test\asyncTest.cpp" />
     <ClCompile Include="test\confTest.cpp" />
@@ -288,6 +289,7 @@
     <ClInclude Include="src\utils\heap.hpp" />
     <ClInclude Include="src\utils\multIndex.hpp" />
     <ClInclude Include="src\utils\semaphore.hpp" />
+    <ClInclude Include="src\utils\stdpp.hpp" />
     <ClInclude Include="test\masterTest.hpp" />
   </ItemGroup>
   <ItemGroup>

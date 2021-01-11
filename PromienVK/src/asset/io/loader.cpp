@@ -4,12 +4,12 @@ namespace asset {
 	namespace io {
 		trackedMemory::trackedMemory() :occupancy(0) {}
 
-		void trackedMemory::init(vk::Device device, vk::DeviceMemory src, int size) {
+		void trackedMemory::init(vk::Device device, vk::DeviceMemory src, uint64_t size) {
 			occupancy = size;
 			core::vMemory::init(device, src, size);
 		}
 
-		void* trackedMemory::tryAlloc(int bytes, int alignment) {
+		void* trackedMemory::tryAlloc(uint64_t bytes, uint64_t alignment) {
 			//80% is a megic number
 			//we may switch to attempts instead, but so far this magic number have worked well
 			if (occupancy + bytes < capacity * 4 / 5) {
@@ -18,22 +18,22 @@ namespace asset {
 			return nullptr;
 		}
 
-		core::vPointer trackedMemory::alloc(int bytes, void* key) {
+		core::vPointer trackedMemory::alloc(uint64_t bytes, void* key) {
 			occupancy += bytes;
-			int offset = allocator.fin_alloc((infr::lvm::rNode*)key, bytes);
+			uint64_t offset = allocator.fin_alloc((infr::lvm::rNode*)key, bytes);
 			sReg.put(offset, bytes);
 			return core::vPointer(*this, offset);
 		}
 		//this occupancy is coarse grained and misses padding info
-		core::vPointer trackedMemory::malloc(int bytes, int alignment) {
+		core::vPointer trackedMemory::malloc(uint64_t bytes, uint64_t alignment) {
 			occupancy += bytes;
-			int offset = allocator.malloc(bytes, alignment);
+			uint64_t offset = allocator.malloc(bytes, alignment);
 			sReg.put(offset, bytes);
 			return core::vPointer(*this, offset);
 		}
 
 		void trackedMemory::free(core::vPointer ptr) {
-			std::optional<int> s = sReg.pop(ptr.getOffset());
+			std::optional<uint64_t> s = sReg.pop(ptr.getOffset());
 			if (!s) {
 				return;
 			}
@@ -54,11 +54,11 @@ namespace asset {
 
 		Vueue::Vueue(){}
 
-		Vueue::Vueue(vk::Device device, core::vPointer mem, vk::Buffer buffer, int size):device(device), mem(mem), buffer(buffer), size(size){}
+		Vueue::Vueue(vk::Device device, core::vPointer mem, vk::Buffer buffer, uint64_t size):device(device), mem(mem), buffer(buffer), size(size){}
 
 		StageVueue::StageVueue(){}
 
-		StageVueue::StageVueue(vk::Device device, core::vPointer mem, vk::Buffer buffer, int size):Vueue(device, mem, buffer, size){}
+		StageVueue::StageVueue(vk::Device device, core::vPointer mem, vk::Buffer buffer, uint64_t size):Vueue(device, mem, buffer, size){}
 
 		void* StageVueue::getStageSource() {
 			return device.mapMemory(mem.getDeviceMemory(), mem.getOffset(), size);
@@ -74,12 +74,12 @@ namespace asset {
 
 		StreamHandle::StreamHandle(){}
 
-		StreamHandle::StreamHandle(StreamHost& src, vk::CommandBuffer cmd, int size, Vueue stage, Vueue vram)
+		StreamHandle::StreamHandle(StreamHost& src, vk::CommandBuffer cmd, uint64_t size, Vueue stage, Vueue vram)
 			:src(&src), cmd(cmd), size(size), vram(vram), stage(stage) {
 			device = src.getDevice();
 		}
 
-		void StreamHandle::initialize(StreamHost& src, vk::CommandBuffer cmd, int size, Vueue stage, Vueue vram) {
+		void StreamHandle::initialize(StreamHost& src, vk::CommandBuffer cmd, uint64_t size, Vueue stage, Vueue vram) {
 			this->src = &src;
 			this->cmd = cmd;
 			this->size = size;
@@ -141,7 +141,7 @@ namespace asset {
 				.setPQueueFamilyIndices(&queueIndex)
 				.setQueueFamilyIndexCount(1)
 				.setSharingMode(vk::SharingMode::eExclusive)
-				.setSize(0)
+				.setSize(stageBlockSize)
 				.setUsage(vk::BufferUsageFlagBits::eTransferSrc));
 
 			vk::MemoryRequirements prop = device.getBufferMemoryRequirements(stgr);
@@ -150,19 +150,21 @@ namespace asset {
 				.setAllocationSize(stageBlockSize)
 				.setMemoryTypeIndex(vm::selectMemoryType(pDevice, vk::MemoryPropertyFlagBits::eHostVisible, prop.memoryTypeBits)));
 			this->stage.init(device, mstage, stageBlockSize);
+
+			device.destroy(stgr);
 		}
 
 		StreamHost::StreamHost(){}
 
-		StreamHost::StreamHost(vk::PhysicalDevice pd, vk::Device device, uint32_t queueIndex, std::vector<vk::Queue>& transferQueue, int vramBlockSize, int stageBlockSize)
+		StreamHost::StreamHost(vk::PhysicalDevice pd, vk::Device device, uint32_t queueIndex, std::vector<vk::Queue>& transferQueue, uint64_t vramBlockSize, uint64_t stageBlockSize)
 			:rId(0), pDevice(pd), device(device), queueIndex(queueIndex), vramBlockSize(vramBlockSize), transferQueue(&transferQueue), stageBlockSize(stageBlockSize) {
 			init();
 		}
 
-		void StreamHost::initialize(vk::PhysicalDevice pd, vk::Device device, uint32_t queueIndex, std::vector<vk::Queue>& transferQueue, int vramBlockSize, int stageBlockSize) {
+		void StreamHost::initialize(vk::PhysicalDevice pd, vk::Device device, uint32_t queueIndex, std::vector<vk::Queue>& transferQueue, uint64_t vramBlockSize, uint64_t stageBlockSize) {
 			rId = 0;
 			pDevice = pd;
-			int a = 0;
+			uint64_t a = 0;
 			a = 1;
 			this->device = device;
 			this->queueIndex = queueIndex;
@@ -176,7 +178,7 @@ namespace asset {
 			return device;
 		}
 
-		StageVueue StreamHost::allocateStageBuffer(int size) {
+		StageVueue StreamHost::allocateStageBuffer(uint64_t size) {
 			auto srcInfo = vk::BufferCreateInfo()
 				.setPQueueFamilyIndices(&queueIndex)
 				.setQueueFamilyIndexCount(1)
@@ -191,7 +193,7 @@ namespace asset {
 			return StageVueue(device, stgp, stgr, size);
 		}
 
-		Vueue StreamHost::allocateVRAM(vk::Buffer dst, int size) {
+		Vueue StreamHost::allocateVRAM(vk::Buffer dst, uint64_t size) {
 			vk::MemoryRequirements prop = device.getBufferMemoryRequirements(dst);
 			uint32_t type = core::vMemory::selectMemoryType(pDevice, vk::MemoryPropertyFlagBits::eDeviceLocal, prop.memoryTypeBits);
 			std::vector<trackedMemory>& vrs = vram[type];
@@ -230,7 +232,7 @@ namespace asset {
 		vk::Queue& StreamHost::requestQueue() {
 			//synchronization actually optional if you dont mind uneven queues
 			sync.lock();
-			int r = rId++;
+			uint64_t r = rId++;
 			sync.unlock();
 			return transferQueue->at(r++%transferQueue->size());
 		}
