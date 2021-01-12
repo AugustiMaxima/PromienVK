@@ -112,25 +112,6 @@ namespace asset {
 			return vram;
 		}
 
-		core::vPointer StreamHost::allocateMemory(vk::Buffer dst) {
-			vk::MemoryRequirements prop = device.getBufferMemoryRequirements(dst);
-			uint32_t type = core::vMemory::selectMemoryType(pDevice, vk::MemoryPropertyFlagBits::eDeviceLocal, prop.memoryTypeBits);
-			std::vector<trackedMemory>& vrs = vram[type];
-			for (auto& vm : vrs) {
-				void* k = vm.tryAlloc(prop.size, prop.alignment);
-				if (k) {
-					return vm.alloc(prop.size, k);
-				}
-			}
-			vk::DeviceMemory dm = device.allocateMemory(vk::MemoryAllocateInfo()
-				.setAllocationSize(vramBlockSize)
-				.setMemoryTypeIndex(type));
-			vrs.emplace_back();
-			trackedMemory& vm = vrs[vrs.size() - 1];
-			vm.init(device, dm, vramBlockSize);
-			return vm.malloc(prop.size, prop.alignment);
-		}
-
 		void StreamHost::init() {
 			using vm = core::vMemory;
 			cmd = device.createCommandPool(vk::CommandPoolCreateInfo()

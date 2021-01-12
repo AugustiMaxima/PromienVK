@@ -3,14 +3,14 @@
 namespace core {
 	vPointer::vPointer(){}
 
-	vPointer::vPointer(vMemory& src, int offset) : src(&src), offset(offset){}
+	vPointer::vPointer(vMemory& src, uint64_t offset) : src(&src), offset(offset){}
 
-	void vPointer::initialize(vMemory& src, int offset) {
+	void vPointer::initialize(vMemory& src, uint64_t offset) {
 		this->src = &src;
 		this->offset = offset;
 	}
 
-	int vPointer::getOffset() const {
+	uint64_t vPointer::getOffset() const {
 		return offset;
 	}
 
@@ -24,36 +24,36 @@ namespace core {
 
 	vMemory::vMemory(){}
 
-	vMemory::vMemory(vk::Device device, vk::DeviceMemory src, int size) : device(device), src(src), allocator(size){}
+	vMemory::vMemory(vk::Device device, vk::DeviceMemory src, uint64_t size) : device(device), src(src), allocator(size){}
 
 	vk::DeviceMemory vMemory::getDeviceMemory() {
 		return src;
 	}
 
-	vMemory vMemory::createMemoryPool(vk::Device device, int size, int memoryType) {
+	vMemory vMemory::createMemoryPool(vk::Device device, uint64_t size, uint64_t memoryType) {
 		vk::DeviceMemory vram = device.allocateMemory(vk::MemoryAllocateInfo()
 			.setAllocationSize(size)
 			.setMemoryTypeIndex(memoryType));
 		return vMemory(device, vram, size);
 	}
 
-	void vMemory::init(vk::Device device, vk::DeviceMemory src, int size) {
-		device = device;
-		src = src;
+	void vMemory::init(vk::Device device, vk::DeviceMemory src, uint64_t size) {
+		this->device = device;
+		this->src = src;
 		allocator.initialize(size);
 	}
 
-	int vMemory::selectMemoryType(vk::PhysicalDevice device, vk::MemoryPropertyFlags flag, uint32_t typeFilter) {
+	uint64_t vMemory::selectMemoryType(vk::PhysicalDevice device, vk::MemoryPropertyFlags flag, uint32_t typeFilter) {
 		vk::PhysicalDeviceMemoryProperties prop = device.getMemoryProperties();
-		for (int i = 0; i < prop.memoryTypeCount; i++) {
+		for (uint64_t i = 0; i < prop.memoryTypeCount; i++) {
 			if (typeFilter & (1 << i) && (prop.memoryTypes[i].propertyFlags & flag) == flag)
 				return i;
 		}
 		return -1;
 	}
 
-	vPointer vMemory::malloc(int bytes, int alignment, bool opt) {
-		int offset = allocator.malloc(bytes, alignment, opt);
+	vPointer vMemory::malloc(uint64_t bytes, uint64_t alignment, bool opt) {
+		uint64_t offset = allocator.malloc(bytes, alignment, opt);
 		allocRegistry.put(offset, true);
 		return vPointer(*this, offset);
 	}
@@ -68,7 +68,7 @@ namespace core {
 		allocator.free(ptr.getOffset());
 	}
 
-	vk::DeviceMemory allocateDeviceMemory(vk::PhysicalDevice device, vk::Device lDevice, int size, int typeFilter, vk::MemoryPropertyFlagBits flag) {
+	vk::DeviceMemory allocateDeviceMemory(vk::PhysicalDevice device, vk::Device lDevice, uint64_t size, uint64_t typeFilter, vk::MemoryPropertyFlagBits flag) {
 		vk::MemoryAllocateInfo info = vk::MemoryAllocateInfo()
 			.setAllocationSize(size)
 			.setMemoryTypeIndex(vMemory::selectMemoryType(device, flag, typeFilter));

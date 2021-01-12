@@ -67,16 +67,16 @@ static int alignStressTest(const int epoch) {
 
 	while (e++ < epoch) {
 		uint64_t action = e % 3;
-		cout << e << endl;
+		//cout << e << endl;
 		if (action < 2) {
 			uint64_t alx = e * 67 % batches.size();
 			uint64_t dev = e * 17 % (alx + 1);
 			uint64_t plier = action % 2 ? -1 : 1;
 			uint64_t fsize = batches[alx] + plier * batches[dev];
 			if (fsize && ramtally + fsize <= bound) {
-				cout << "Alloccing " << fsize << " bytes" << endl;
+				//cout << "Alloccing " << fsize << " bytes" << endl;
 				alloced.push_back(vm.malloc(fsize));
-				cout << "Allocated at " << alloced[alloced.size() - 1] << endl;
+				//cout << "Allocated at " << alloced[alloced.size() - 1] << endl;
 				sizes.push_back(fsize);
 				ramtally += fsize;
 			}
@@ -90,15 +90,15 @@ static int alignStressTest(const int epoch) {
 				sizes[dex] = sizes[kek];
 				alloced[kek] = temp;
 				sizes[kek] = temp2;
-				cout << "Freeing " << sizes[dex] << " bytes at " << alloced[dex] << endl;
+				//cout << "Freeing " << sizes[dex] << " bytes at " << alloced[dex] << endl;
 				vm.free(alloced[dex]);
-				cout << "Freed at " << alloced[dex] << endl;
+				//cout << "Freed at " << alloced[dex] << endl;
 				ramtally -= sizes[dex++];
 			}
 		}
 	}
 
-	cout << "Pretty stable performance!" << endl;
+	//cout << "Pretty stable performance!" << endl;
 
 	return 0;
 }
@@ -109,6 +109,6 @@ int allocTest(bool stress) {
 	overAllocTest();
 	rightAllocTest();
 
-	alignStressTest(stress? 1000000 : 1000);
+	alignStressTest(stress? 10000000 : 10000);
 	return 0;
 }

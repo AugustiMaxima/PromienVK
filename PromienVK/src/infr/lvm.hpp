@@ -36,6 +36,7 @@ namespace infr {
 			util::multIndex<uint64_t, mNode*> allocRecord;
 			void attachRegistry(rNode* reg);
 			void removeRegistry(rNode* reg);
+			uint64_t upscale(uint64_t size, uint64_t align);
 			friend mNode;
 		public:
 			LinearVM();

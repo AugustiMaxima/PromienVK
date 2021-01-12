@@ -98,6 +98,10 @@ namespace infr {
 			delete reg;
 		}
 
+		uint64_t LinearVM::upscale(uint64_t size, uint64_t align) {
+			return size % align ? ((size / align) + 1) * align : size;
+		}
+
 		LinearVM::LinearVM(){
 			src = new mNode(0, 0, *this, true);
 		}
@@ -119,30 +123,14 @@ namespace infr {
 		//but most of the time, we can assume that the headers are aligned
 		//optimistic alignment scheme will attempt to align without padding, and retry if failed
 		uint64_t LinearVM::malloc(uint64_t size, uint64_t align, bool prealigned) {
-			for (uint64_t i = 0; i < 2; i++) {
-				if (!prealigned) {
-					size += align - 1;
-					align = 1;
-				}
-				auto result = freeList.probe(size, -1);
-				rNode* reg = nullptr;
-				if (result) {
-					reg = result;
-				}
-				if (!reg)
-					throw std::exception("Allocation failed");
-				mNode* node = reg->node->allocRequest(size, *this, align);
-				if (!node) {
-					prealigned = false;
-					continue;
-				}
-				allocRecord.put(node->offset, node);
-				return node->offset;
-			}
-			throw std::exception("Alignment failure");
+			rNode* reg = try_alloc(size, align, prealigned);
+			if (!reg)
+				throw std::exception("Alignment failure");
+			return fin_alloc(reg, size, align);
 		}
 
 		rNode* LinearVM::try_alloc(uint64_t size, uint64_t align, bool prealigned) {
+			size = upscale(size, align);
 			for (uint64_t i = 0; i < 2; i++) {
 				if (!prealigned) {
 					size += align - 1;
@@ -161,7 +149,7 @@ namespace infr {
 				}
 				return reg;
 			}
-			throw std::exception("Alignment failure");
+			return nullptr;
 		}
 
 		uint64_t LinearVM::fin_alloc(rNode* reg, uint64_t size, uint64_t align) {

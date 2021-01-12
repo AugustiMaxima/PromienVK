@@ -74,7 +74,6 @@ namespace asset {
 			std::vector<vk::Queue>* transferQueue;
 			core::vMemory stage;
 			std::map<uint32_t, std::vector<trackedMemory>> vram;
-			core::vPointer allocateMemory(vk::Buffer dst);
 			void init();
 		public:
 			StreamHost();

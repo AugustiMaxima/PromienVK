@@ -7,6 +7,7 @@ namespace asset {
 		void ModelToStage::work() {
 			const int bufferSize = model.getAttributes() * model.getVerticeCount() * sizeof(float);
 			stage = host.allocateStageBuffer(bufferSize);
+			//TODO:synchronization
 			model.copy(stage.getStageSource());
 			stage.flushCache();
 		}

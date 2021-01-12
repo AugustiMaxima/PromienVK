@@ -9,12 +9,13 @@ namespace core {
 	//incomplete draft -- more to be done with interface & abstraction
 	class vPointer {
 		vMemory* src;
-		int offset;
+		uint64_t offset;
+		uint64_t size;
 	public:
 		vPointer();
-		vPointer(vMemory& src, int offset);
-		void initialize(vMemory& src, int offset);
-		int getOffset() const;
+		vPointer(vMemory& src, uint64_t offset);
+		void initialize(vMemory& src, uint64_t offset);
+		uint64_t getOffset() const;
 		vk::DeviceMemory getDeviceMemory();
 		void free();
 	};
@@ -27,17 +28,17 @@ namespace core {
 		util::multIndex<int, bool> allocRegistry; //An additional safety check to prevent bad free
 	public:
 		vMemory();
-		vMemory(vk::Device device, vk::DeviceMemory src, int size);
-		void init(vk::Device device, vk::DeviceMemory src, int size);
+		vMemory(vk::Device device, vk::DeviceMemory src, uint64_t size);
+		void init(vk::Device device, vk::DeviceMemory src, uint64_t size);
 		vk::DeviceMemory getDeviceMemory();
-		static vMemory createMemoryPool(vk::Device device, int size, int memoryType);
-		static int selectMemoryType(vk::PhysicalDevice device, vk::MemoryPropertyFlags flag, uint32_t typeFilter = 0xFFFFFFFF);
-		virtual vPointer malloc(int bytes, int alignment = 4, bool opt = true);
+		static vMemory createMemoryPool(vk::Device device, uint64_t size, uint64_t memoryType);
+		static uint64_t selectMemoryType(vk::PhysicalDevice device, vk::MemoryPropertyFlags flag, uint32_t typeFilter = 0xFFFFFFFF);
+		virtual vPointer malloc(uint64_t bytes, uint64_t alignment = 4, bool opt = true);
 		virtual void free(vPointer& ptr);
 		virtual ~vMemory();
 	};
 
-	vk::DeviceMemory allocateDeviceMemory(vk::PhysicalDevice device, vk::Device lDevice, int size, int typeFilter, vk::MemoryPropertyFlagBits flag);
+	vk::DeviceMemory allocateDeviceMemory(vk::PhysicalDevice device, vk::Device lDevice, uint64_t size, uint64_t typeFilter, vk::MemoryPropertyFlagBits flag);
 }
 
 
