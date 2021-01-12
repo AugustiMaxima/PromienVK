@@ -36,12 +36,12 @@ namespace infr {
 			util::multIndex<uint64_t, mNode*> allocRecord;
 			void attachRegistry(rNode* reg);
 			void removeRegistry(rNode* reg);
-			uint64_t upscale(uint64_t size, uint64_t align);
 			friend mNode;
 		public:
 			LinearVM();
 			LinearVM(uint64_t maxHeapSize);
 			void initialize(uint64_t maxHeapSize);
+			uint64_t upscale(uint64_t size, uint64_t align);
 			uint64_t malloc(uint64_t size, uint64_t align = 4, bool prealigned = true);
 			rNode* try_alloc(uint64_t size, uint64_t align = 4, bool prealigned = true);
 			uint64_t fin_alloc(rNode* node, uint64_t size, uint64_t align = 4);

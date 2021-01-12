@@ -13,9 +13,10 @@ namespace core {
 		uint64_t size;
 	public:
 		vPointer();
-		vPointer(vMemory& src, uint64_t offset);
-		void initialize(vMemory& src, uint64_t offset);
+		vPointer(vMemory& src, uint64_t offset, uint64_t size);
+		void initialize(vMemory& src, uint64_t offset, uint64_t size);
 		uint64_t getOffset() const;
+		uint64_t getSize() const;
 		vk::DeviceMemory getDeviceMemory();
 		void free();
 	};
@@ -25,7 +26,6 @@ namespace core {
 		vk::Device device;
 		vk::DeviceMemory src;
 		infr::lvm::LinearVM allocator;
-		util::multIndex<int, bool> allocRegistry; //An additional safety check to prevent bad free
 	public:
 		vMemory();
 		vMemory(vk::Device device, vk::DeviceMemory src, uint64_t size);

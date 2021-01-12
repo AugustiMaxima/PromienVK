@@ -98,10 +98,6 @@ namespace infr {
 			delete reg;
 		}
 
-		uint64_t LinearVM::upscale(uint64_t size, uint64_t align) {
-			return size % align ? ((size / align) + 1) * align : size;
-		}
-
 		LinearVM::LinearVM(){
 			src = new mNode(0, 0, *this, true);
 		}
@@ -118,6 +114,10 @@ namespace infr {
 			src->r->f = src;
 		}
 
+		uint64_t LinearVM::upscale(uint64_t size, uint64_t align) {
+			return size % align ? ((size / align) + 1) * align : size;
+		}
+
 		//Note on prealigned:
 		//align buffer will always guarantee success, at the cost of some fragmentation
 		//but most of the time, we can assume that the headers are aligned
@@ -126,7 +126,7 @@ namespace infr {
 			rNode* reg = try_alloc(size, align, prealigned);
 			if (!reg)
 				throw std::exception("Alignment failure");
-			return fin_alloc(reg, size, align);
+			 return fin_alloc(reg, size, align);
 		}
 
 		rNode* LinearVM::try_alloc(uint64_t size, uint64_t align, bool prealigned) {
@@ -154,8 +154,9 @@ namespace infr {
 
 		uint64_t LinearVM::fin_alloc(rNode* reg, uint64_t size, uint64_t align) {
 			mNode* node = reg->node->allocRequest(size, *this, align);
-			allocRecord.put(node->offset, node);
-			return node->offset;
+			uint64_t offset = node->offset % align ? ((node->offset / align) + 1) * align : node->offset;
+			allocRecord.put(offset, node);
+			return offset;
 		}
 
 		void LinearVM::free(uint64_t offset) {

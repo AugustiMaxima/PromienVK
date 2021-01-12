@@ -3,15 +3,20 @@
 namespace core {
 	vPointer::vPointer(){}
 
-	vPointer::vPointer(vMemory& src, uint64_t offset) : src(&src), offset(offset){}
+	vPointer::vPointer(vMemory& src, uint64_t offset, uint64_t size) : src(&src), offset(offset), size(size){}
 
-	void vPointer::initialize(vMemory& src, uint64_t offset) {
+	void vPointer::initialize(vMemory& src, uint64_t offset, uint64_t size) {
 		this->src = &src;
 		this->offset = offset;
+		this->size = size;
 	}
 
 	uint64_t vPointer::getOffset() const {
 		return offset;
+	}
+
+	uint64_t vPointer::getSize() const {
+		return size;
 	}
 
 	vk::DeviceMemory vPointer::getDeviceMemory() {
@@ -53,9 +58,9 @@ namespace core {
 	}
 
 	vPointer vMemory::malloc(uint64_t bytes, uint64_t alignment, bool opt) {
+		bytes = allocator.upscale(bytes, alignment);
 		uint64_t offset = allocator.malloc(bytes, alignment, opt);
-		allocRegistry.put(offset, true);
-		return vPointer(*this, offset);
+		return vPointer(*this, offset, bytes);
 	}
 
 	vMemory::~vMemory(){}
@@ -63,8 +68,6 @@ namespace core {
 	void vMemory::free(vPointer& ptr) {
 		if (ptr.getDeviceMemory() != src)
 			throw std::exception("This memory was allocated from a different heap of deviceMemory");
-		if (!allocRegistry.get(ptr.getOffset()))
-			throw std::exception("No pointer of the correct offset found");
 		allocator.free(ptr.getOffset());
 	}
 
