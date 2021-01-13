@@ -218,5 +218,8 @@
     <None Include="test\testFiles\test.json">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="shaders\compileShader.bat">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

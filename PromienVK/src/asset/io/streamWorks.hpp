@@ -29,6 +29,7 @@ namespace asset {
 			virtual void work() override;
 			bool transferComplete();
 			vk::Fence getFence();
+			Vueue collectVRAM();
 			virtual ~StagePropagation();
 		};
 	}

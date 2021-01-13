@@ -38,6 +38,10 @@ namespace asset {
 			return fence;
 		}
 
+		Vueue StagePropagation::collectVRAM() {
+			return stream.collectVram();
+		}
+
 		StagePropagation::~StagePropagation() {
 
 		}

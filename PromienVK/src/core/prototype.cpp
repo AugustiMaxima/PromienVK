@@ -233,6 +233,28 @@ namespace core {
 		pip.shaders.srcs = { "shaders/shader.vert.spv", "shaders/shader.frag.spv" };
 		pip.shaders.stages = { vk::ShaderStageFlagBits::eVertex , vk::ShaderStageFlagBits::eFragment };
 
+		//configure your vertex assembly information here
+		auto& vx = pip.vertice;
+		vx.binding.push_back(vk::VertexInputBindingDescription()
+			.setBinding(0)
+			.setInputRate(vk::VertexInputRate::eVertex)
+			.setStride(8 * sizeof(float)));
+		vx.attribute.push_back(vk::VertexInputAttributeDescription()
+			.setBinding(0)
+			.setLocation(0)
+			.setFormat(vk::Format::eR32G32B32Sfloat)
+			.setOffset(0));
+		vx.attribute.push_back(vk::VertexInputAttributeDescription()
+			.setBinding(0)
+			.setLocation(2)
+			.setFormat(vk::Format::eR32G32Sfloat)
+			.setOffset(3*sizeof(float)));
+		vx.attribute.push_back(vk::VertexInputAttributeDescription()
+			.setBinding(0)
+			.setLocation(3)
+			.setFormat(vk::Format::eR32G32B32Sfloat)
+			.setOffset(5*sizeof(float)));
+
 		pipeline = pip.construct(device, renderPass, 0, nullptr, -1, nullptr);
 		pipelineLayout = pip.uniform.layout;
 
@@ -288,6 +310,7 @@ namespace core {
 		}
 	}
 
+
 	void Prototype::configureAssets() {
 		using namespace asset::format;
 		host.initialize(grgpu, device, queueIndex[infr::QueueFunction::transfer], queueMap[infr::QueueFunction::transfer], 536870912, 536870912);
@@ -303,7 +326,9 @@ namespace core {
 		asset::io::StagePropagation transfer{ host, vr, stageBuffer };
 		transfer.start();
 		device.waitForFences(transfer.getFence(), true, UINT64_MAX);
+		vram = transfer.collectVRAM();
 	}
+
 
 	void Prototype::setup() {
 		using namespace std;
@@ -365,7 +390,8 @@ namespace core {
 			.setFramebuffer(framebuffers[id])
 			, vk::SubpassContents::eInline);
 		cb.bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline);
-		cb.draw(3, 1, 0, 0);
+		cb.bindVertexBuffers((uint32_t)0, vram.buffer, (vk::DeviceSize)0);
+		cb.draw(lux->getVerticeCount(), 1, 0, 0);
 		cb.endRenderPass();
 		cb.end();
 

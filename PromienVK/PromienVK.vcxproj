@@ -294,6 +294,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="configs\settings.json" />
+    <None Include="shaders\compileShader.bat" />
     <None Include="shaders\shader.frag" />
     <None Include="shaders\shader.vert" />
     <None Include="test\testFiles\test.json" />
