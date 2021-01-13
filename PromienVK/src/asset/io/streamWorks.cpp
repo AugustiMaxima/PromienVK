@@ -27,7 +27,7 @@ namespace asset {
 			vk::Device device = host.getDevice();
 			Vueue vram = host.allocateVRAM(binding, stage.size);
 			stream = host.allocateStream(stage, vram);
-			stream.transfer();
+			fence = stream.transfer();
 		}
 
 		bool StagePropagation::transferComplete() {

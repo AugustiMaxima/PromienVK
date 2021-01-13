@@ -18,7 +18,7 @@ namespace asset {
 			trackedMemory();
 			void init(vk::Device, vk::DeviceMemory src, uint64_t size);
 			void* tryAlloc(uint64_t bytes, uint64_t alignment);
-			core::vPointer alloc(uint64_t bytes, void* key);
+			core::vPointer alloc(uint64_t bytes, uint64_t align, void* key);
 			core::vPointer malloc(uint64_t bytes, uint64_t alignment);
 			virtual void free(core::vPointer ptr);
 			virtual ~trackedMemory();
@@ -66,6 +66,7 @@ namespace asset {
 			uint64_t rId;
 			uint64_t stageBlockSize;
 			uint64_t vramBlockSize;
+			uint64_t atomSize;
 			std::mutex sync;
 			vk::PhysicalDevice pDevice;
 			vk::Device device;

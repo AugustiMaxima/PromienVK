@@ -10,6 +10,7 @@ namespace asset {
 		}
 
 		void* trackedMemory::tryAlloc(uint64_t bytes, uint64_t alignment) {
+			bytes = bytes % alignment ? (bytes / alignment + 1) * alignment : bytes;
 			//80% is a megic number
 			//we may switch to attempts instead, but so far this magic number have worked well
 			if (occupancy + bytes < capacity * 4 / 5) {
@@ -18,18 +19,20 @@ namespace asset {
 			return nullptr;
 		}
 
-		core::vPointer trackedMemory::alloc(uint64_t bytes, void* key) {
+		core::vPointer trackedMemory::alloc(uint64_t bytes, uint64_t alignment, void* key) {
+			bytes = bytes % alignment ? (bytes / alignment + 1) * alignment : bytes;
 			occupancy += bytes;
 			uint64_t offset = allocator.fin_alloc((infr::lvm::rNode*)key, bytes);
 			sReg.put(offset, bytes);
-			return core::vPointer(*this, offset);
+			return core::vPointer(*this, offset, bytes);
 		}
 		//this occupancy is coarse grained and misses padding info
 		core::vPointer trackedMemory::malloc(uint64_t bytes, uint64_t alignment) {
+			bytes = bytes % alignment ? (bytes / alignment + 1) * alignment : bytes;
 			occupancy += bytes;
 			uint64_t offset = allocator.malloc(bytes, alignment);
 			sReg.put(offset, bytes);
-			return core::vPointer(*this, offset);
+			return core::vPointer(*this, offset, bytes);
 		}
 
 		void trackedMemory::free(core::vPointer ptr) {
@@ -61,14 +64,14 @@ namespace asset {
 		StageVueue::StageVueue(vk::Device device, core::vPointer mem, vk::Buffer buffer, uint64_t size):Vueue(device, mem, buffer, size){}
 
 		void* StageVueue::getStageSource() {
-			return device.mapMemory(mem.getDeviceMemory(), mem.getOffset(), size);
+			return device.mapMemory(mem.getDeviceMemory(), mem.getOffset(), mem.getSize());
 		}
 
 		void StageVueue::flushCache() {
 			vk::MappedMemoryRange range = vk::MappedMemoryRange()
 				.setMemory(mem.getDeviceMemory())
 				.setOffset(mem.getOffset())
-				.setSize(size);
+				.setSize(mem.getSize());
 			device.flushMappedMemoryRanges(range);
 		}
 
@@ -90,6 +93,8 @@ namespace asset {
 
 		vk::Fence StreamHandle::transfer() {
 			fence = device.createFence(vk::FenceCreateInfo());
+			stage.bindBuffer();
+			vram.bindBuffer();
 			cpy.setSize(size).setSrcOffset(stage.mem.getOffset()).setDstOffset(vram.mem.getOffset());
 			cmd.begin(vk::CommandBufferBeginInfo());
 			cmd.copyBuffer(stage.buffer, vram.buffer, cpy);
@@ -133,6 +138,8 @@ namespace asset {
 			this->stage.init(device, mstage, stageBlockSize);
 
 			device.destroy(stgr);
+
+			atomSize = pDevice.getProperties().limits.nonCoherentAtomSize;
 		}
 
 		StreamHost::StreamHost(){}
@@ -169,6 +176,8 @@ namespace asset {
 			vk::Buffer stgr = device.createBuffer(srcInfo);
 			vk::MemoryRequirements stgProp = device.getBufferMemoryRequirements(stgr);
 			sync.lock();
+			if (stgProp.alignment < atomSize)
+				stgProp.alignment = atomSize;
 			core::vPointer stgp = stage.malloc(stgProp.size, stgProp.alignment);
 			sync.unlock();
 			return StageVueue(device, stgp, stgr, size);
@@ -182,7 +191,7 @@ namespace asset {
 			for (auto& vm : vrs) {
 				void* k = vm.tryAlloc(prop.size, prop.alignment);
 				if (k) {
-					Vueue vs{ device, vm.alloc(prop.size, k), dst, size };
+					Vueue vs{ device, vm.alloc(prop.size, prop.alignment, k), dst, size };
 					sync.unlock();
 					return vs;
 				}
@@ -206,7 +215,7 @@ namespace asset {
 			sync.lock();
 			vk::CommandBuffer cmdb = device.allocateCommandBuffers(cmdInfo)[0];
 			sync.unlock();
-			//question -> should vueue hold sizes
+			//TODO:verify the size here
 			return StreamHandle(*this, cmdb, src.size, src, dst);
 		}
 

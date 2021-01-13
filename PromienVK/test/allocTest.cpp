@@ -107,7 +107,7 @@ static int alignStressTest(const int epoch) {
 
 int allocTest(bool stress) {
 	overAllocTest();
-	rightAllocTest();
+	//rightAllocTest();
 
 	alignStressTest(stress? 10000000 : 10000);
 	return 0;

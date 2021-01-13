@@ -32,7 +32,7 @@ namespace core {
 		void init(vk::Device device, vk::DeviceMemory src, uint64_t size);
 		vk::DeviceMemory getDeviceMemory();
 		static vMemory createMemoryPool(vk::Device device, uint64_t size, uint64_t memoryType);
-		static uint64_t selectMemoryType(vk::PhysicalDevice device, vk::MemoryPropertyFlags flag, uint32_t typeFilter = 0xFFFFFFFF);
+		static uint32_t selectMemoryType(vk::PhysicalDevice device, vk::MemoryPropertyFlags flag, uint32_t typeFilter = 0xFFFFFFFF);
 		virtual vPointer malloc(uint64_t bytes, uint64_t alignment = 4, bool opt = true);
 		virtual void free(vPointer& ptr);
 		virtual ~vMemory();

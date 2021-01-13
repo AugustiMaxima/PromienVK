@@ -48,7 +48,7 @@ namespace core {
 		allocator.initialize(size);
 	}
 
-	uint64_t vMemory::selectMemoryType(vk::PhysicalDevice device, vk::MemoryPropertyFlags flag, uint32_t typeFilter) {
+	uint32_t vMemory::selectMemoryType(vk::PhysicalDevice device, vk::MemoryPropertyFlags flag, uint32_t typeFilter) {
 		vk::PhysicalDeviceMemoryProperties prop = device.getMemoryProperties();
 		for (uint64_t i = 0; i < prop.memoryTypeCount; i++) {
 			if (typeFilter & (1 << i) && (prop.memoryTypes[i].propertyFlags & flag) == flag)
