@@ -10,7 +10,7 @@ namespace core {
 				return info;
 			if (!shaders.size()) {
 				for (const auto& src : srcs) {
-					shaders.push_back(shader::createShaderModule(device, src));
+					shaders.push_back(createShaderModule(device, src));
 				}
 			}
 			//assuming srcs, entryname and stages are equal

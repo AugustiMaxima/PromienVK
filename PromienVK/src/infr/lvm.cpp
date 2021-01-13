@@ -2,7 +2,7 @@
 
 namespace infr {
 	namespace lvm {
-		mNode::mNode(int offset, int bytes, LinearVM& vm, bool alloced) :offset(offset), bytes(bytes), f(nullptr), r(nullptr) {
+		mNode::mNode(uint64_t offset, uint64_t bytes, LinearVM& vm, bool alloced) :offset(offset), bytes(bytes), f(nullptr), r(nullptr) {
 			if (alloced)
 				reg = nullptr;
 			else {
@@ -11,10 +11,18 @@ namespace infr {
 			}
 		}
 
-		mNode* mNode::allocRequest(int size, LinearVM& vm) {
+		bool mNode::compatible(uint64_t size, uint64_t align) {
+			return alignedSize(size, align) <= bytes;
+		}
+
+		uint64_t mNode::alignedSize(uint64_t size, uint64_t align) {
+			return (offset % align ? (align - offset % align) : 0) + size;
+		}
+
+		mNode* mNode::allocRequest(uint64_t size, LinearVM& vm, uint64_t align) {
 			vm.removeRegistry(reg);
-			int fSize = size % vm.align ? (size + vm.align - size % vm.align) : size;
-			if (fSize + vm.minHeapSize <= bytes) {
+			uint64_t fSize = alignedSize(size, align);
+			if (fSize < bytes) {
 				//split condition
 				mNode* nf = new mNode(offset, fSize, vm, true);
 				mNode* nr = new mNode(offset + fSize, bytes - fSize, vm);
@@ -29,7 +37,10 @@ namespace infr {
 				delete this;
 				return nf;
 			}
-			return this;
+			else if (fSize == bytes) {
+				return this;
+			}
+			return nullptr;
 		}
 
 		void mNode::free(LinearVM& vm) {
@@ -87,29 +98,69 @@ namespace infr {
 			delete reg;
 		}
 
-		LinearVM::LinearVM(int maxHeapSize, int minHeapSize, int align) :maxHeapSize(maxHeapSize), minHeapSize(minHeapSize < align ? align : minHeapSize), align(align) {
+		LinearVM::LinearVM(){
+			src = new mNode(0, 0, *this, true);
+		}
+
+		LinearVM::LinearVM(uint64_t maxHeapSize) : maxHeapSize(maxHeapSize){
 			src = new mNode(0, 0, *this, true);
 			//meme first slot to avoid the assignment problem
 			src->r = new mNode(0, maxHeapSize, *this);
 			src->r->f = src;
 		}
 
-		int LinearVM::malloc(int size) {
-			size = size < minHeapSize ? minHeapSize : size;
-			auto result = freeList.probe(size, -1);
-			rNode* reg = nullptr;
-			if (result) {
-				reg = result;
-			}
-			if (!reg)
-				throw std::exception("Allocation failed");
-			mNode* node = reg->node->allocRequest(size, *this);
-			allocRecord.put(node->offset, node);
-			return node->offset;
+		void LinearVM::initialize(uint64_t maxHeapSize){
+			src->r = new mNode(0, maxHeapSize, *this);
+			src->r->f = src;
 		}
 
-		void LinearVM::free(int offset) {
-			auto rec = allocRecord.get(offset);
+		uint64_t LinearVM::upscale(uint64_t size, uint64_t align) {
+			return size % align ? ((size / align) + 1) * align : size;
+		}
+
+		//Note on prealigned:
+		//align buffer will always guarantee success, at the cost of some fragmentation
+		//but most of the time, we can assume that the headers are aligned
+		//optimistic alignment scheme will attempt to align without padding, and retry if failed
+		uint64_t LinearVM::malloc(uint64_t size, uint64_t align, bool prealigned) {
+			rNode* reg = try_alloc(size, align, prealigned);
+			if (!reg)
+				throw std::exception("Alignment failure");
+			 return fin_alloc(reg, size, align);
+		}
+
+		rNode* LinearVM::try_alloc(uint64_t size, uint64_t align, bool prealigned) {
+			size = upscale(size, align);
+			for (uint64_t i = 0; i < 2; i++) {
+				if (!prealigned) {
+					size += align - 1;
+					align = 1;
+				}
+				auto result = freeList.probe(size, -1);
+				rNode* reg = nullptr;
+				if (result) {
+					reg = result;
+				}
+				if (!reg)
+					throw std::exception("Allocation failed");
+				if (!reg->node->compatible(size, align)) {
+					prealigned = false;
+					continue;
+				}
+				return reg;
+			}
+			return nullptr;
+		}
+
+		uint64_t LinearVM::fin_alloc(rNode* reg, uint64_t size, uint64_t align) {
+			mNode* node = reg->node->allocRequest(size, *this, align);
+			uint64_t offset = node->offset % align ? ((node->offset / align) + 1) * align : node->offset;
+			allocRecord.put(offset, node);
+			return offset;
+		}
+
+		void LinearVM::free(uint64_t offset) {
+			auto rec = allocRecord.pop(offset);
 			mNode* node = nullptr;
 			if (rec)
 				node = rec.value();

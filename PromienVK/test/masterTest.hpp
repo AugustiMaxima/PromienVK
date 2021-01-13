@@ -12,6 +12,8 @@ int heapTest();
 
 int asyncTest();
 
+int objTest();
+
 int masterTest(bool stress = false);
 
 #endif

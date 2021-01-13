@@ -5,31 +5,41 @@
 #include "../infr/lvm.hpp"
 
 namespace core {
-	namespace ram {
-		//incomplete draft -- more to be done with interface & abstraction
-		struct vPointer {
-			const vk::DeviceMemory memory;
-			const int offset;
-			vPointer(vk::DeviceMemory memory, int offset);
-		};
+	class vMemory;
+	//incomplete draft -- more to be done with interface & abstraction
+	class vPointer {
+		vMemory* src;
+		uint64_t offset;
+		uint64_t size;
+	public:
+		vPointer();
+		vPointer(vMemory& src, uint64_t offset, uint64_t size);
+		void initialize(vMemory& src, uint64_t offset, uint64_t size);
+		uint64_t getOffset() const;
+		uint64_t getSize() const;
+		vk::DeviceMemory getDeviceMemory();
+		void free();
+	};
 
-		class vMemory {
-			vk::DeviceMemory src;
-			infr::lvm::LinearVM allocator;
-			util::multIndex<int, bool> allocRegistry; //An additional safety check to prevent bad free
-		public:
-			vMemory(vk::DeviceMemory src, int size);
-			static vMemory createMemoryPool(vk::Device device, int size, int memoryType);
-			static int selectMemoryType(vk::PhysicalDevice device, int typeFilter, vk::MemoryPropertyFlags flag);
-			vPointer malloc(int bytes);
-			void free(vPointer ptr);
-		};
+	class vMemory {
+	protected:
+		vk::Device device;
+		vk::DeviceMemory src;
+		infr::lvm::LinearVM allocator;
+	public:
+		vMemory();
+		vMemory(vk::Device device, vk::DeviceMemory src, uint64_t size);
+		void init(vk::Device device, vk::DeviceMemory src, uint64_t size);
+		vk::DeviceMemory getDeviceMemory();
+		static vMemory createMemoryPool(vk::Device device, uint64_t size, uint64_t memoryType);
+		static uint32_t selectMemoryType(vk::PhysicalDevice device, vk::MemoryPropertyFlags flag, uint32_t typeFilter = 0xFFFFFFFF);
+		virtual vPointer malloc(uint64_t bytes, uint64_t alignment = 4, bool opt = true);
+		virtual void free(vPointer& ptr);
+		virtual ~vMemory();
+	};
 
-		vk::DeviceMemory allocateDeviceMemory(vk::PhysicalDevice device, vk::Device lDevice, int size, int typeFilter, vk::MemoryPropertyFlagBits flag);
-	}
+	vk::DeviceMemory allocateDeviceMemory(vk::PhysicalDevice device, vk::Device lDevice, uint64_t size, uint64_t typeFilter, vk::MemoryPropertyFlagBits flag);
 }
-
-
 
 
 #endif

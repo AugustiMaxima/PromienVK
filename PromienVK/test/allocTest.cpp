@@ -7,7 +7,7 @@ using namespace infr;
 using namespace std;
 
 static int overAllocTest() {
-	lvm::LinearVM vm{ 2048, 1 };
+	lvm::LinearVM vm{ 2048 };
 	vm.malloc(1024);
 	vm.malloc(512);
 	vm.malloc(256);
@@ -24,7 +24,7 @@ static int overAllocTest() {
 
 static int rightAllocTest() {
 	hvm::HierarchicalVM vm{ 2048, 1 };
-	int ptr[100];
+	uint64_t ptr[100];
 	ptr[0] = vm.malloc(1024);
 	ptr[1] = vm.malloc(512);
 	ptr[2] = vm.malloc(256);
@@ -47,121 +47,58 @@ static int rightAllocTest() {
 	return 0;
 }
 
-static int allocStressTest() {
-	int limit = 4194304;
-	int bound = limit * 93 / 100;
-	//A word on the fragmentation efficiency
-	//100% is impossible for any architecture
-	//the theoretical worst case for hvm should be 50%
-	//assuming good external fragmentation, this would imply worst bound of 50%, consistent with our real world testing
-	//lvm seems to perform much more admirably with a "real world" synthetic scenario achieving 93% utilization
+static int alignStressTest(const int epoch) {
+	uint64_t limit = 9663676416;
+	uint64_t bound = limit * 84 / 100;
+	lvm::LinearVM vm{ limit };
 
-	lvm::LinearVM vm{limit, 1, 1};
+	uint64_t ramtally = 0;
+	std::vector<uint64_t> batches;
 
-	int ramtally = 0;
-	std::vector<int> batches;
-
-	for (int i = 1; i < bound/4; i=i*2) {
+	for (uint64_t i = 1; i < limit / 4; i = i * 2) {
 		batches.push_back(i);
 	}
 
-	int e = 0;
+	uint64_t e = 0;
 
-	std::vector<int> alloced;
-	std::vector<int> sizes;
-	int dex = 0;
+	std::vector<uint64_t> alloced;
+	std::vector<uint64_t> sizes;
+	uint64_t dex = 0;
 
-	while (e++ < 1000000) {
-		int action = e % 3;
-		cout << e << endl;
+	while (e++ < epoch) {
+		uint64_t action = e % 3;
+		//cout << e << endl;
 		if (action < 2) {
-			int alx = e * 67 % batches.size();
-			int dev = e * 17 % (alx + 1);
-			int plier = action % 2 ? -1 : 1;
-			int fsize = batches[alx] + plier * batches[dev];
-			if (ramtally + fsize <= bound) {
-				cout << "Alloccing " << fsize << " bytes" << endl;
+			uint64_t alx = e * 67 % batches.size();
+			uint64_t dev = e * 17 % (alx + 1);
+			uint64_t plier = action % 2 ? -1 : 1;
+			uint64_t fsize = batches[alx] + plier * batches[dev];
+			if (fsize && ramtally + fsize <= bound) {
+				//cout << "Alloccing " << fsize << " bytes" << endl;
 				alloced.push_back(vm.malloc(fsize));
-				cout << "Allocated at " << alloced[alloced.size() - 1] << endl;
+				//cout << "Allocated at " << alloced[alloced.size() - 1] << endl;
 				sizes.push_back(fsize);
 				ramtally += fsize;
 			}
 		}
 		else {
 			if (alloced.size() > dex) {
-				int kek = (e * 13 % (alloced.size() - dex)) + dex;
-				int temp = alloced[dex];
-				int temp2 = sizes[dex];
+				uint64_t kek = (e * 13 % (alloced.size() - dex)) + dex;
+				uint64_t temp = alloced[dex];
+				uint64_t temp2 = sizes[dex];
 				alloced[dex] = alloced[kek];
 				sizes[dex] = sizes[kek];
 				alloced[kek] = temp;
 				sizes[kek] = temp2;
+				//cout << "Freeing " << sizes[dex] << " bytes at " << alloced[dex] << endl;
 				vm.free(alloced[dex]);
-				cout << "Freeing " << sizes[dex] << " bytes" << endl;
-				cout << "Freed at " << alloced[dex] << endl;
+				//cout << "Freed at " << alloced[dex] << endl;
 				ramtally -= sizes[dex++];
 			}
 		}
 	}
 
-	cout << "Pretty stable performance!" << endl;
-
-	return 0;
-}
-
-
-static int alignStressTest() {
-	int limit = 9663676416;
-	int bound = limit * 93 / 100;
-	lvm::LinearVM vm{ limit, 16, 16 };
-
-	int ramtally = 0;
-	std::vector<int> batches;
-
-	for (int i = 1; i < bound / 4; i = i * 2) {
-		batches.push_back(i);
-	}
-
-	int e = 0;
-
-	std::vector<int> alloced;
-	std::vector<int> sizes;
-	int dex = 0;
-
-	while (e++ < 1000000) {
-		int action = e % 3;
-		cout << e << endl;
-		if (action < 2) {
-			int alx = e * 67 % batches.size();
-			int dev = e * 17 % (alx + 1);
-			int plier = action % 2 ? -1 : 1;
-			int fsize = batches[alx] + plier * batches[dev];
-			if (ramtally + fsize <= bound) {
-				cout << "Alloccing " << fsize << " bytes" << endl;
-				alloced.push_back(vm.malloc(fsize));
-				cout << "Allocated at " << alloced[alloced.size() - 1] << endl;
-				sizes.push_back(fsize);
-				ramtally += fsize;
-			}
-		}
-		else {
-			if (alloced.size() > dex) {
-				int kek = (e * 13 % (alloced.size() - dex)) + dex;
-				int temp = alloced[dex];
-				int temp2 = sizes[dex];
-				alloced[dex] = alloced[kek];
-				sizes[dex] = sizes[kek];
-				alloced[kek] = temp;
-				sizes[kek] = temp2;
-				vm.free(alloced[dex]);
-				cout << "Freeing " << sizes[dex] << " bytes" << endl;
-				cout << "Freed at " << alloced[dex] << endl;
-				ramtally -= sizes[dex++];
-			}
-		}
-	}
-
-	cout << "Pretty stable performance!" << endl;
+	//cout << "Pretty stable performance!" << endl;
 
 	return 0;
 }
@@ -170,12 +107,8 @@ static int alignStressTest() {
 
 int allocTest(bool stress) {
 	overAllocTest();
-	rightAllocTest();
+	//rightAllocTest();
 
-	if (!stress)
-		return 0;
-
-	//allocStressTest();
-	alignStressTest();
+	alignStressTest(stress? 10000000 : 10000);
 	return 0;
 }

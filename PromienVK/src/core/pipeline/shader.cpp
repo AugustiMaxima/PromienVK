@@ -2,7 +2,7 @@
 #include "shader.hpp"
 
 namespace core {
-	namespace shader {
+	namespace pipeline {
 		using namespace vk;
 		using namespace std;
 		ShaderModule createShaderModule(vk::Device device, const string& path) {

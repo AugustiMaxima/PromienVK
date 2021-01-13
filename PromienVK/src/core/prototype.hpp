@@ -9,6 +9,8 @@
 #include "../infr/type.hpp"
 #include "../utils/semaphore.hpp"
 #include "settings.hpp"
+#include "../asset/io/loader.hpp"
+#include "../asset/format/obj.hpp"
 
 VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE
 
@@ -30,6 +32,7 @@ namespace core {
 		vk::PhysicalDevice grgpu;
 		vk::Device device;
 		vk::DispatchLoaderDynamic dldd;
+		std::map<infr::QueueFunction, int> queueIndex;
 		std::map<infr::QueueFunction, std::vector<vk::Queue>> queueMap;
 		vk::SwapchainKHR swapchain;
 		settings::DisplaySettings display;
@@ -54,6 +57,12 @@ namespace core {
 		std::vector<vk::Fence> imageLease;
 
 
+		asset::io::StreamHost host;
+		asset::format::obj* lux;
+
+		asset::io::StageVueue stageBuffer;
+		asset::io::Vueue vram;
+
 		virtual void createInstance();
 		virtual void createSurface();
 		virtual void allocatePhysicalDevices();
@@ -65,6 +74,7 @@ namespace core {
 		virtual void configureFramebuffers();
 		virtual void configureCommandPool();
 		virtual void configureSynchronization();
+		virtual void configureAssets();
 		virtual void setup();
 		virtual void render();
 		virtual void renderFrame(unsigned f);

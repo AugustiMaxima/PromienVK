@@ -4,10 +4,11 @@
 #include "devicePick.hpp"
 #include "../utils/multindex.hpp"
 #include "swapchain.hpp"
-#include "shader.hpp"
-#include "pipeline.hpp"
-#include "boilerplate.hpp"
-#include "renderpass.hpp"
+#include "pipeline/shader.hpp"
+#include "pipeline/pipeline.hpp"
+#include "pipeline/boilerplate.hpp"
+#include "pipeline/renderpass.hpp"
+#include "../asset/io/streamWorks.hpp"
 #include "prototype.hpp"
 
 namespace core {
@@ -79,7 +80,7 @@ namespace core {
 		vk::DynamicLoader dl;
 		PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr = dl.getProcAddress<PFN_vkGetInstanceProcAddr>("vkGetInstanceProcAddr");
 
-		dldi.init(instance, vkGetInstanceProcAddr);
+		dldi.init((VkInstance)instance, vkGetInstanceProcAddr);
 
 #if defined(_DEBUG)
 		debugMessenger = instance.createDebugUtilsMessengerEXT(msgInfo, nullptr, dldi);
@@ -138,7 +139,9 @@ namespace core {
 
 		device = dps::allocateDeviceQueue(grgpu, graphic, queuery);
 
-		std::map<infr::QueueFunction, util::multIndex<float, vk::Queue>> indexedMap = dps::collectDeviceQueue(device, grgpu, queuery);
+		queueIndex = dps::collectDeviceQueueIndex(grgpu, queuery);
+
+		std::map<infr::QueueFunction, util::multIndex<float, vk::Queue>> indexedMap = dps::fetchDeviceQueue(grgpu, device, queueIndex);
 		for (const auto& index : indexedMap) {
 			util::multIndex<float, vk::Queue> queues = index.second;
 			queueMap[index.first] = queues.query(1.0f, 1.0f);
@@ -230,6 +233,28 @@ namespace core {
 		pip.shaders.srcs = { "shaders/shader.vert.spv", "shaders/shader.frag.spv" };
 		pip.shaders.stages = { vk::ShaderStageFlagBits::eVertex , vk::ShaderStageFlagBits::eFragment };
 
+		//configure your vertex assembly information here
+		auto& vx = pip.vertice;
+		vx.binding.push_back(vk::VertexInputBindingDescription()
+			.setBinding(0)
+			.setInputRate(vk::VertexInputRate::eVertex)
+			.setStride(8 * sizeof(float)));
+		vx.attribute.push_back(vk::VertexInputAttributeDescription()
+			.setBinding(0)
+			.setLocation(0)
+			.setFormat(vk::Format::eR32G32B32Sfloat)
+			.setOffset(0));
+		vx.attribute.push_back(vk::VertexInputAttributeDescription()
+			.setBinding(0)
+			.setLocation(2)
+			.setFormat(vk::Format::eR32G32Sfloat)
+			.setOffset(3*sizeof(float)));
+		vx.attribute.push_back(vk::VertexInputAttributeDescription()
+			.setBinding(0)
+			.setLocation(3)
+			.setFormat(vk::Format::eR32G32B32Sfloat)
+			.setOffset(5*sizeof(float)));
+
 		pipeline = pip.construct(device, renderPass, 0, nullptr, -1, nullptr);
 		pipelineLayout = pip.uniform.layout;
 
@@ -256,10 +281,9 @@ namespace core {
 	void Prototype::configureCommandPool() {
 		std::map<infr::QueueFunction, std::function<bool(vk::QueueFamilyProperties)>> queuery;
 		queuery[infr::QueueFunction::graphic] = infr::dvs::isGraphicQueue;
-		std::map<infr::QueueFunction, int> result = dps::collectDeviceQueueIndex(grgpu, queuery);
 	
 		auto pInfo = vk::CommandPoolCreateInfo()
-			.setQueueFamilyIndex(result[infr::QueueFunction::graphic])
+			.setQueueFamilyIndex(queueIndex[infr::QueueFunction::graphic])
 			.setFlags(vk::CommandPoolCreateFlagBits::eResetCommandBuffer);
 		
 		for (int i = 0; i < swapchainImages.size(); i++) {
@@ -286,6 +310,26 @@ namespace core {
 		}
 	}
 
+
+	void Prototype::configureAssets() {
+		using namespace asset::format;
+		host.initialize(grgpu, device, queueIndex[infr::QueueFunction::transfer], queueMap[infr::QueueFunction::transfer], 536870912, 536870912);
+		lux = new obj("assets/lux.obj");
+		const int size = lux->getAttributes() * lux->getVerticeCount() * sizeof(float);
+		asset::io::ModelToStage load{host, *lux};
+		load.start();
+		stageBuffer = load.collectStage();
+		vk::Buffer vr = device.createBuffer(vk::BufferCreateInfo()
+			.setUsage(vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferDst)
+			.setSharingMode(vk::SharingMode::eExclusive)
+			.setSize(size));
+		asset::io::StagePropagation transfer{ host, vr, stageBuffer };
+		transfer.start();
+		device.waitForFences(transfer.getFence(), true, UINT64_MAX);
+		vram = transfer.collectVRAM();
+	}
+
+
 	void Prototype::setup() {
 		using namespace std;
 		createInstance();
@@ -298,18 +342,16 @@ namespace core {
 		configureGraphicsPipeline();
 		configureFramebuffers();
 		configureCommandPool();
+		configureAssets();
+		configureSynchronization();
 	}
 
 	void Prototype::render() {
-			using namespace std;
-		configureSynchronization();
 		unsigned fc = 0;
-		cout << fc << endl;
 
 		while (!glfwWindowShouldClose(window)) {
 			glfwPollEvents();
 			renderFrame(fc++);
-			cout << fc << endl;
 		}
 
 	}
@@ -348,7 +390,8 @@ namespace core {
 			.setFramebuffer(framebuffers[id])
 			, vk::SubpassContents::eInline);
 		cb.bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline);
-		cb.draw(3, 1, 0, 0);
+		cb.bindVertexBuffers((uint32_t)0, vram.buffer, (vk::DeviceSize)0);
+		cb.draw(lux->getVerticeCount(), 1, 0, 0);
 		cb.endRenderPass();
 		cb.end();
 

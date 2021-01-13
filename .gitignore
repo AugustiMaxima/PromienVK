@@ -3,6 +3,9 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
+# asset files that should not be public
+PromienVK/assets/
+
 # User-specific files
 *.rsuser
 *.suo
