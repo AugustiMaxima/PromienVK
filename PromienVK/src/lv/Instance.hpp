@@ -8,11 +8,12 @@
 namespace lv {
 
 	struct Instance;
+	struct Device;
 
 	struct PhysicalDevice {
-		Instance& instance;
+		Instance* instance;
 		vk::PhysicalDevice src;
-		std::vector<vk::Device> logicalDevices;
+		std::vector<Device> logicalDevices;
 	};
 
 	struct Instance {

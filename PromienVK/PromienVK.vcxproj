@@ -286,6 +286,11 @@
     <ClInclude Include="src\infr\InfraVK.hpp" />
     <ClInclude Include="src\infr\lvm.hpp" />
     <ClInclude Include="src\infr\type.hpp" />
+    <ClInclude Include="src\lv\Command.hpp" />
+    <ClInclude Include="src\lv\Device.hpp" />
+    <ClInclude Include="src\lv\Instance.hpp" />
+    <ClInclude Include="src\lv\Pipeline.hpp" />
+    <ClInclude Include="src\lv\Present.hpp" />
     <ClInclude Include="src\utils\heap.hpp" />
     <ClInclude Include="src\utils\multIndex.hpp" />
     <ClInclude Include="src\utils\semaphore.hpp" />
