@@ -17,6 +17,7 @@ namespace lv {
 	struct Device {
 		PhysicalDevice* physical;
 		vk::Device device;
+		vk::DispatchLoaderDynamic loader;
 		std::vector<std::vector<Queue>> queues;
 	};
 }
