@@ -6,8 +6,10 @@
 #include <vector>
 
 namespace lv {
+	struct Instance;
 
 	struct Surface {
+		Instance* instance;
 		GLFWwindow* window;
 		vk::SurfaceKHR surface;
 	};

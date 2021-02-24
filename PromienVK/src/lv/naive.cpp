@@ -4,6 +4,8 @@
 #include "../dbg/vLog.hpp"
 #include "naive.hpp"
 #include "Instance.hpp"
+#include "Present.hpp"
+#include "Device.hpp"
 
 namespace lvl {
 	void configureInstance(lv::Instance& instance, std::string& appName, uint32_t version) {
@@ -60,4 +62,33 @@ namespace lvl {
 		instance.debugMessenger = instance.instance.createDebugUtilsMessengerEXT(msgInfo, nullptr, instance.loader);
 #endif
 	}
+
+	void enumeratePhysicalDevices(lv::Instance& instance) {
+		for (const auto& pDevice : instance.instance.enumeratePhysicalDevices()) {
+			lv::PhysicalDevice device;
+			device.instance = &instance;
+			device.src = pDevice;
+			instance.devices.push_back(device);
+		}
+	}
+
+	void initializeSurface(lv::Instance& instance, lv::Surface& surface, int width, int height, std::string& appName) {
+		glfwInit();
+		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+		glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+		surface.window = glfwCreateWindow(width, height, appName.c_str(), nullptr, nullptr);
+		VkSurfaceKHR sf;
+		if (glfwCreateWindowSurface((VkInstance)(instance.instance), surface.window, nullptr, &sf) != VK_SUCCESS) {
+			throw std::runtime_error("failed to create window surface!");
+		}
+		surface.surface = vk::SurfaceKHR(sf);
+		surface.instance = &instance;
+	}
+
+	lv::PhysicalDevice* collectRenderingDevice(lv::Instance& instance, lv::Surface& surface) {
+		const auto& devices = instance.devices;
+		return nullptr;
+	}
+
+
 }
