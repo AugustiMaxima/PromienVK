@@ -16,12 +16,12 @@ namespace lv {
 	struct PhysicalDevice {
 		Instance* instance;
 		vk::PhysicalDevice src;
-		std::vector<Device> logicalDevices;
+		std::vector<Device> Devices;
 	};
 
 	struct Instance {
-		vk::Instance instance;
-		std::vector<PhysicalDevice> devices;
+		vk::Instance src;
+		std::vector<PhysicalDevice> physicalDevices;
 		vk::DispatchLoaderDynamic loader;
 #if defined(_DEBUG)
 		vk::DebugUtilsMessengerEXT debugMessenger;

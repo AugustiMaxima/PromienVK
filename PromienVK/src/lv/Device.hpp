@@ -11,12 +11,12 @@ namespace lv {
 	struct Queue {
 		Device* device;
 		int QueueIndex;
-		vk::Queue queue;
+		vk::Queue src;
 	};
 
 	struct Device {
-		PhysicalDevice* physical;
-		vk::Device device;
+		PhysicalDevice* physicalDevice;
+		vk::Device src;
 		vk::DispatchLoaderDynamic loader;
 		std::vector<std::vector<Queue>> queues;
 	};

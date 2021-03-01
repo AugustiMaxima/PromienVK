@@ -11,16 +11,17 @@ namespace infr{
 
 namespace lv {
 	struct Instance;
+	struct PhysicalDevice;
 	struct Surface;
 }
 
-namespace lvm {
+namespace lvl {
 	std::map<infr::DeviceFunction, std::vector<int>> getSuitableMatches(
-		const std::map<infr::DeviceFunction, std::function<int(lv::Instance& instance, lv::Surface& surface)>>& rankMap,
-		lv::Instance& instance, lv::Surface& surface);
+		const std::map<infr::DeviceFunction, std::function<int(lv::PhysicalDevice&)>>& rankMap, 
+		lv::Instance& instance);
 
-
-
+	int sortByVRAM(lv::PhysicalDevice& device);
+	int vulkanVersionSupport(lv::PhysicalDevice& device);
 }
 
 #endif
