@@ -253,8 +253,8 @@
     <ClCompile Include="src\infr\hvm.cpp" />
     <ClCompile Include="src\infr\InfraVK.cpp" />
     <ClCompile Include="src\infr\lvm.cpp" />
-    <ClCompile Include="src\lv\deviceLib.cpp" />
-    <ClCompile Include="src\lv\naive.cpp" />
+    <ClCompile Include="src\lv\helper\deviceLib.cpp" />
+    <ClCompile Include="src\lv\helper\naive.cpp" />
     <ClCompile Include="src\utils\semaphore.cpp" />
     <ClCompile Include="src\utils\stdpp.cpp" />
     <ClCompile Include="test\allocTest.cpp" />
@@ -290,9 +290,9 @@
     <ClInclude Include="src\infr\type.hpp" />
     <ClInclude Include="src\lv\Command.hpp" />
     <ClInclude Include="src\lv\Device.hpp" />
-    <ClInclude Include="src\lv\deviceLib.hpp" />
+    <ClInclude Include="src\lv\helper\deviceLib.hpp" />
+    <ClInclude Include="src\lv\helper\naive.hpp" />
     <ClInclude Include="src\lv\Instance.hpp" />
-    <ClInclude Include="src\lv\naive.hpp" />
     <ClInclude Include="src\lv\Pipeline.hpp" />
     <ClInclude Include="src\lv\Present.hpp" />
     <ClInclude Include="src\utils\heap.hpp" />

@@ -13,6 +13,7 @@ namespace lv {
 	struct Instance;
 	struct PhysicalDevice;
 	struct Surface;
+	struct Device;
 }
 
 namespace lvl {
@@ -22,6 +23,9 @@ namespace lvl {
 
 	int sortByVRAM(lv::PhysicalDevice& device);
 	int vulkanVersionSupport(lv::PhysicalDevice& device);
+
+	void autoPopulatePriorities(lv::PhysicalDevice& physicalDevice, std::vector<std::vector<float>>& priorities);
+	lv::Device& allocateDevice(lv::PhysicalDevice& physicalDevice, vk::DeviceCreateInfo& templ, std::vector<std::vector<float>>& priorities);
 }
 
 #endif

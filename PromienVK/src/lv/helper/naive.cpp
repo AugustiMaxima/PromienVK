@@ -1,12 +1,12 @@
 #define GLFW_INCLUDE_VULKAN
 #include <vulkan/vulkan.hpp>
 #include <GLFW/glfw3.h>
-#include "../dbg/vLog.hpp"
-#include "../infr/type.hpp"
-#include "../core/devicePick.hpp"
-#include "Instance.hpp"
-#include "Present.hpp"
-#include "Device.hpp"
+#include "../../dbg/vLog.hpp"
+#include "../../infr/type.hpp"
+#include "../../core/devicePick.hpp"
+#include "../Instance.hpp"
+#include "../Present.hpp"
+#include "../Device.hpp"
 #include "deviceLib.hpp"
 #include "naive.hpp"
 
@@ -108,6 +108,20 @@ namespace lvl {
 		auto matchedDevices = getSuitableMatches(criteria, instance);
 		int index = matchedDevices[infr::DeviceFunction::graphic][0];
 		return &(instance.physicalDevices[index]);
+	}
+
+	lv::Device* allocateLogicalDevice(lv::PhysicalDevice& physicalDevice) {
+		vk::DeviceCreateInfo graphic;
+
+		const std::vector<const char*> deviceExtensions = {
+			VK_KHR_SWAPCHAIN_EXTENSION_NAME
+		};
+		graphic.enabledExtensionCount = deviceExtensions.size();
+		graphic.ppEnabledExtensionNames = deviceExtensions.data();
+		
+		std::vector<std::vector<float>> priorities;
+		autoPopulatePriorities(physicalDevice, priorities);
+		return &allocateDevice(physicalDevice, graphic, priorities);
 	}
 
 

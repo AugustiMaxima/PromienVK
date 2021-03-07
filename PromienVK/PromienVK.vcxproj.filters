@@ -115,10 +115,10 @@
     <ClCompile Include="src\utils\stdpp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\lv\naive.cpp">
+    <ClCompile Include="src\lv\helper\deviceLib.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\lv\deviceLib.cpp">
+    <ClCompile Include="src\lv\helper\naive.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -222,10 +222,10 @@
     <ClInclude Include="src\lv\Present.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\lv\naive.hpp">
+    <ClInclude Include="src\lv\helper\deviceLib.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\lv\deviceLib.hpp">
+    <ClInclude Include="src\lv\helper\naive.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

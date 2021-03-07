@@ -16,7 +16,7 @@ namespace lv {
 	struct PhysicalDevice {
 		Instance* instance;
 		vk::PhysicalDevice src;
-		std::vector<Device> Devices;
+		std::vector<Device> devices;
 	};
 
 	struct Instance {

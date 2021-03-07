@@ -11,6 +11,7 @@ namespace lv {
 	struct Queue {
 		Device* device;
 		int QueueIndex;
+		float priority;
 		vk::Queue src;
 	};
 
