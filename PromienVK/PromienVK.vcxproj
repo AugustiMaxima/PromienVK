@@ -302,7 +302,7 @@
     <ClInclude Include="test\masterTest.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="configs\settings.json" />
+    <None Include="configs\default.json" />
     <None Include="shaders\compileShader.bat" />
     <None Include="shaders\shader.frag" />
     <None Include="shaders\shader.vert" />

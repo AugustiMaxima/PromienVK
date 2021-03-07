@@ -230,9 +230,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="configs\settings.json">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="shaders\shader.frag">
       <Filter>Resource Files</Filter>
     </None>
@@ -246,6 +243,9 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="shaders\compileShader.bat">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="configs\default.json">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>

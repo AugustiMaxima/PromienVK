@@ -6,6 +6,9 @@
 # asset files that should not be public
 PromienVK/assets/
 
+#config files that should be specific to devs/machines
+PromienVK/configs/settings.json
+
 # User-specific files
 *.rsuser
 *.suo
