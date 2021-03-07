@@ -10,7 +10,7 @@
 namespace lvl {
 	std::map<infr::DeviceFunction, std::vector<int>> getSuitableMatches(
 		const std::map<infr::DeviceFunction, std::function<int(lv::PhysicalDevice&)>>& rankMap,
-		lv::Instance& instance, lv::Surface& surface) {
+		lv::Instance& instance) {
 		std::map<infr::DeviceFunction, std::vector<int>> index;
 		const auto& physicalDevices = instance.physicalDevices;
 		for (const auto& entry : rankMap) {
@@ -61,7 +61,6 @@ namespace lvl {
 		device.physicalDevice = &physicalDevice;
 
 		std::vector<vk::DeviceQueueCreateInfo> queueInfos;
-		std::vector<std::vector<float>> priorities;
 
 		queueInfos.resize(priorities.size());
 		for (int i = 0; i < priorities.size(); i++) {
@@ -89,6 +88,7 @@ namespace lvl {
 		}
 
 		device.loader.init(device.src);
+		return device;
 	}
 
 }

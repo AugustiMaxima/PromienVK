@@ -4,6 +4,8 @@
 #include "../../dbg/vLog.hpp"
 #include "../../infr/type.hpp"
 #include "../../core/devicePick.hpp"
+#include "../../core/settings.hpp"
+#include "../../core/swapchain.hpp"
 #include "../Instance.hpp"
 #include "../Present.hpp"
 #include "../Device.hpp"
@@ -124,5 +126,53 @@ namespace lvl {
 		return &allocateDevice(physicalDevice, graphic, priorities);
 	}
 
+	void initializeSwapchain(lv::SwapChain& swapchain, lv::Device& device, lv::Surface& surf, core::settings::DisplaySettings& display) {
+		auto& grgpu = device.physicalDevice->src;
+		auto& surface = surf.surface;
+		display.format = core::spc::selectSurfaceFormat(grgpu, surface, display.format);
+		display.present = core::spc::selectPresentMode(grgpu, surface, display.present);
+		display.resolution = core::spc::chooseSwapExtent(grgpu, surface, display.resolution);
+		vk::SurfaceCapabilitiesKHR cap = grgpu.getSurfaceCapabilitiesKHR(surface);
 
+		int imageCount = cap.minImageCount + 1;
+		if (imageCount > cap.maxImageCount && !cap.maxImageCount)
+			imageCount = cap.maxImageCount;
+
+		vk::SwapchainCreateInfoKHR info = vk::SwapchainCreateInfoKHR()
+			.setMinImageCount(imageCount)
+			.setImageFormat(display.format.format)
+			.setImageColorSpace(display.format.colorSpace)
+			.setImageExtent(display.resolution)
+			.setImageArrayLayers(1)
+			.setImageUsage(vk::ImageUsageFlagBits::eColorAttachment)
+			.setImageSharingMode(vk::SharingMode::eExclusive)
+			.setQueueFamilyIndexCount(0)
+			.setPQueueFamilyIndices(nullptr)
+			.setPreTransform(cap.currentTransform)
+			.setCompositeAlpha(vk::CompositeAlphaFlagBitsKHR::eOpaque)
+			.setPresentMode(display.present)
+			.setClipped(true)
+			.setSurface(surface);
+
+		swapchain.device = &device;
+		swapchain.swapchain = device.src.createSwapchainKHR(info);
+
+		swapchain.images = device.src.getSwapchainImagesKHR(swapchain.swapchain);
+		for (int i = 0; i < swapchain.images.size(); i++) {
+			vk::ImageViewCreateInfo info = vk::ImageViewCreateInfo()
+				.setImage(swapchain.images[i])
+				.setViewType(vk::ImageViewType::e2D)
+				.setFormat(display.format.format)
+				.setComponents({ vk::ComponentSwizzle::eIdentity, vk::ComponentSwizzle::eIdentity, vk::ComponentSwizzle::eIdentity, vk::ComponentSwizzle::eIdentity })
+				.setSubresourceRange(
+					vk::ImageSubresourceRange()
+					.setAspectMask(vk::ImageAspectFlagBits::eColor)
+					.setBaseMipLevel(0)
+					.setLevelCount(1)
+					.setBaseArrayLayer(0)
+					.setLayerCount(1)
+				);
+			swapchain.imageViews.push_back(device.src.createImageView(info));
+		}
+	}
 }

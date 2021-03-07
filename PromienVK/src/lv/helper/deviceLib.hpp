@@ -16,6 +16,10 @@ namespace lv {
 	struct Device;
 }
 
+namespace vk {
+	struct DeviceCreateInfo;
+}
+
 namespace lvl {
 	std::map<infr::DeviceFunction, std::vector<int>> getSuitableMatches(
 		const std::map<infr::DeviceFunction, std::function<int(lv::PhysicalDevice&)>>& rankMap, 

@@ -18,7 +18,8 @@ namespace lvl {
 
 	lv::PhysicalDevice* collectRenderingDevice(lv::Instance& instance, lv::Surface& surface);
 
+	void initializeSwapchain(lv::SwapChain& swapchain, lv::Device& device, lv::Surface& surf, core::settings::DisplaySettings& display);
+	
 }
-
 
 #endif
