@@ -23,6 +23,22 @@ namespace lv {
 		std::vector<vk::ImageView> imageViews;
 	};
 
+	struct RenderPass;
+
+	struct FrameBuffer {
+		SwapChain* swapchain;
+		RenderPass* renderPass;
+		std::vector<vk::Framebuffer> framebuffers;
+	};
+
+	struct FrameSynchronization {
+		FrameBuffer* framebuffer;
+		int framesInFlight;
+		std::vector<vk::Semaphore> imageAcquired;
+		std::vector<vk::Semaphore> renderComplete;
+		std::vector<vk::Fence> frameFinished;
+		std::vector<vk::Fence> frameLease;
+	};
 }
 
 #endif

@@ -14,8 +14,8 @@ namespace lv {
 	};
 
 	struct RenderPass {
-		Device* src;
-		vk::RenderPass renderPass;
+		Device* device;
+		vk::RenderPass src;
 		std::vector<Pipeline> pipelines;
 	};
 }

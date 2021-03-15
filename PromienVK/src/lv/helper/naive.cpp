@@ -9,6 +9,7 @@
 #include "../Instance.hpp"
 #include "../Present.hpp"
 #include "../Device.hpp"
+#include "../Pipeline.hpp"
 #include "deviceLib.hpp"
 #include "naive.hpp"
 
@@ -175,4 +176,38 @@ namespace lvl {
 			swapchain.imageViews.push_back(device.src.createImageView(info));
 		}
 	}
+
+	void initializeFrameBuffer(lv::FrameBuffer& framebuffer, lv::SwapChain& swapchain, lv::RenderPass& renderPass, core::settings::DisplaySettings& display) {
+		framebuffer.framebuffers.resize(swapchain.images.size());
+		framebuffer.swapchain = &swapchain;
+		framebuffer.renderPass = &renderPass;
+		for (int i = 0; i < swapchain.imageViews.size(); i++) {
+			std::array<vk::ImageView, 1> attachments = { swapchain.imageViews[i] };
+			vk::FramebufferCreateInfo info = vk::FramebufferCreateInfo()
+				.setRenderPass(renderPass.src)
+				.setAttachments(attachments)
+				.setWidth(display.resolution.width)
+				.setHeight(display.resolution.height)
+				.setLayers(1);
+			framebuffer.framebuffers[i] = renderPass.device->src.createFramebuffer(info);
+		}
+	}
+
+	void initializeFrameSynchronization(lv::FrameSynchronization& sync, lv::FrameBuffer& frameBuffer, int framesInFlight) {
+		int swapchainSize = frameBuffer.framebuffers.size();
+		sync.framesInFlight = framesInFlight > 0 ? framesInFlight : swapchainSize;
+		sync.frameFinished.resize(sync.framesInFlight);
+		sync.imageAcquired.resize(sync.framesInFlight);
+		sync.renderComplete.resize(sync.framesInFlight);
+		sync.framebuffer = &frameBuffer;
+		vk::Device& device = frameBuffer.renderPass->device->src;
+		for (int i = 0; i < sync.framesInFlight; i++) {
+			sync.frameFinished[i] = device.createFence(vk::FenceCreateInfo()
+				.setFlags(vk::FenceCreateFlagBits::eSignaled));
+			sync.imageAcquired[i] = device.createSemaphore(vk::SemaphoreCreateInfo());
+			sync.renderComplete[i] = device.createSemaphore(vk::SemaphoreCreateInfo());
+		}
+		sync.frameLease.resize(swapchainSize, nullptr);
+	}
+
 }

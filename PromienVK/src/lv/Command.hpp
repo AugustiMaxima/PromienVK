@@ -6,13 +6,19 @@
 
 namespace lv {
 	struct Device;
+	struct CommandBuffer;
 
 	struct CommandPool {
-		Device* src;
-		vk::CommandPool pool;
-		std::vector<vk::CommandBuffer> buffers;
+		Device* device;
+		int queueIndex;
+		vk::CommandPool src;
+		std::vector<lv::CommandBuffer> buffers;
+	};
+
+	struct CommandBuffer {
+		CommandPool* commandPool;
+		vk::CommandBuffer src;
 	};
 }
-
 
 #endif
