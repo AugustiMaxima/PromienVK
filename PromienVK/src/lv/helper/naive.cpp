@@ -127,7 +127,7 @@ namespace lvl {
 		return &allocateDevice(physicalDevice, graphic, priorities);
 	}
 
-	void initializeSwapchain(lv::SwapChain& swapchain, lv::Device& device, lv::Surface& surf, core::settings::DisplaySettings& display) {
+	void initializeSwapchain(lv::SwapChain& swapchain, lv::Device& device, lv::Surface& surf, core::DisplaySettings& display) {
 		auto& grgpu = device.physicalDevice->src;
 		auto& surface = surf.surface;
 		display.format = core::spc::selectSurfaceFormat(grgpu, surface, display.format);
@@ -177,7 +177,7 @@ namespace lvl {
 		}
 	}
 
-	void initializeFrameBuffer(lv::FrameBuffer& framebuffer, lv::SwapChain& swapchain, lv::RenderPass& renderPass, core::settings::DisplaySettings& display) {
+	void initializeFrameBuffer(lv::FrameBuffer& framebuffer, lv::SwapChain& swapchain, lv::RenderPass& renderPass, core::DisplaySettings& display) {
 		framebuffer.framebuffers.resize(swapchain.images.size());
 		framebuffer.swapchain = &swapchain;
 		framebuffer.renderPass = &renderPass;

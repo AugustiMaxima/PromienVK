@@ -1,11 +1,17 @@
 #ifndef NAIVE_HPP
 #define NAIVE_HPP
 
+#include "../../core/settings.hpp"
+
 namespace lv {
 	struct Instance;
 	struct Surface;
 	struct PhysicalDevice;
 	struct Device;
+	struct SwapChain;
+	struct FrameBuffer;
+	struct FrameSynchronization;
+	struct RenderPass;
 }
 
 namespace lvl {
@@ -18,9 +24,9 @@ namespace lvl {
 
 	lv::PhysicalDevice* collectRenderingDevice(lv::Instance& instance, lv::Surface& surface);
 
-	void initializeSwapchain(lv::SwapChain& swapchain, lv::Device& device, lv::Surface& surf, core::settings::DisplaySettings& display);
+	void initializeSwapchain(lv::SwapChain& swapchain, lv::Device& device, lv::Surface& surf, core::DisplaySettings& display);
 
-	void initializeFrameBuffer(lv::FrameBuffer& frameBuffer, lv::SwapChain& swapchain, lv::RenderPass& renderPass, core::settings::DisplaySettings& display);
+	void initializeFrameBuffer(lv::FrameBuffer& frameBuffer, lv::SwapChain& swapchain, lv::RenderPass& renderPass, core::DisplaySettings& display);
 
 	void initializeFrameSynchronization(lv::FrameSynchronization& sync, lv::FrameBuffer& frameBuffer, int framesInFlight = -1);
 

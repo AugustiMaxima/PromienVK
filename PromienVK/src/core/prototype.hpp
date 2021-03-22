@@ -35,7 +35,7 @@ namespace core {
 		std::map<infr::QueueFunction, int> queueIndex;
 		std::map<infr::QueueFunction, std::vector<vk::Queue>> queueMap;
 		vk::SwapchainKHR swapchain;
-		settings::DisplaySettings display;
+		DisplaySettings display;
 		std::vector<vk::Image> swapchainImages;
 		std::vector<vk::ImageView> swapchainImageViews;
 

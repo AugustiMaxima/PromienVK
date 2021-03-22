@@ -1,10 +1,12 @@
 #include "../lv/lv.hpp"
+#include "settings.hpp"
 #include "../infr/type.hpp"
 #include "../asset/io/loader.hpp"
 #include "../asset/format/obj.hpp"
 
 namespace core {
 	class Harness {
+		conf::Scope configs;
 		lv::Instance instance;
 		lv::PhysicalDevice* pDevice;
 		lv::Device* device;
@@ -20,5 +22,10 @@ namespace core {
 
 		asset::io::StageVueue stageBuffer;
 		asset::io::Vueue vram;
+
+	public:
+		Harness();
+		void start();
+		~Harness();
 	};
 }

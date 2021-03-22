@@ -149,11 +149,11 @@ namespace core {
 	}
 
 	void Prototype::configureSwapChain() {
-		display = settings::processDisplaySettings(configs["Display"]);
+		display = processDisplaySettings(configs["Display"]);
 		display.format = spc::selectSurfaceFormat(grgpu, surface, display.format);
 		display.present = spc::selectPresentMode(grgpu, surface, display.present);
 		display.resolution = spc::chooseSwapExtent(grgpu, surface, display.resolution);
-		settings::updateDisplaySettings(configs["Display"], display);
+		updateDisplaySettings(configs["Display"], display);
 
 		//TODO: Actually construct the damn swap chain
 
@@ -186,7 +186,7 @@ namespace core {
 	}
 
 	void Prototype::configureImageView() {
-		settings::DisplaySettings display = settings::processDisplaySettings(configs["Display"]);
+		DisplaySettings display = processDisplaySettings(configs["Display"]);
 		swapchainImages = device.getSwapchainImagesKHR(swapchain);
 		for (int i = 0; i < swapchainImages.size(); i++) {
 			vk::ImageViewCreateInfo info = vk::ImageViewCreateInfo()

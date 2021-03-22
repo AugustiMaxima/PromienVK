@@ -13,5 +13,5 @@ void main() {
 	posn = position;
 	coord = coordinate;
 	norm = normal;
-	gl_Position = vec4(position, 1.0);
+	gl_Position = vec4(posn, 1.0);
 }
