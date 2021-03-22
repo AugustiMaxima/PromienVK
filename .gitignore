@@ -6,6 +6,9 @@
 # asset files that should not be public
 PromienVK/assets/
 
+#compiled shaders, which aren't source files
+PromienVK/shaders/*.spv
+
 #config files that should be specific to devs/machines
 PromienVK/configs/settings.json
 

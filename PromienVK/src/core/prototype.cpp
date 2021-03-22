@@ -359,12 +359,11 @@ namespace core {
 	void Prototype::renderFrame(unsigned f) {
 		unsigned id = f % swapchainImages.size();
 		unsigned il = f % maxFramesLatency;
-		device.waitForFences(frameFinished[il], true, UINT64_MAX);
-		device.resetCommandPool(commandPools[id], vk::CommandPoolResetFlagBits::eReleaseResources);		
-
 		if (imageLease[id]) {
 			device.waitForFences(imageLease[id], true, UINT64_MAX);
 		}
+		device.resetCommandPool(commandPools[id], vk::CommandPoolResetFlagBits::eReleaseResources);		
+		device.waitForFences(frameFinished[il], true, UINT64_MAX);
 
 		//a note on this reset and the imageLease
 		//this is a plug gap solution to solve the scenario where maxFramesLatency != swapchain image size
