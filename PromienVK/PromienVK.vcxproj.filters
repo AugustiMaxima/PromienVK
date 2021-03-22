@@ -121,6 +121,9 @@
     <ClCompile Include="src\lv\helper\naive.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\core\harness.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\core\prototype.hpp">
@@ -226,6 +229,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\lv\helper\naive.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\core\harness.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\lv\DynamicDispatch.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\lv\lv.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
