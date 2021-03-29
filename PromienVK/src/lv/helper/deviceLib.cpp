@@ -9,7 +9,7 @@
 
 namespace lvl {
 	std::map<infr::DeviceFunction, std::vector<int>> getSuitableMatches(
-		const std::map<infr::DeviceFunction, std::function<int(lv::PhysicalDevice&)>>& rankMap,
+		const std::map<infr::DeviceFunction, std::function<int(const lv::PhysicalDevice&)>>& rankMap,
 		lv::Instance& instance) {
 		std::map<infr::DeviceFunction, std::vector<int>> index;
 		const auto& physicalDevices = instance.physicalDevices;
@@ -35,11 +35,11 @@ namespace lvl {
 	}
 
 	//denominaiton of 1MB
-	int sortByVRAM(lv::PhysicalDevice& device) {
+	int sortByVRAM(const lv::PhysicalDevice& device) {
 		return device.src.getMemoryProperties().memoryHeaps[0].size / 1048576;
 	}
 
-	int vulkanVersionSupport(lv::PhysicalDevice& device) {
+	int vulkanVersionSupport(const lv::PhysicalDevice& device) {
 		return device.src.getProperties().apiVersion;
 	}
 
@@ -88,7 +88,46 @@ namespace lvl {
 		}
 
 		device.loader.init(device.src);
+
 		return device;
+	}
+
+	bool graphicQueue(const vk::QueueFamilyProperties& prop) {
+		return (bool)(prop.queueFlags & vk::QueueFlagBits::eGraphics);
+	}
+
+	bool asyncComputeQueue(const vk::QueueFamilyProperties& prop) {
+		return (prop.queueFlags & vk::QueueFlagBits::eCompute) && !(prop.queueFlags & vk::QueueFlagBits::eGraphics);
+	}
+
+	bool transferQueue(const vk::QueueFamilyProperties& prop) {
+		return (prop.queueFlags & vk::QueueFlagBits::eTransfer) && 
+			!(prop.queueFlags & vk::QueueFlagBits::eCompute) && !(prop.queueFlags & vk::QueueFlagBits::eGraphics);
+	}
+
+	std::map<infr::QueueFunction, int> getDeviceQueueIndex(lv::PhysicalDevice& device, 
+		std::map<infr::QueueFunction, std::function<bool(const vk::QueueFamilyProperties&)>>& query) {
+		const auto& queueProps = device.src.getQueueFamilyProperties();
+		std::map<infr::QueueFunction, int> map;
+		
+		//A word on the complexity of DeviceQueues
+		//Device queues are not as nicely segregated as one might hope
+		//some queues are strictly optional
+		//some queues only exist in conjunction with other functionalities (graphics)
+		//some queues behave differently when other function are disabled (async compute vs compute)
+		//so rather than being picky and exclusive, greedy is actually the closest we have
+		//subtle beaviors, such as making trasnfer queue optional or explicit, can be refined by specifying other missing functionalities
+		for (int i = 0; i < queueProps.size(); i++) { 
+			const auto& qProp = queueProps[i];
+			for (auto& kv : query) {
+				auto& key = kv.first;
+				auto& condition = kv.second;
+				if (condition(qProp)) {
+					map[key] = i;
+				}
+			}
+		}
+		return map;
 	}
 
 }

@@ -92,13 +92,13 @@ namespace lvl {
 	}
 
 	lv::PhysicalDevice* collectRenderingDevice(lv::Instance& instance, lv::Surface& surface) {
-		std::map<infr::DeviceFunction, std::function<int(lv::PhysicalDevice&)>> criteria;
+		std::map<infr::DeviceFunction, std::function<int(const lv::PhysicalDevice&)>> criteria;
 		const std::vector<const char*> deviceExtensions = {
 			VK_KHR_SWAPCHAIN_EXTENSION_NAME
 		};
 		vk::DeviceCreateInfo graphics = vk::DeviceCreateInfo()
 			.setPEnabledExtensionNames(deviceExtensions);
-		criteria[infr::DeviceFunction::graphic] = [&surface, &graphics](lv::PhysicalDevice& device) {
+		criteria[infr::DeviceFunction::graphic] = [&surface, &graphics](const lv::PhysicalDevice& device) {
 			using namespace core::dps;
 			if(!presentReady(device.src, surface.surface)){
 				return -1;

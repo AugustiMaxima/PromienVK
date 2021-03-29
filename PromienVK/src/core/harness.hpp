@@ -10,7 +10,8 @@ namespace core {
 		lv::Instance instance;
 		lv::PhysicalDevice* pDevice;
 		lv::Device* device;
-		std::map<infr::DeviceFunction, std::vector<int>> deviceQueues;
+		std::vector<lv::Queue>* graphicQueue;
+		std::vector<lv::Queue>* transferQueue;
 		lv::Surface surface;
 		lv::SwapChain swapchain;
 		lv::RenderPass renderPass;
@@ -24,7 +25,7 @@ namespace core {
 		asset::io::Vueue vram;
 
 	public:
-		Harness();
+		Harness(const std::string& config);
 		void start();
 		~Harness();
 	};
