@@ -4,6 +4,7 @@
 #include <vulkan/vulkan.hpp>
 #include <GLFW/glfw3.h>
 #include <vector>
+#include "Command.hpp"
 
 namespace lv {
 	struct Instance;
@@ -38,6 +39,7 @@ namespace lv {
 		std::vector<vk::Semaphore> renderComplete;
 		std::vector<vk::Fence> frameFinished;
 		std::vector<vk::Fence> frameLease;
+		std::vector<CommandPool> commandPools;
 	};
 }
 

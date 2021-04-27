@@ -28,9 +28,8 @@ namespace lvl {
 
 	void initializeFrameBuffer(lv::FrameBuffer& frameBuffer, lv::SwapChain& swapchain, lv::RenderPass& renderPass, core::DisplaySettings& display);
 
-	void initializeFrameSynchronization(lv::FrameSynchronization& sync, lv::FrameBuffer& frameBuffer, int framesInFlight = -1);
+	void initializeFrameSynchronization(lv::FrameSynchronization& sync, lv::FrameBuffer& frameBuffer, int queueIndex, int framesInFlight = -1);
 
-	
 }
 
 #endif

@@ -10,12 +10,13 @@ namespace core {
 		lv::Instance instance;
 		lv::PhysicalDevice* pDevice;
 		lv::Device* device;
-		std::vector<lv::Queue>* graphicQueue;
-		std::vector<lv::Queue>* transferQueue;
+		std::vector<lv::Queue>* graphicQueues;
+		std::vector<lv::Queue>* transferQueues;
 		lv::Surface surface;
 		lv::SwapChain swapchain;
 		lv::RenderPass renderPass;
 		lv::FrameBuffer frameBuffer;
+		lv::FrameSynchronization synchronization;
 		lv::CommandPool command;
 
 		asset::io::StreamHost host;

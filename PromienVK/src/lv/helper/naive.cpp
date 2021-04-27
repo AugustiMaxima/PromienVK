@@ -193,12 +193,13 @@ namespace lvl {
 		}
 	}
 
-	void initializeFrameSynchronization(lv::FrameSynchronization& sync, lv::FrameBuffer& frameBuffer, int framesInFlight) {
+	void initializeFrameSynchronization(lv::FrameSynchronization& sync, lv::FrameBuffer& frameBuffer, int queueIndex, int framesInFlight) {
 		int swapchainSize = frameBuffer.framebuffers.size();
 		sync.framesInFlight = framesInFlight > 0 ? framesInFlight : swapchainSize;
 		sync.frameFinished.resize(sync.framesInFlight);
 		sync.imageAcquired.resize(sync.framesInFlight);
 		sync.renderComplete.resize(sync.framesInFlight);
+		sync.commandPools.resize(sync.framesInFlight);
 		sync.framebuffer = &frameBuffer;
 		vk::Device& device = frameBuffer.renderPass->device->src;
 		for (int i = 0; i < sync.framesInFlight; i++) {
@@ -206,6 +207,19 @@ namespace lvl {
 				.setFlags(vk::FenceCreateFlagBits::eSignaled));
 			sync.imageAcquired[i] = device.createSemaphore(vk::SemaphoreCreateInfo());
 			sync.renderComplete[i] = device.createSemaphore(vk::SemaphoreCreateInfo());
+
+			auto& commandPool = sync.commandPools[i];
+			commandPool.src = device.createCommandPool(vk::CommandPoolCreateInfo()
+				.setFlags(vk::CommandPoolCreateFlagBits::eResetCommandBuffer)
+				.setQueueFamilyIndex(queueIndex));
+			commandPool.device= frameBuffer.renderPass->device;
+			commandPool.queueIndex = queueIndex;
+			commandPool.buffers.push_back(lv::CommandBuffer());
+			commandPool.buffers[0].commandPool = &commandPool;
+			commandPool.buffers[0].src = device.allocateCommandBuffers(vk::CommandBufferAllocateInfo()
+				.setCommandBufferCount(1)
+				.setCommandPool(commandPool.src)
+				.setLevel(vk::CommandBufferLevel::ePrimary))[0];
 		}
 		sync.frameLease.resize(swapchainSize, nullptr);
 	}
