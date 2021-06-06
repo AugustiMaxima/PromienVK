@@ -236,6 +236,7 @@
     <ClCompile Include="src\asset\io\loader.cpp" />
     <ClCompile Include="src\asset\io\streamWorks.cpp" />
     <ClCompile Include="src\core\devicePick.cpp" />
+    <ClCompile Include="src\core\harness.cpp" />
     <ClCompile Include="src\core\memoryMap.cpp" />
     <ClCompile Include="src\core\pipeline\boilerplate.cpp" />
     <ClCompile Include="src\core\pipeline\pipeline.cpp" />
@@ -253,6 +254,8 @@
     <ClCompile Include="src\infr\hvm.cpp" />
     <ClCompile Include="src\infr\InfraVK.cpp" />
     <ClCompile Include="src\infr\lvm.cpp" />
+    <ClCompile Include="src\lv\helper\deviceLib.cpp" />
+    <ClCompile Include="src\lv\helper\naive.cpp" />
     <ClCompile Include="src\utils\semaphore.cpp" />
     <ClCompile Include="src\utils\stdpp.cpp" />
     <ClCompile Include="test\allocTest.cpp" />
@@ -268,6 +271,7 @@
     <ClInclude Include="src\asset\io\loader.hpp" />
     <ClInclude Include="src\asset\io\streamWorks.hpp" />
     <ClInclude Include="src\core\devicePick.hpp" />
+    <ClInclude Include="src\core\harness.hpp" />
     <ClInclude Include="src\core\memoryMap.hpp" />
     <ClInclude Include="src\core\pipeline\boilerplate.hpp" />
     <ClInclude Include="src\core\pipeline\pipeline.hpp" />
@@ -286,6 +290,15 @@
     <ClInclude Include="src\infr\InfraVK.hpp" />
     <ClInclude Include="src\infr\lvm.hpp" />
     <ClInclude Include="src\infr\type.hpp" />
+    <ClInclude Include="src\lv\Command.hpp" />
+    <ClInclude Include="src\lv\Device.hpp" />
+    <ClInclude Include="src\lv\DynamicDispatch.hpp" />
+    <ClInclude Include="src\lv\helper\deviceLib.hpp" />
+    <ClInclude Include="src\lv\helper\naive.hpp" />
+    <ClInclude Include="src\lv\Instance.hpp" />
+    <ClInclude Include="src\lv\lv.hpp" />
+    <ClInclude Include="src\lv\Pipeline.hpp" />
+    <ClInclude Include="src\lv\Present.hpp" />
     <ClInclude Include="src\utils\heap.hpp" />
     <ClInclude Include="src\utils\multIndex.hpp" />
     <ClInclude Include="src\utils\semaphore.hpp" />
@@ -293,7 +306,7 @@
     <ClInclude Include="test\masterTest.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="configs\settings.json" />
+    <None Include="configs\default.json" />
     <None Include="shaders\compileShader.bat" />
     <None Include="shaders\shader.frag" />
     <None Include="shaders\shader.vert" />

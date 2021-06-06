@@ -149,11 +149,11 @@ namespace core {
 	}
 
 	void Prototype::configureSwapChain() {
-		display = settings::processDisplaySettings(configs["Display"]);
+		display = processDisplaySettings(configs["Display"]);
 		display.format = spc::selectSurfaceFormat(grgpu, surface, display.format);
 		display.present = spc::selectPresentMode(grgpu, surface, display.present);
 		display.resolution = spc::chooseSwapExtent(grgpu, surface, display.resolution);
-		settings::updateDisplaySettings(configs["Display"], display);
+		updateDisplaySettings(configs["Display"], display);
 
 		//TODO: Actually construct the damn swap chain
 
@@ -186,7 +186,7 @@ namespace core {
 	}
 
 	void Prototype::configureImageView() {
-		settings::DisplaySettings display = settings::processDisplaySettings(configs["Display"]);
+		DisplaySettings display = processDisplaySettings(configs["Display"]);
 		swapchainImages = device.getSwapchainImagesKHR(swapchain);
 		for (int i = 0; i < swapchainImages.size(); i++) {
 			vk::ImageViewCreateInfo info = vk::ImageViewCreateInfo()
@@ -359,19 +359,16 @@ namespace core {
 	void Prototype::renderFrame(unsigned f) {
 		unsigned id = f % swapchainImages.size();
 		unsigned il = f % maxFramesLatency;
-		device.waitForFences(frameFinished[il], true, UINT64_MAX);
-		device.resetCommandPool(commandPools[id], vk::CommandPoolResetFlagBits::eReleaseResources);		
-
 		if (imageLease[id]) {
 			device.waitForFences(imageLease[id], true, UINT64_MAX);
 		}
+		device.resetCommandPool(commandPools[id], vk::CommandPoolResetFlagBits::eReleaseResources);		
+		device.waitForFences(frameFinished[il], true, UINT64_MAX);
 
 		//a note on this reset and the imageLease
 		//this is a plug gap solution to solve the scenario where maxFramesLatency != swapchain image size
 		//however, it is not perfect, and leads to defects (back-frame stutters) when there are more images than frames in flight
 		//when possible, we should fix frame in flight to be equivalent to swapchain images, this eliminates the need for image leases
-		//failing that, we should avoid making frame in flight lesser than swapchain images, this lead to nasty stale induced stutter
-		device.resetFences(frameFinished[il]);
 		device.acquireNextImageKHR(swapchain, UINT64_MAX, imgAcquired[il], nullptr, &id);
 
 
@@ -410,8 +407,11 @@ namespace core {
 			.setPWaitSemaphores(&imgAcquired[il])
 			.setPWaitDstStageMask(&wstage);
 
+		device.resetFences(frameFinished[il]);
 		gq.submit(submit, frameFinished[il]);
 		
+		imageLease[id] = frameFinished[il];
+
 		auto present = vk::PresentInfoKHR()
 			.setSwapchainCount(1)
 			.setPSwapchains(&swapchain)

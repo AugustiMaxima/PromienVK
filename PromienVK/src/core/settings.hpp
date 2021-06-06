@@ -4,17 +4,15 @@
 #include "../infr/Conf.hpp"
 #include <vulkan/vulkan.hpp>
 
-namespace core {
-	namespace settings {
-		struct DisplaySettings {
-			vk::SurfaceFormatKHR format;
-			vk::PresentModeKHR present;
-			vk::Extent2D resolution;
-		};
+namespace core{
+	struct DisplaySettings {
+		vk::SurfaceFormatKHR format;
+		vk::PresentModeKHR present;
+		vk::Extent2D resolution;
+	};
 
-		DisplaySettings processDisplaySettings(conf::Scope& configs);
-		void updateDisplaySettings(conf::Scope& configs, DisplaySettings setting);
-	}
+	DisplaySettings processDisplaySettings(conf::Scope& configs);
+	void updateDisplaySettings(conf::Scope& configs, DisplaySettings setting);
 }
 
 #endif

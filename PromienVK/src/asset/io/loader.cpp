@@ -162,6 +162,32 @@ namespace asset {
 			init();
 		}
 
+		void StreamHost::initialize(vk::PhysicalDevice pd, vk::Device device, uint32_t queueIndex, std::vector<vk::Queue>& transferQueue) {
+			const auto& memProp = pd.getMemoryProperties();
+			int stageHeap = -1;
+			int vramHeap = -1;
+			int cVram = -1;
+			for (const auto& memType : memProp.memoryTypes) {
+				if (memType.propertyFlags & vk::MemoryPropertyFlagBits::eDeviceLocal && 
+					!(memType.propertyFlags & vk::MemoryPropertyFlagBits::eHostVisible)) {
+					vramHeap = memType.heapIndex;
+				}
+				else if (memType.propertyFlags & vk::MemoryPropertyFlagBits::eHostVisible &&
+					!(memType.propertyFlags & vk::MemoryPropertyFlagBits::eDeviceLocal)) {
+					stageHeap = memType.heapIndex;
+				}
+				else if (memType.propertyFlags & vk::MemoryPropertyFlagBits::eHostVisible &&
+					memType.propertyFlags & vk::MemoryPropertyFlagBits::eDeviceLocal) {
+					cVram = memType.heapIndex;
+				}
+			}
+
+			uint64_t vramBlockSize = memProp.memoryHeaps[vramHeap].size / 16;
+			uint64_t stageBlockSize = memProp.memoryHeaps[stageHeap].size / 16;
+			initialize(pd, device, queueIndex, transferQueue, vramBlockSize, stageBlockSize);
+		}
+
+
 		vk::Device StreamHost::getDevice() {
 			return device;
 		}

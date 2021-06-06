@@ -4,11 +4,9 @@
 #include <vector>
 
 namespace util {
-
 	template<typename K, typename V>
 	class minHeap {
 		std::vector<std::pair<K, V>> entries;
-
 		void heapFloat() {
 			int p = entries.size() - 1;
 			int np = p / 2;
@@ -52,9 +50,6 @@ namespace util {
 			return ret;
 		}
 	};
-
-
-
 }
 
 

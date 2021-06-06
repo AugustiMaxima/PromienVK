@@ -14,6 +14,8 @@
 
 VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE
 
+//Deprecated in favor of harness.hpp
+
 namespace core {
 	class Prototype : public infr::InfraVK {
 		void initWindow();
@@ -35,7 +37,7 @@ namespace core {
 		std::map<infr::QueueFunction, int> queueIndex;
 		std::map<infr::QueueFunction, std::vector<vk::Queue>> queueMap;
 		vk::SwapchainKHR swapchain;
-		settings::DisplaySettings display;
+		DisplaySettings display;
 		std::vector<vk::Image> swapchainImages;
 		std::vector<vk::ImageView> swapchainImageViews;
 

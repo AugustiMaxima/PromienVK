@@ -80,6 +80,7 @@ namespace asset {
 			StreamHost();
 			StreamHost(vk::PhysicalDevice pd, vk::Device device, uint32_t queueIndex, std::vector<vk::Queue>& transferQueue, uint64_t vramBlockSize, uint64_t stageBlockSize);
 			void initialize(vk::PhysicalDevice pd, vk::Device device, uint32_t queueIndex, std::vector<vk::Queue>& transferQueue, uint64_t vramBlockSize, uint64_t stageBlockSize);
+			void initialize(vk::PhysicalDevice pd, vk::Device device, uint32_t queueIndex, std::vector<vk::Queue>& transferQueue);
 			vk::Device getDevice();
 			StageVueue allocateStageBuffer(uint64_t size);
 			Vueue allocateVRAM(vk::Buffer dst, uint64_t size);
