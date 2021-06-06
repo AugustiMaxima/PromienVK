@@ -87,7 +87,8 @@ namespace lvl {
 		
 		}
 
-		device.loader.init(device.src);
+		//This line crashes the app, will investigate later
+		//device.loader.init(device.src);
 
 		return device;
 	}

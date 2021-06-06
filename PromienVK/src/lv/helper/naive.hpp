@@ -15,12 +15,13 @@ namespace lv {
 }
 
 namespace lvl {
+	void initWindow(lv::Surface& surface, int width, int height, std::string& appName);
 
 	void configureInstance(lv::Instance& instance, std::string& appName, uint32_t version);
 
 	void enumeratePhysicalDevices(lv::Instance& instance);
 
-	void initializeSurface(lv::Instance& instance, lv::Surface& surface, int width, int height, std::string& appName);
+	void initializeSurface(lv::Instance& instance, lv::Surface& surface);
 
 	lv::PhysicalDevice* collectRenderingDevice(lv::Instance& instance, lv::Surface& surface);
 

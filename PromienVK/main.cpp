@@ -1,7 +1,7 @@
 #include "test/masterTest.hpp"
 #include <stdio.h>
 #include <Windows.h>
-#include "src/core/prototype.hpp"
+#include "src/core/harness.hpp"
 #include <iostream>
 
 
@@ -24,9 +24,7 @@ int main() {
 	cin >> a;
 #endif
 
-	core::Prototype pt{ "configs/settings.json" };
-	pt.run();
-
-	
+	core::Harness pt{ "configs/settings.json" };
+	pt.start();
 
 }

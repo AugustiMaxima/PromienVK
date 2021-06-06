@@ -30,11 +30,11 @@ namespace conf {
 		Entry(Entry&& entry);
 		Entry& operator=(Entry& entry);
 		Entry& operator=(Entry&& entry);
-		operator std::string& ();
+		operator std::string&();
 		operator int& ();
 		operator Scope();
-		operator Scope& ();
-		operator std::vector<Entry> ();
+		operator Scope&();
+		operator std::vector<Entry>();
 		operator std::vector<Entry>& ();
 		Entry& operator=(int num);
 		Entry& operator=(std::string str);

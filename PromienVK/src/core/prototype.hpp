@@ -14,6 +14,8 @@
 
 VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE
 
+//Deprecated in favor of harness.hpp
+
 namespace core {
 	class Prototype : public infr::InfraVK {
 		void initWindow();

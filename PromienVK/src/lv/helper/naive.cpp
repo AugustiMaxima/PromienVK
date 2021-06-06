@@ -14,6 +14,13 @@
 #include "naive.hpp"
 
 namespace lvl {
+	void initWindow(lv::Surface& surface, int width, int height, std::string& appName) {
+		glfwInit();
+		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+		glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+		surface.window = glfwCreateWindow(width, height, appName.c_str(), nullptr, nullptr);
+	}
+
 	void configureInstance(lv::Instance& instance, std::string& appName, uint32_t version) {
 		vk::ApplicationInfo appInfo = vk::ApplicationInfo()
 			.setPApplicationName(appName.c_str())
@@ -78,11 +85,7 @@ namespace lvl {
 		}
 	}
 
-	void initializeSurface(lv::Instance& instance, lv::Surface& surface, int width, int height, std::string& appName) {
-		glfwInit();
-		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-		glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
-		surface.window = glfwCreateWindow(width, height, appName.c_str(), nullptr, nullptr);
+	void initializeSurface(lv::Instance& instance, lv::Surface& surface) {
 		VkSurfaceKHR sf;
 		if (glfwCreateWindowSurface((VkInstance)(instance.src), surface.window, nullptr, &sf) != VK_SUCCESS) {
 			throw std::runtime_error("failed to create window surface!");

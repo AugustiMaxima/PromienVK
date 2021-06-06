@@ -40,7 +40,7 @@ namespace conf {
 		Scope* src = new Scope;
 		Scope& scope = *src;
 		if (line[index++] != '{') {
-			throw exception("Bad config file, expecting brace");
+			throw runtime_error("Bad config file, expecting brace");
 		}
 		bool empty = true;
 		while (true) {
@@ -50,19 +50,19 @@ namespace conf {
 				break;
 			}
 			if (!empty && line[index++] != ',') {
-				throw exception("Missing delimiter ,");
+				throw runtime_error("Missing delimiter ,");
 			}
 			dash(stream, line, index);
 			//key name
 			if (line[index++] != '"') {
-				throw exception("Bad config file, expecting quotation");
+				throw runtime_error("Bad config file, expecting quotation");
 			}
 			int mark = skipToDelimiter(line, index, '"');
 			string key = line.substr(index, mark - index);
 			index = mark + 1;
 			dash(stream, line, index);
 			if (line[index++] != ':') {
-				throw exception("Bad config file, expecting divider");
+				throw runtime_error("Bad config file, expecting divider");
 			}
 			//deals with real entry now
 			parseConfigGeneric(scope[key], stream, line, index);
@@ -75,7 +75,7 @@ namespace conf {
 		vector<Entry>* src = new vector<Entry>;
 		vector<Entry>& arr = *src;
 		if (line[index++] != '[') {
-			throw exception("Bad config file, expecting bracket");
+			throw runtime_error("Bad config file, expecting bracket");
 		}
 		bool empty = true;
 		int i = 0;
@@ -86,7 +86,7 @@ namespace conf {
 				break;
 			}
 			if (!empty && line[index++] != ',') {
-				throw exception("Missing delimiter ,");
+				throw runtime_error("Missing delimiter ,");
 			}
 			dash(stream, line, index);
 			arr.push_back(Entry());
@@ -113,7 +113,7 @@ namespace conf {
 
 	string* parseConfigStr(ifstream& stream, string& line, int& index) {
 		if (line[index++] != '"') {
-			throw exception("Bad config file, expecting open quote");
+			throw runtime_error("Bad config file, expecting open quote");
 		}
 		int mark = skipToDelimiter(line, index, '"');
 		string* str = new string;
@@ -142,7 +142,7 @@ namespace conf {
 			entry.content = parseConfigNum(stream, line, index);
 		}
 		else {
-			throw exception("Cannot parse entry");
+			throw runtime_error("Cannot parse entry");
 		}
 	}
 
@@ -156,19 +156,19 @@ namespace conf {
 
 		while (!file.eof()) {
 			if (!empty && line[index++] != ',') {
-				throw exception("Missing delimiter ,");
+				throw runtime_error("Missing delimiter ,");
 			}
 			dash(file, line, index);
 			//key name
 			if (line[index++] != '"') {
-				throw exception("Bad config file, expecting quotation");
+				throw runtime_error("Bad config file, expecting quotation");
 			}
 			int mark = skipToDelimiter(line, index, '"');
 			string key = line.substr(index, mark - index);
 			index = mark + 1;
 			dash(file, line, index);
 			if (line[index++] != ':') {
-				throw exception("Bad config file, expecting divider");
+				throw runtime_error("Bad config file, expecting divider");
 			}
 			//deals with real entry now
 			parseConfigGeneric(scope[key], file, line, index);
@@ -245,21 +245,21 @@ namespace conf {
 
 	Entry::operator string&() {
 		if (type != Type::STRING) {
-			throw exception("Bad cast exception");
+			throw runtime_error("Bad cast runtime_error");
 		}
 		return *(string*)content;
 	}
 	
 	Entry::operator int&() {
 		if (type != Type::NUM) {
-			throw exception("Bad cast exception");
+			throw runtime_error("Bad cast runtime_error");
 		}
 		return *(int*)content;
 	}
 
 	Entry::operator Scope () {
 		if (type != Type::MAP) {
-			throw exception("Bad cast exception");
+			throw runtime_error("Bad cast runtime_error");
 		}
 		//use a cast first to make sure we get lvalue assignment rather than rvalue assignment
 		Scope& src = *(Scope*)content;
@@ -268,23 +268,23 @@ namespace conf {
 
 	Entry::operator Scope& () {
 		if (type != Type::MAP) {
-			throw exception("Bad cast exception");
+			throw runtime_error("Bad cast runtime_error");
 		}
 		//no concerns about r values here
 		return *(Scope*)content;
 	}
-	
-	Entry::operator vector<Entry>(){
+
+	Entry::operator std::vector<Entry>(){
 		if (type != Type::ARRAY) {
-			throw exception("Bad cast exception");
+			throw runtime_error("Bad cast runtime_error");
 		}
 		vector<Entry>& src = *(vector<Entry>*)content;
 		return src;
 	}
 
-	Entry::operator vector<Entry>&() {
+	Entry::operator std::vector<Entry>&() {
 		if (type != Type::ARRAY) {
-			throw exception("Bad cast exception");
+			throw runtime_error("Bad cast runtime_error");
 		}
 		return *(vector<Entry>*)content;
 	}
